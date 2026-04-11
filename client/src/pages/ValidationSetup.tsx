@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,6 +7,7 @@ import { AlertCircle, CheckCircle, Loader } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 
 export default function ValidationSetup() {
+  const [, setLocation] = useLocation();
   const [sessionStarted, setSessionStarted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [sessionData, setSessionData] = useState<any>(null);
@@ -155,7 +157,7 @@ export default function ValidationSetup() {
 
         {/* Action Buttons */}
         <div className="flex gap-4">
-          <Button className="bg-blue-600 hover:bg-blue-700 flex-1">Go to Dashboard</Button>
+          <Button className="bg-blue-600 hover:bg-blue-700 flex-1" onClick={() => setLocation('/validation/dashboard')}>Go to Dashboard</Button>
           <Button variant="outline" className="flex-1">Download Start Report</Button>
         </div>
       </div>
