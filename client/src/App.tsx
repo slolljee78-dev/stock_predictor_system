@@ -1,4 +1,4 @@
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
@@ -9,6 +9,8 @@ import AppInstallPrompt from "./components/AppInstallPrompt";
 import Dashboard from "./pages/Dashboard";
 import StockDetail from "./pages/StockDetail";
 import TradingSimulator from "./pages/TradingSimulator";
+import ValidationSetup from "./pages/ValidationSetup";
+import ValidationDashboard from "./pages/ValidationDashboard";
 
 function Router() {
   return (
@@ -17,23 +19,19 @@ function Router() {
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/stock/:ticker" component={StockDetail} />
       <Route path="/simulator" component={TradingSimulator} />
+      <Route path="/validation/setup" component={ValidationSetup} />
+      <Route path="/validation/dashboard" component={ValidationDashboard} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
   );
 }
 
-// NOTE: About Theme
-// - First choose a default theme according to your design style (dark or light bg), than change color palette in index.css
-//   to keep consistent foreground/background color across components
-// - If you want to make theme switchable, pass `switchable` ThemeProvider and use `useTheme` hook
-
 function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider
         defaultTheme="light"
-        // switchable
       >
         <TooltipProvider>
           <Toaster />
