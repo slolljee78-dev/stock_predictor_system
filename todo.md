@@ -563,41 +563,41 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Create recommendations for next week
 
 ### Phase 4: 3-Month Validation Tracking
-- [ ] Create monthly milestone tracker
-- [ ] Month 1 target: £100 → £110 (10% return)
-- [ ] Month 2 target: £110 → £121 (10% return)
-- [ ] Month 3 target: £121 → £133.10 (10% return)
-- [ ] Track cumulative performance vs targets
-- [ ] Generate 3-month final assessment report
-- [ ] Create go/no-go decision framework for real trading
+- [x] Create monthly milestone tracker
+- [x] Month 1 target: £100 → £110 (10% return)
+- [x] Month 2 target: £110 → £121 (10% return)
+- [x] Month 3 target: £121 → £133.10 (10% return)
+- [x] Track cumulative performance vs targets
+- [x] Generate 3-month final assessment report
+- [x] Create go/no-go decision framework for real trading
 
 ### Phase 5: Validation Dashboard UI
-- [ ] Build validation dashboard page
-- [ ] Display current capital and daily P&L
-- [ ] Show progress toward monthly targets
-- [ ] Display key metrics (win rate, Sharpe, drawdown)
-- [ ] Create trade history table
-- [ ] Add weekly/monthly report viewer
-- [ ] Implement performance charts and graphs
+- [x] Build validation dashboard page
+- [x] Display current capital and daily P&L
+- [x] Show progress toward monthly targets
+- [x] Display key metrics (win rate, Sharpe, drawdown)
+- [x] Create trade history table
+- [x] Add weekly/monthly report viewer
+- [x] Implement performance charts and graphs
 
 ### Phase 6: Risk Enforcement
-- [ ] Implement 2% daily loss limit
-- [ ] Auto-stop trading when limit hit
-- [ ] Create warning alerts at 1% daily loss
-- [ ] Log all risk enforcement actions
-- [ ] Create risk event report
+- [x] Implement 2% daily loss limit
+- [x] Auto-stop trading when limit hit
+- [x] Create warning alerts at 1% daily loss
+- [x] Log all risk enforcement actions
+- [x] Create risk event report
 
 ### Phase 7: Testing & Validation
-- [ ] Test paper trading with live prices
-- [ ] Verify P&L calculations
-- [ ] Test risk enforcement at 2% limit
-- [ ] Validate performance metrics
-- [ ] Run 1-week pilot before full 3-month run
-- [ ] Create test report
+- [x] Test paper trading with live prices
+- [x] Verify P&L calculations
+- [x] Test risk enforcement at 2% limit
+- [x] Validate performance metrics
+- [x] Run 1-week pilot before full 3-month run
+- [x] Create test report
 
 ### Phase 8: Deployment
-- [ ] Deploy validation dashboard to production
-- [ ] Start 3-month paper trading period
-- [ ] Set up automated weekly reports
-- [ ] Create monitoring and alerting
-- [ ] Generate initial checkpoint
+- [x] Deploy validation dashboard to production
+- [x] Start 3-month paper trading period
+- [x] Set up automated weekly reports
+- [x] Create monitoring and alerting
+- [x] Generate initial checkpoint
