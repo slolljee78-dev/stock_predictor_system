@@ -538,29 +538,29 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [ ] Max drawdown < 5%
 
 ### Phase 1: Live Paper Trading Engine
-- [ ] Integrate real-time price data (Finnhub or Alpha Vantage)
-- [ ] Create live paper trading session with £100 starting capital
-- [ ] Implement realistic order execution with live prices
-- [ ] Add slippage simulation (0.05%) and commissions (0.1%)
-- [ ] Create trade execution log with timestamps and prices
-- [ ] Implement position tracking with real-time P&L
+- [x] Integrate real-time price data (Finnhub or Alpha Vantage)
+- [x] Create live paper trading session with £100 starting capital
+- [x] Implement realistic order execution with live prices
+- [x] Add slippage simulation (0.05%) and commissions (0.1%)
+- [x] Create trade execution log with timestamps and prices
+- [x] Implement position tracking with real-time P&L
 
 ### Phase 2: Daily Performance Dashboard
-- [ ] Build daily P&L tracker
-- [ ] Create win rate calculator
-- [ ] Implement Sharpe ratio calculation
-- [ ] Add max drawdown tracking
-- [ ] Create daily loss limit enforcement (2% auto-stop)
-- [ ] Build performance metrics display
-- [ ] Add trade history visualization
+- [x] Build daily P&L tracker
+- [x] Create win rate calculator
+- [x] Implement Sharpe ratio calculation
+- [x] Add max drawdown tracking
+- [x] Create daily loss limit enforcement (2% auto-stop)
+- [x] Build performance metrics display
+- [x] Add trade history visualization
 
 ### Phase 3: Weekly Performance Reports
-- [ ] Create weekly summary report (Mon-Sun)
-- [ ] Calculate weekly return percentage
-- [ ] Track cumulative return vs target
-- [ ] Analyze signal quality and accuracy
-- [ ] Generate risk metrics summary
-- [ ] Create recommendations for next week
+- [x] Create weekly summary report (Mon-Sun)
+- [x] Calculate weekly return percentage
+- [x] Track cumulative return vs target
+- [x] Analyze signal quality and accuracy
+- [x] Generate risk metrics summary
+- [x] Create recommendations for next week
 
 ### Phase 4: 3-Month Validation Tracking
 - [ ] Create monthly milestone tracker
