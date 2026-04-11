@@ -1,4 +1,3 @@
-import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
@@ -34,7 +33,6 @@ function App() {
         defaultTheme="light"
       >
         <TooltipProvider>
-          <Toaster />
           <Router />
           <AppInstallPrompt />
         </TooltipProvider>
