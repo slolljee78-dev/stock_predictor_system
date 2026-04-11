@@ -8,6 +8,7 @@ import Home from "./pages/Home";
 import AppInstallPrompt from "./components/AppInstallPrompt";
 import Dashboard from "./pages/Dashboard";
 import StockDetail from "./pages/StockDetail";
+import TradingSimulator from "./pages/TradingSimulator";
 
 function Router() {
   return (
@@ -15,6 +16,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/stock/:ticker" component={StockDetail} />
+      <Route path="/simulator" component={TradingSimulator} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
