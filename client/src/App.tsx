@@ -5,6 +5,7 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
+import AppInstallPrompt from "./components/AppInstallPrompt";
 import Dashboard from "./pages/Dashboard";
 import StockDetail from "./pages/StockDetail";
 
@@ -35,6 +36,7 @@ function App() {
         <TooltipProvider>
           <Toaster />
           <Router />
+          <AppInstallPrompt />
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>
