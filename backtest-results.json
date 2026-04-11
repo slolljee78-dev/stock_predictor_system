@@ -1,0 +1,35 @@
+{
+  "timestamp": "2026-04-11T20:52:48.240Z",
+  "baseResults": {
+    "name": "Base Signals",
+    "startCapital": 100,
+    "finalCapital": 100,
+    "totalProfit": 0,
+    "returnPercent": 0,
+    "totalTrades": 0,
+    "wins": 0,
+    "losses": 0,
+    "winRate": 0,
+    "avgWin": 0,
+    "avgLoss": 0,
+    "trades": []
+  },
+  "phase1Results": {
+    "name": "Phase 1 Enhanced",
+    "startCapital": 100,
+    "finalCapital": 100,
+    "totalProfit": 0,
+    "returnPercent": 0,
+    "totalTrades": 0,
+    "wins": 0,
+    "losses": 0,
+    "winRate": 0,
+    "avgWin": 0,
+    "avgLoss": 0,
+    "trades": []
+  },
+  "improvement": {
+    "capitalGain": 0,
+    "winRateGain": 0
+  }
+}
