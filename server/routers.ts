@@ -1,7 +1,7 @@
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { publicProcedure, router } from "./_core/trpc";
+import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -17,12 +17,84 @@ export const appRouter = router({
     }),
   }),
 
-  // TODO: add feature routers here, e.g.
-  // todo: router({
-  //   list: protectedProcedure.query(({ ctx }) =>
-  //     db.getUserTodos(ctx.user.id)
-  //   ),
-  // }),
+  stocks: router({
+    search: publicProcedure
+      .input((val: unknown) => {
+        if (typeof val === 'string') return val;
+        throw new Error('Expected string');
+      })
+      .query(async ({ input }) => {
+        const results = await import('./db').then(db => db.searchStocks(input));
+        return results;
+      }),
+
+    getAll: publicProcedure.query(async () => {
+      const results = await import('./db').then(db => db.getAllStocks({ type: 'equity' }));
+      return results;
+    }),
+
+    getByTicker: publicProcedure
+      .input((val: unknown) => {
+        if (typeof val === 'string') return val;
+        throw new Error('Expected string');
+      })
+      .query(async ({ input }) => {
+        const result = await import('./db').then(db => db.getStockByTicker(input));
+        return result;
+      }),
+  }),
+
+  watchlist: router({
+    list: protectedProcedure.query(async ({ ctx }) => {
+      const results = await import('./db').then(db => db.getUserWatchlist(ctx.user.id));
+      return results;
+    }),
+
+    add: protectedProcedure
+      .input((val: unknown) => {
+        if (typeof val === 'object' && val !== null && 'stockId' in val) {
+          return val as { stockId: number; label?: string };
+        }
+        throw new Error('Invalid input');
+      })
+      .mutation(async ({ ctx, input }) => {
+        await import('./db').then(db =>
+          db.addToWatchlist(ctx.user.id, input.stockId, { label: input.label })
+        );
+        return { success: true };
+      }),
+
+    remove: protectedProcedure
+      .input((val: unknown) => {
+        if (typeof val === 'object' && val !== null && 'watchlistId' in val) {
+          return val as { watchlistId: number };
+        }
+        throw new Error('Invalid input');
+      })
+      .mutation(async ({ ctx, input }) => {
+        await import('./db').then(db =>
+          db.removeFromWatchlist(input.watchlistId, ctx.user.id)
+        );
+        return { success: true };
+      }),
+  }),
+
+  signals: router({
+    getForStock: publicProcedure
+      .input((val: unknown) => {
+        if (typeof val === 'number') return val;
+        throw new Error('Expected number');
+      })
+      .query(async ({ input }) => {
+        const results = await import('./db').then(db => db.getSignalsForStock(input, 50));
+        return results;
+      }),
+
+    getForUser: protectedProcedure.query(async ({ ctx }) => {
+      const results = await import('./db').then(db => db.getActiveSignalsForUser(ctx.user.id));
+      return results;
+    }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

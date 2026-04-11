@@ -1,6 +1,15 @@
-import { eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import {
+  InsertUser,
+  users,
+  stocks,
+  priceHistory,
+  watchlists,
+  signals,
+  notifications,
+  userPreferences,
+} from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -89,4 +98,321 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+/**
+ * Get all stocks or filter by ticker/type
+ */
+export async function getAllStocks(filter?: { type?: 'equity' | 'etf'; exchange?: string }) {
+  const db = await getDb();
+  if (!db) return [];
+
+  let query: any = db.select().from(stocks);
+
+  if (filter?.type) {
+    query = query.where(eq(stocks.type, filter.type));
+  }
+  if (filter?.exchange) {
+    query = query.where(eq(stocks.exchange, filter.exchange));
+  }
+
+  return query.limit(1000);
+}
+
+/**
+ * Search stocks by ticker or name
+ */
+export async function searchStocks(searchTerm: string) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const term = `%${searchTerm.toUpperCase()}%`;
+  return db
+    .select()
+    .from(stocks)
+    .where(
+      sql`UPPER(${stocks.ticker}) LIKE ${term} OR UPPER(${stocks.name}) LIKE ${term}`
+    )
+    .limit(20);
+}
+
+/**
+ * Get stock by ticker
+ */
+export async function getStockByTicker(ticker: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db
+    .select()
+    .from(stocks)
+    .where(eq(stocks.ticker, ticker.toUpperCase()))
+    .limit(1);
+
+  return result[0];
+}
+
+/**
+ * Get user's watchlist with stock details
+ */
+export async function getUserWatchlist(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return db
+    .select({
+      id: watchlists.id,
+      stockId: watchlists.stockId,
+      ticker: stocks.ticker,
+      name: stocks.name,
+      label: watchlists.label,
+      alertOnBuy: watchlists.alertOnBuy,
+      alertOnSell: watchlists.alertOnSell,
+      minConfidenceThreshold: watchlists.minConfidenceThreshold,
+      emailNotifications: watchlists.emailNotifications,
+      inAppNotifications: watchlists.inAppNotifications,
+      createdAt: watchlists.createdAt,
+    })
+    .from(watchlists)
+    .innerJoin(stocks, eq(watchlists.stockId, stocks.id))
+    .where(eq(watchlists.userId, userId))
+    .orderBy(watchlists.createdAt);
+}
+
+/**
+ * Add stock to user's watchlist
+ */
+export async function addToWatchlist(
+  userId: number,
+  stockId: number,
+  options?: { label?: string; alertOnBuy?: boolean; alertOnSell?: boolean }
+) {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+
+  await db.insert(watchlists).values({
+    userId,
+    stockId,
+    label: options?.label,
+    alertOnBuy: options?.alertOnBuy !== false ? 1 : 0,
+    alertOnSell: options?.alertOnSell !== false ? 1 : 0,
+  });
+}
+
+/**
+ * Remove stock from user's watchlist
+ */
+export async function removeFromWatchlist(watchlistId: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+
+  await db
+    .delete(watchlists)
+    .where(and(eq(watchlists.id, watchlistId), eq(watchlists.userId, userId)));
+}
+
+/**
+ * Get recent signals for a stock
+ */
+export async function getSignalsForStock(stockId: number, limit: number = 50) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return db
+    .select()
+    .from(signals)
+    .where(eq(signals.stockId, stockId))
+    .orderBy(signals.createdAt)
+    .limit(limit);
+}
+
+/**
+ * Get active signals for user's watchlist
+ */
+export async function getActiveSignalsForUser(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return db
+    .select({
+      signalId: signals.id,
+      stockId: signals.stockId,
+      ticker: stocks.ticker,
+      type: signals.type,
+      confidenceScore: signals.confidenceScore,
+      priceAtSignal: signals.priceAtSignal,
+      createdAt: signals.createdAt,
+    })
+    .from(signals)
+    .innerJoin(stocks, eq(signals.stockId, stocks.id))
+    .innerJoin(watchlists, eq(watchlists.stockId, stocks.id))
+    .where(
+      and(
+        eq(watchlists.userId, userId),
+        eq(signals.status, 'active')
+      )
+    )
+    .orderBy(signals.createdAt);
+}
+
+/**
+ * Store a new trading signal
+ */
+export async function createSignal(
+  stockId: number,
+  type: 'buy' | 'sell',
+  confidenceScore: number,
+  priceAtSignal: number,
+  indicators?: Record<string, unknown>,
+  analysis?: string
+) {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+
+  const result = await db.insert(signals).values({
+    stockId,
+    type,
+    confidenceScore,
+    priceAtSignal,
+    indicators: indicators ? JSON.stringify(indicators) : undefined,
+    analysis,
+  });
+
+  return result;
+}
+
+/**
+ * Get price history for technical analysis
+ */
+export async function getPriceHistory(stockId: number, days: number = 365) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - days);
+
+  return db
+    .select()
+    .from(priceHistory)
+    .where(
+      and(
+        eq(priceHistory.stockId, stockId),
+        sql`${priceHistory.date} >= ${cutoffDate}`
+      )
+    )
+    .orderBy(priceHistory.date);
+}
+
+/**
+ * Store price history data
+ */
+export async function storePriceData(
+  stockId: number,
+  priceData: Array<{
+    date: Date;
+    open: number;
+    high: number;
+    low: number;
+    close: number;
+    volume: number;
+    adjClose?: number;
+  }>
+) {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+
+  // Convert prices to cents for storage
+  const values = priceData.map(p => ({
+    stockId,
+    date: p.date,
+    open: Math.round(p.open * 100),
+    high: Math.round(p.high * 100),
+    low: Math.round(p.low * 100),
+    close: Math.round(p.close * 100),
+    volume: p.volume,
+    adjClose: p.adjClose ? Math.round(p.adjClose * 100) : undefined,
+  }));
+
+  await db.insert(priceHistory).values(values).onDuplicateKeyUpdate({
+    set: {
+      open: sql`VALUES(open)`,
+      high: sql`VALUES(high)`,
+      low: sql`VALUES(low)`,
+      close: sql`VALUES(close)`,
+      volume: sql`VALUES(volume)`,
+      adjClose: sql`VALUES(adjClose)`,
+    },
+  });
+}
+
+/**
+ * Get or create user preferences
+ */
+export async function getUserPreferences(userId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  let prefs = await db
+    .select()
+    .from(userPreferences)
+    .where(eq(userPreferences.userId, userId))
+    .limit(1);
+
+  if (prefs.length === 0) {
+    await db.insert(userPreferences).values({ userId });
+    prefs = await db
+      .select()
+      .from(userPreferences)
+      .where(eq(userPreferences.userId, userId))
+      .limit(1);
+  }
+
+  return prefs[0];
+}
+
+/**
+ * Create in-app notification
+ */
+export async function createNotification(
+  userId: number,
+  signalId: number,
+  ticker: string,
+  title: string,
+  message: string
+) {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+
+  await db.insert(notifications).values({
+    userId,
+    signalId,
+    ticker,
+    title,
+    message,
+  });
+}
+
+/**
+ * Get user's unread notifications
+ */
+export async function getUnreadNotifications(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return db
+    .select()
+    .from(notifications)
+    .where(and(eq(notifications.userId, userId), eq(notifications.isRead, 0)))
+    .orderBy(notifications.createdAt);
+}
+
+/**
+ * Mark notification as read
+ */
+export async function markNotificationAsRead(notificationId: number) {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+
+  await db
+    .update(notifications)
+    .set({ isRead: 1, readAt: new Date() })
+    .where(eq(notifications.id, notificationId));
+}
