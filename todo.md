@@ -411,3 +411,69 @@ All tests passing: 140/140 (100%)
 ### Ready for Deployment
 The system is fully tested, documented, and ready for production deployment.
 Users can sign in, add stocks to watchlist, view trading signals, and practice with the simulator.
+
+
+## Phase 18: Step 1 - Real Market Data Integration & Backtesting
+- [ ] Activate yfinance integration for real stock data
+- [ ] Implement historical data fetcher (6-12 months)
+- [ ] Create backtesting engine with realistic conditions
+- [ ] Add slippage and commission simulation
+- [ ] Implement walk-forward backtesting
+- [ ] Create backtest reporting with statistics
+- [ ] Validate signal accuracy on historical data
+- [ ] Document backtest results and findings
+
+## Phase 19: Step 2 - Parameter Optimization & Tuning
+- [ ] Create parameter optimization framework
+- [ ] Implement grid search for indicator thresholds
+- [ ] Optimize RSI, MACD, Bollinger Bands parameters
+- [ ] Fine-tune Phase 1-4 confidence weights
+- [ ] Optimize Kelly Criterion safety factor
+- [ ] Tune quick wins filter thresholds
+- [ ] Implement genetic algorithm for optimization
+- [ ] Create parameter sensitivity analysis
+- [ ] Document optimal parameters for different market conditions
+
+## Phase 20: Step 3 - Market Regime Adaptation
+- [ ] Implement market regime detection (trending, ranging, volatile)
+- [ ] Create adaptive strategy switching
+- [ ] Build volatility-based position sizing
+- [ ] Add bull/bear market filters
+- [ ] Implement sector rotation logic
+- [ ] Create regime-specific signal weights
+- [ ] Add market condition dashboard
+- [ ] Test regime adaptation on historical data
+
+## Phase 21: Step 4 - Real Sentiment Data Integration
+- [ ] Integrate NewsAPI for financial news
+- [ ] Implement LLM-based news sentiment analysis
+- [ ] Add social media sentiment tracking (Twitter/Reddit)
+- [ ] Create earnings surprise detection
+- [ ] Add insider trading alerts
+- [ ] Implement sentiment scoring system
+- [ ] Create sentiment dashboard
+- [ ] Validate sentiment impact on signal accuracy
+
+## Phase 22: Step 5 - Automated Trading Execution
+- [ ] Research broker APIs (Interactive Brokers, Alpaca, etc.)
+- [ ] Implement order execution system
+- [ ] Add position tracking and management
+- [ ] Create automated order placement logic
+- [ ] Implement trade confirmation and logging
+- [ ] Add SMS/Telegram alert integration
+- [ ] Create webhook system for external integrations
+- [ ] Implement paper trading mode for validation
+- [ ] Add manual override capability
+- [ ] Create execution logs and audit trail
+
+## Phase 23: Final Testing & Production Deployment
+- [ ] End-to-end testing with real data
+- [ ] Stress testing with extreme market conditions
+- [ ] Security audit and penetration testing
+- [ ] Performance optimization and load testing
+- [ ] User acceptance testing
+- [ ] Create deployment checklist
+- [ ] Deploy to production
+- [ ] Monitor system performance
+- [ ] Gather user feedback
+- [ ] Create post-launch support plan
