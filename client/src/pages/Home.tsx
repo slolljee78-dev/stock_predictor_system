@@ -1,10 +1,10 @@
-import { useAuth } from "@/_core/hooks/useAuth";
+import React from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, BarChart3, Bell, Lock } from "lucide-react";
+import { TrendingUp, BarChart3, Bell, Zap, Shield, LineChart, ArrowRight } from "lucide-react";
 import { getLoginUrl } from "@/const";
 import { useLocation } from "wouter";
 import { useEffect } from "react";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 export default function Home() {
   const { user, isAuthenticated, loading } = useAuth();
@@ -18,25 +18,28 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
-        <div className="text-white text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-          <p>Loading...</p>
+      <div className="min-h-screen bg-background dark:bg-gradient-to-br dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-foreground">Loading...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <nav className="border-b border-slate-700/50 bg-slate-900/50 backdrop-blur">
+    <div className="min-h-screen bg-background dark:bg-gradient-to-br dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+      {/* Premium Navigation */}
+      <nav className="border-b border-border/50 bg-card/50 backdrop-blur sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <TrendingUp className="h-6 w-6 text-blue-400" />
-            <span className="text-xl font-bold text-white">Stock Predictor</span>
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-br from-primary to-accent rounded-lg">
+              <TrendingUp className="h-5 w-5 text-white" />
+            </div>
+            <span className="text-xl font-bold gradient-text">Stock Predictor</span>
           </div>
           {!isAuthenticated && (
-            <Button asChild>
+            <Button asChild className="btn-premium">
               <a href={getLoginUrl()}>
                 Sign In
               </a>
@@ -46,78 +49,89 @@ export default function Home() {
       </nav>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="text-center mb-16">
-          <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
-            AI-Powered Stock Analysis
+        {/* Hero Section */}
+        <div className="text-center mb-20 animate-fade-in-up">
+          <div className="inline-block mb-6 px-4 py-2 bg-accent/10 rounded-full border border-accent/20">
+            <p className="text-sm font-semibold text-accent">🚀 Powered by AI & Machine Learning</p>
+          </div>
+          <h1 className="text-5xl md:text-7xl font-bold mb-6 gradient-text">
+            Trade Smarter, Not Harder
           </h1>
-          <p className="text-xl text-slate-300 mb-8 max-w-2xl mx-auto">
-            Get intelligent buy/sell signals for Trading 212 stocks with advanced technical indicators and machine learning insights.
+          <p className="text-lg text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
+            Get intelligent buy/sell signals for Trading 212 stocks with advanced technical indicators, machine learning insights, and real-time market analysis.
           </p>
           {!isAuthenticated && (
-            <Button asChild size="lg" className="gap-2">
-              <a href={getLoginUrl()}>
-                Get Started Free
-              </a>
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button asChild className="btn-premium gap-2 h-12 px-8 text-base">
+                <a href={getLoginUrl()}>
+                  Get Started Free
+                  <ArrowRight className="h-4 w-4" />
+                </a>
+              </Button>
+              <Button asChild className="btn-premium-secondary gap-2 h-12 px-8 text-base">
+                <a href="#features">
+                  Learn More
+                </a>
+              </Button>
+            </div>
           )}
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-          <Card className="border-slate-700 bg-slate-800/50 backdrop-blur">
-            <CardHeader>
-              <BarChart3 className="h-8 w-8 text-blue-400 mb-2" />
-              <CardTitle className="text-white">Technical Analysis</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-slate-300 text-sm">
-                RSI, MACD, Bollinger Bands, Moving Averages and more
-              </p>
-            </CardContent>
-          </Card>
+        {/* Features Grid */}
+        <div id="features" className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-20">
+          <div className="card-premium group hover:border-primary/50 transition-all">
+            <div className="p-3 bg-primary/10 rounded-lg w-fit mb-4 group-hover:bg-primary/20 transition-colors">
+              <BarChart3 className="h-6 w-6 text-primary" />
+            </div>
+            <h3 className="font-semibold mb-2">Technical Analysis</h3>
+            <p className="text-sm text-muted-foreground">
+              RSI, MACD, Bollinger Bands, Moving Averages and more
+            </p>
+          </div>
 
-          <Card className="border-slate-700 bg-slate-800/50 backdrop-blur">
-            <CardHeader>
-              <TrendingUp className="h-8 w-8 text-green-400 mb-2" />
-              <CardTitle className="text-white">ML Signals</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-slate-300 text-sm">
-                AI-generated buy/sell signals with confidence scores
-              </p>
-            </CardContent>
-          </Card>
+          <div className="card-premium group hover:border-accent/50 transition-all">
+            <div className="p-3 bg-accent/10 rounded-lg w-fit mb-4 group-hover:bg-accent/20 transition-colors">
+              <Zap className="h-6 w-6 text-accent" />
+            </div>
+            <h3 className="font-semibold mb-2">ML Signals</h3>
+            <p className="text-sm text-muted-foreground">
+              AI-generated buy/sell signals with confidence scores
+            </p>
+          </div>
 
-          <Card className="border-slate-700 bg-slate-800/50 backdrop-blur">
-            <CardHeader>
-              <Bell className="h-8 w-8 text-orange-400 mb-2" />
-              <CardTitle className="text-white">Smart Alerts</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-slate-300 text-sm">
-                Real-time notifications via email and in-app
-              </p>
-            </CardContent>
-          </Card>
+          <div className="card-premium group hover:border-primary/50 transition-all">
+            <div className="p-3 bg-primary/10 rounded-lg w-fit mb-4 group-hover:bg-primary/20 transition-colors">
+              <Bell className="h-6 w-6 text-primary" />
+            </div>
+            <h3 className="font-semibold mb-2">Smart Alerts</h3>
+            <p className="text-sm text-muted-foreground">
+              Real-time notifications via email and in-app
+            </p>
+          </div>
 
-          <Card className="border-slate-700 bg-slate-800/50 backdrop-blur">
-            <CardHeader>
-              <Lock className="h-8 w-8 text-purple-400 mb-2" />
-              <CardTitle className="text-white">Secure</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-slate-300 text-sm">
-                Your data is encrypted and never shared
-              </p>
-            </CardContent>
-          </Card>
+          <div className="card-premium group hover:border-accent/50 transition-all">
+            <div className="p-3 bg-accent/10 rounded-lg w-fit mb-4 group-hover:bg-accent/20 transition-colors">
+              <Shield className="h-6 w-6 text-accent" />
+            </div>
+            <h3 className="font-semibold mb-2">Secure & Private</h3>
+            <p className="text-sm text-muted-foreground">
+              Your data is encrypted and never shared
+            </p>
+          </div>
         </div>
 
-        <div className="text-center">
-          <p className="text-slate-400 mb-4">Trading 212 stocks only</p>
+        {/* CTA Section */}
+        <div className="card-premium text-center">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <LineChart className="h-5 w-5 text-accent" />
+            <p className="font-semibold">Monitor 212 Trading 212 Stocks</p>
+          </div>
+          <p className="text-muted-foreground mb-6">Get started with AI-powered stock analysis and make informed trading decisions</p>
           {!isAuthenticated && (
-            <Button asChild size="lg">
+            <Button asChild className="btn-premium gap-2">
               <a href={getLoginUrl()}>
                 Start Analyzing Now
+                <ArrowRight className="h-4 w-4" />
               </a>
             </Button>
           )}
