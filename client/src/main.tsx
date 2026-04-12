@@ -8,6 +8,10 @@ import App from "./App";
 import { getLoginUrl } from "./const";
 import "./index.css";
 
+// App Version - Updated with new homepage design and video
+const APP_VERSION = '2.0.1-premium-homepage';
+console.log('[App] Version:', APP_VERSION);
+
 // Initialize Service Worker for PWA
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
