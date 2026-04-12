@@ -135,12 +135,12 @@ export default function Home() {
                 className="w-full h-full object-contain"
                 controlsList="nodownload"
               >
-                <source src="https://d2xsxph8kpxj0f.cloudfront.net/310519663483836922/knJ3QkdJFvivzkyeUv8kpq/stock_predictor_demo_c21a1a93.mp4" type="video/mp4" />
+                <source src="https://d2xsxph8kpxj0f.cloudfront.net/310519663483836922/knJ3QkdJFvivzkyeUv8kpq/stock_predictor_demo_v2_355195bc.mp4" type="video/mp4" />
                 <p className="text-white p-4">Your browser does not support the video tag. Please try a different browser.</p>
               </video>
             </div>
           </div>
-          <p className="text-center text-sm text-muted-foreground">Professional 2:45 minute product walkthrough</p>
+          <p className="text-center text-sm text-muted-foreground">Professional 7-8 minute product walkthrough with all features</p>
         </div>
 
         {/* CTA Section */}
