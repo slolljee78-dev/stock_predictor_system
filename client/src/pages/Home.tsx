@@ -120,7 +120,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Demo Video Section */}
+        {/* Demo Video Section - Professional 90-second walkthrough */}
         <div className="space-y-4 mb-20 w-full">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold mb-2 gradient-text">See It In Action</h2>
