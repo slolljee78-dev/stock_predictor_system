@@ -4,6 +4,36 @@
  */
 
 export const SUBSCRIPTION_PRODUCTS = {
+  TRIAL: {
+    name: 'Trial',
+    description: '7-day full access trial',
+    priceUSD: 0,
+    priceGBP: 0,
+    features: [
+      'All 212 stocks',
+      'Advanced AI signals',
+      'Daily reports',
+      'Real-time alerts',
+      'Live market data',
+      'Email support',
+      '7 days only',
+    ],
+    stripePriceId: 'trial_free',
+    trialDays: 7,
+  },
+  FREEMIUM: {
+    name: 'Freemium',
+    description: 'Free forever with limited features',
+    priceUSD: 0,
+    priceGBP: 0,
+    features: [
+      '20 stocks monitoring',
+      'Basic AI signals',
+      'Weekly reports',
+      'Email support',
+    ],
+    stripePriceId: 'freemium_free',
+  },
   STARTER: {
     name: 'Starter',
     description: 'Basic stock analysis for beginners',

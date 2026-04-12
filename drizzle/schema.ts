@@ -28,6 +28,10 @@ export const users = mysqlTable("users", {
   stripeSubscriptionId: varchar("stripeSubscriptionId", { length: 255 }),
   subscriptionStartedAt: timestamp("subscriptionStartedAt"),
   subscriptionEndedAt: timestamp("subscriptionEndedAt"),
+  
+  // Trial fields for freemium model
+  trialStartedAt: timestamp("trialStartedAt"),
+  watchlistCount: int("watchlistCount").default(0),
 });
 
 export type User = typeof users.$inferSelect;
