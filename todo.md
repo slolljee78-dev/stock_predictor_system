@@ -55,6 +55,7 @@
 - [x] Create notification permission UI
 - [x] Implement in-app notification center
 - [x] Add notification preferences per stock (NotificationPreferences.tsx created)
+- [x] Create notifications tRPC router (notifications.ts created)
 
 ## Phase 6: PWA & Mobile App
 - [x] Create PWA manifest.json
@@ -705,6 +706,7 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Set up webhook for payment success/failure (infrastructure ready)
 - [ ] Test payment processing with test card 4242 4242 4242 4242
 - [x] Create payment confirmation email (paymentHistory.ts)
+- [x] Create payments tRPC router (payments.ts created)
 
 ## PHASE 20: TRADING 212 BROKER API INTEGRATION
 - [x] Research Trading 212 API documentation
@@ -717,6 +719,7 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Implement live price data from broker
 - [x] Create broker error handling
 - [x] Add broker connection status monitoring
+- [x] Create brokers tRPC router (brokers.ts created)
 
 ## PHASE 21: ADVANCED FEATURES
 - [x] Implement portfolio comparison to S&P 500 benchmark
@@ -729,6 +732,8 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Implement portfolio cloning
 - [x] Add portfolio templates (PortfolioTemplates.tsx created)
 - [x] Create performance attribution analysis
+- [x] Create templates tRPC router (templates.ts created)
+- [x] Create analytics tRPC router (analytics.ts created)
 
 ## PHASE 22: FREEMIUM TRIAL SYSTEM
 - [x] Create TRIAL tier (7-day full access)
