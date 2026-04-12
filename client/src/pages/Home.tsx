@@ -40,7 +40,7 @@ export default function Home() {
             <div className="p-2 bg-gradient-to-br from-primary to-accent rounded-lg">
               <TrendingUp className="h-5 w-5 text-white" />
             </div>
-            <span className="text-xl font-bold gradient-text">Stock Predictor</span>
+            <span className="text-xl font-bold gradient-text">Vortex Trade</span>
           </div>
           {!isAuthenticated && (
             <Button asChild className="btn-premium">
@@ -59,10 +59,10 @@ export default function Home() {
             <p className="text-sm font-semibold text-accent">🚀 Powered by AI & Machine Learning</p>
           </div>
           <h1 className="text-7xl md:text-9xl font-black mb-8 gradient-text leading-tight tracking-tighter" style={{letterSpacing: '-0.04em'}}>
-            Trade Smarter,<br />Not Harder
+            Catch the<br />Vortex
           </h1>
           <p className="text-lg text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
-            Get intelligent buy/sell signals for Trading 212 stocks with advanced technical indicators, machine learning insights, and real-time market analysis.
+            Ride the momentum with AI-powered trading signals. Real-time analysis, intelligent buy/sell recommendations, and portfolio optimization—all designed to help you profit from market movements.
           </p>
           {!isAuthenticated && (
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
