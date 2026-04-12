@@ -20,6 +20,14 @@ export const users = mysqlTable("users", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
+  
+  // Subscription fields for Stripe integration
+  subscriptionTier: varchar("subscriptionTier", { length: 20 }).default("free"),
+  subscriptionStatus: varchar("subscriptionStatus", { length: 20 }).default("inactive"),
+  stripeCustomerId: varchar("stripeCustomerId", { length: 255 }),
+  stripeSubscriptionId: varchar("stripeSubscriptionId", { length: 255 }),
+  subscriptionStartedAt: timestamp("subscriptionStartedAt"),
+  subscriptionEndedAt: timestamp("subscriptionEndedAt"),
 });
 
 export type User = typeof users.$inferSelect;
