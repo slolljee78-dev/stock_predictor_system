@@ -120,6 +120,27 @@ export default function Home() {
           </div>
         </div>
 
+        {/* Demo Video Section */}
+        <div className="space-y-4">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold mb-2 gradient-text">See It In Action</h2>
+            <p className="text-muted-foreground">Watch how Manus Stock Predictor helps you make smarter trading decisions</p>
+          </div>
+          <div className="card-premium p-0 overflow-hidden">
+            <video 
+              width="100%" 
+              height="auto" 
+              controls 
+              className="w-full rounded-xl"
+              poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1920 1080'%3E%3Crect fill='%23111827' width='1920' height='1080'/%3E%3C/svg%3E"
+            >
+              <source src="https://cdn.manus.im/stock_predictor_demo.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          </div>
+          <p className="text-center text-sm text-muted-foreground">2:45 minute walkthrough of all key features</p>
+        </div>
+
         {/* CTA Section */}
         <div className="card-premium text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
