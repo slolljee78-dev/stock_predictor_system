@@ -121,19 +121,21 @@ export default function Home() {
         </div>
 
         {/* Demo Video Section */}
-        <div className="space-y-4 mb-20">
+        <div className="space-y-4 mb-20 w-full">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold mb-2 gradient-text">See It In Action</h2>
             <p className="text-muted-foreground">Watch how Manus Stock Predictor helps you make smarter trading decisions</p>
           </div>
-          <div className="card-premium p-0 overflow-hidden">
-            <div className="w-full bg-black rounded-xl" style={{aspectRatio: '16/9'}}>
+          <div className="card-premium p-0 overflow-hidden w-full">
+            <div className="w-full bg-black" style={{aspectRatio: '16/9'}}>
               <video 
                 width="100%" 
                 height="100%" 
                 controls 
+                preload="metadata"
                 className="w-full h-full object-contain"
                 controlsList="nodownload"
+                style={{display: 'block', width: '100%', height: '100%'}}
               >
                 <source src="https://d2xsxph8kpxj0f.cloudfront.net/310519663483836922/knJ3QkdJFvivzkyeUv8kpq/stock_predictor_demo_v2_355195bc.mp4" type="video/mp4" />
                 <p className="text-white p-4">Your browser does not support the video tag. Please try a different browser.</p>
