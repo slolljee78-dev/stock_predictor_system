@@ -10,6 +10,7 @@ import StockDetail from "./pages/StockDetail";
 import TradingSimulator from "./pages/TradingSimulator";
 import ValidationSetup from "./pages/ValidationSetup";
 import ValidationDashboard from "./pages/ValidationDashboard";
+import Pricing from "./pages/Pricing";
 
 function Router() {
   return (
@@ -20,6 +21,7 @@ function Router() {
       <Route path="/simulator" component={TradingSimulator} />
       <Route path="/validation/setup" component={ValidationSetup} />
       <Route path="/validation/dashboard" component={ValidationDashboard} />
+      <Route path="/pricing" component={Pricing} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

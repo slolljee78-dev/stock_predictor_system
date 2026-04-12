@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { constructWebhookEvent, handleCheckoutSessionCompleted, handleSubscriptionUpdated, handleSubscriptionDeleted } from './stripeService';
-import { db } from './db';
+import { getDb } from './db';
 import { users } from '../drizzle/schema';
 import { eq } from 'drizzle-orm';
 
@@ -35,17 +35,20 @@ router.post('/webhook', async (req: Request, res: Response) => {
         
         // Update user subscription in database
         if (userId) {
-          await db
-            .update(users)
-            .set({
-              subscriptionTier: tier,
-              stripeCustomerId: session.customer,
-              subscriptionStatus: 'active',
-              subscriptionStartedAt: new Date(),
-            })
-            .where(eq(users.id, userId));
-          
-          console.log(`[Webhook] User ${userId} subscribed to ${tier} tier`);
+          const db = await getDb();
+          if (db) {
+            await db
+              .update(users)
+              .set({
+                subscriptionTier: tier,
+                stripeCustomerId: session.customer,
+                subscriptionStatus: 'active',
+                subscriptionStartedAt: new Date(),
+              })
+              .where(eq(users.id, parseInt(userId, 10)));
+            
+            console.log(`[Webhook] User ${userId} subscribed to ${tier} tier`);
+          }
         }
         break;
       }
@@ -55,20 +58,22 @@ router.post('/webhook', async (req: Request, res: Response) => {
         const { subscriptionId, customerId, status, cancelAtPeriodEnd } = await handleSubscriptionUpdated(subscription);
         
         // Find user by stripe customer ID and update subscription
-        const user = await db.query.users.findFirst({
-          where: eq(users.stripeCustomerId, customerId),
-        });
+        const db = await getDb();
+        if (db) {
+          const userList = await db.select().from(users).where(eq(users.stripeCustomerId, customerId));
+          const user = userList[0];
 
-        if (user) {
-          await db
-            .update(users)
-            .set({
-              subscriptionStatus: status,
-              stripeSubscriptionId: subscriptionId,
-            })
-            .where(eq(users.id, user.id));
-          
-          console.log(`[Webhook] Subscription ${subscriptionId} updated to ${status}`);
+          if (user) {
+            await db
+              .update(users)
+              .set({
+                subscriptionStatus: status,
+                stripeSubscriptionId: subscriptionId,
+              })
+              .where(eq(users.id, user.id));
+            
+            console.log(`[Webhook] Subscription ${subscriptionId} updated to ${status}`);
+          }
         }
         break;
       }
@@ -78,20 +83,22 @@ router.post('/webhook', async (req: Request, res: Response) => {
         const { subscriptionId, customerId } = await handleSubscriptionDeleted(subscription);
         
         // Find user and mark subscription as cancelled
-        const user = await db.query.users.findFirst({
-          where: eq(users.stripeCustomerId, customerId),
-        });
+        const db = await getDb();
+        if (db) {
+          const userList = await db.select().from(users).where(eq(users.stripeCustomerId, customerId));
+          const user = userList[0];
 
-        if (user) {
-          await db
-            .update(users)
-            .set({
-              subscriptionStatus: 'cancelled',
-              subscriptionTier: 'free',
-            })
-            .where(eq(users.id, user.id));
-          
-          console.log(`[Webhook] Subscription ${subscriptionId} cancelled for user ${user.id}`);
+          if (user) {
+            await db
+              .update(users)
+              .set({
+                subscriptionStatus: 'cancelled',
+                subscriptionTier: 'free',
+              })
+              .where(eq(users.id, user.id));
+            
+            console.log(`[Webhook] Subscription ${subscriptionId} cancelled for user ${user.id}`);
+          }
         }
         break;
       }

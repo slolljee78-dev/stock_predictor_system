@@ -24,7 +24,7 @@ const PRICING_TIERS = [
   },
   {
     name: "Pro",
-    price: 23.99,
+    price: 29.99,
     currency: "£",
     description: "Most popular choice",
     features: [
@@ -42,7 +42,7 @@ const PRICING_TIERS = [
   },
   {
     name: "Elite",
-    price: 79.99,
+    price: 99.99,
     currency: "£",
     description: "For professional traders",
     features: [
