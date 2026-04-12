@@ -54,8 +54,8 @@ export default function Home() {
           <div className="inline-block mb-6 px-4 py-2 bg-accent/10 rounded-full border border-accent/20">
             <p className="text-sm font-semibold text-accent">🚀 Powered by AI & Machine Learning</p>
           </div>
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 gradient-text">
-            Trade Smarter, Not Harder
+          <h1 className="text-6xl md:text-8xl font-black mb-6 gradient-text leading-tight tracking-tight">
+            Trade Smarter,<br />Not Harder
           </h1>
           <p className="text-lg text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
             Get intelligent buy/sell signals for Trading 212 stocks with advanced technical indicators, machine learning insights, and real-time market analysis.
@@ -126,23 +126,24 @@ export default function Home() {
             <h2 className="text-3xl font-bold mb-2 gradient-text">See It In Action</h2>
             <p className="text-muted-foreground">Watch how Manus Stock Predictor helps you make smarter trading decisions</p>
           </div>
-          <div className="card-premium p-0 overflow-hidden w-full">
+          <div className="card-premium p-0 overflow-hidden w-full shadow-2xl">
             <div className="w-full bg-black" style={{aspectRatio: '16/9'}}>
               <video 
                 width="100%" 
                 height="100%" 
                 controls 
                 preload="metadata"
+                poster="https://d2xsxph8kpxj0f.cloudfront.net/310519663483836922/knJ3QkdJFvivzkyeUv8kpq/stock_predictor_video_poster-o7v85aHek2B7TV7csZwpMr.webp"
                 className="w-full h-full object-contain"
                 controlsList="nodownload"
                 style={{display: 'block', width: '100%', height: '100%'}}
               >
-                <source src="https://d2xsxph8kpxj0f.cloudfront.net/310519663483836922/knJ3QkdJFvivzkyeUv8kpq/stock_predictor_demo_v2_355195bc.mp4" type="video/mp4" />
+                <source src="https://d2xsxph8kpxj0f.cloudfront.net/310519663483836922/knJ3QkdJFvivzkyeUv8kpq/stock_predictor_demo_final_3a4107dd.mp4" type="video/mp4" />
                 <p className="text-white p-4">Your browser does not support the video tag. Please try a different browser.</p>
               </video>
             </div>
           </div>
-          <p className="text-center text-sm text-muted-foreground">Professional 7-8 minute product walkthrough with all features</p>
+          <p className="text-center text-sm text-muted-foreground">Watch a complete walkthrough of all features</p>
         </div>
 
         {/* CTA Section */}
