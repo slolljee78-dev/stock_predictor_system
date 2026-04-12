@@ -134,7 +134,7 @@ export default function Home() {
               className="w-full rounded-xl"
               poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1920 1080'%3E%3Crect fill='%23111827' width='1920' height='1080'/%3E%3C/svg%3E"
             >
-              <source src="https://cdn.manus.im/stock_predictor_demo.mp4" type="video/mp4" />
+              <source src="https://d2xsxph8kpxj0f.cloudfront.net/310519663483836922/knJ3QkdJFvivzkyeUv8kpq/stock_predictor_demo_c21a1a93.mp4" type="video/mp4" />
               Your browser does not support the video tag.
             </video>
           </div>
