@@ -7,6 +7,10 @@ import { useEffect } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 
 export default function Home() {
+  // Premium Dark Theme v2.1 - Force deployment cache bust
+  const THEME_VERSION = '2.1-premium-dark';
+  console.log('[Homepage] Theme Version:', THEME_VERSION);
+  
   const { user, isAuthenticated, loading } = useAuth();
   const [, setLocation] = useLocation();
 
