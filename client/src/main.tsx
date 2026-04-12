@@ -74,3 +74,4 @@ root.render(
     </QueryClientProvider>
   </trpc.Provider>
 );
+// Force deployment update - Sun Apr 12 10:30:37 EDT 2026
