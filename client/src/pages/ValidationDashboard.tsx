@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-import { AlertCircle, TrendingUp, TrendingDown, Target, AlertTriangle, RefreshCw } from "lucide-react";
+import { TrendingUp, TrendingDown, Target, AlertTriangle, RefreshCw, CheckCircle, AlertCircle, Zap } from "lucide-react";
 import { trpc } from "@/lib/trpc";
+import { Button } from "@/components/ui/button";
+import PageTransition from "@/components/PageTransition";
 
 interface ValidationMetrics {
   currentCapital: number;
@@ -99,7 +98,7 @@ export default function ValidationDashboard() {
 
   const capitalProgress = (metrics.currentCapital / monthlyTargets[2].target) * 100;
   const riskLimitStatus = Math.abs(metrics.dailyPnL) > 2 ? "EXCEEDED" : "OK";
-  const riskColor = riskLimitStatus === "EXCEEDED" ? "text-red-600" : "text-green-600";
+  const riskColor = riskLimitStatus === "EXCEEDED" ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400";
 
   const winLossData = [
     { name: "Wins", value: Math.round(metrics.totalTrades * metrics.winRate) },
@@ -109,240 +108,247 @@ export default function ValidationDashboard() {
   const COLORS = ["#10b981", "#ef4444"];
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
+    <PageTransition>
+      <div className="space-y-8 p-6">
+      {/* Premium Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 animate-fade-in-up">
         <div>
-          <h1 className="text-3xl font-bold">3-Month Validation Framework</h1>
-          <p className="text-gray-600 mt-2">Track your paper trading performance toward £100 → £133.10 goal</p>
+          <h1 className="text-4xl font-bold gradient-text mb-2">3-Month Validation</h1>
+          <p className="text-muted-foreground">Track your paper trading performance toward £100 → £133.10</p>
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700">Start New Session</Button>
+        <Button 
+          onClick={handleManualRefresh}
+          disabled={loading}
+          className="btn-premium gap-2"
+        >
+          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          Refresh Data
+        </Button>
       </div>
 
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      {/* Key Metrics Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Current Capital */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Current Capital</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">£{metrics.currentCapital.toFixed(2)}</div>
-            <p className={`text-sm mt-2 ${metrics.dailyPnL >= 0 ? "text-green-600" : "text-red-600"}`}>
-              {metrics.dailyPnL >= 0 ? "+" : ""}{metrics.dailyPnL.toFixed(2)} today
-            </p>
-          </CardContent>
-        </Card>
+        <div className="metric-card">
+          <div className="flex items-center justify-between mb-2">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <TrendingUp className="h-5 w-5 text-primary" />
+            </div>
+            <span className="text-xs font-semibold text-muted-foreground">CAPITAL</span>
+          </div>
+          <div className="metric-value">£{metrics.currentCapital.toFixed(2)}</div>
+          <div className={`metric-change ${metrics.dailyPnL >= 0 ? 'positive' : 'negative'}`}>
+            {metrics.dailyPnL >= 0 ? '+' : ''}{metrics.dailyPnL.toFixed(2)} today
+          </div>
+        </div>
 
         {/* Win Rate */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Win Rate</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{(metrics.winRate * 100).toFixed(1)}%</div>
-            <p className="text-sm text-gray-500 mt-2">Target: 60%+</p>
-            <Progress value={Math.min(metrics.winRate * 100, 100)} className="mt-2" />
-          </CardContent>
-        </Card>
+        <div className="metric-card">
+          <div className="flex items-center justify-between mb-2">
+            <div className="p-2 bg-accent/10 rounded-lg">
+              <CheckCircle className="h-5 w-5 text-accent" />
+            </div>
+            <span className="text-xs font-semibold text-muted-foreground">WIN RATE</span>
+          </div>
+          <div className="metric-value">{(metrics.winRate * 100).toFixed(1)}%</div>
+          <div className="metric-label">Target: 60%+</div>
+          <div className="progress-premium mt-3">
+            <div 
+              className="progress-premium-fill" 
+              style={{ width: `${Math.min(metrics.winRate * 100, 100)}%` }}
+            />
+          </div>
+        </div>
 
         {/* Sharpe Ratio */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Sharpe Ratio</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{metrics.sharpeRatio.toFixed(2)}</div>
-            <p className="text-sm text-gray-500 mt-2">Target: {">"}1.0</p>
-            <div className={`text-xs mt-2 ${metrics.sharpeRatio > 1.0 ? "text-green-600" : "text-yellow-600"}`}>
-              {metrics.sharpeRatio > 1.0 ? "✓ Target met" : "⚠ Below target"}
+        <div className="metric-card">
+          <div className="flex items-center justify-between mb-2">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Zap className="h-5 w-5 text-primary" />
             </div>
-          </CardContent>
-        </Card>
+            <span className="text-xs font-semibold text-muted-foreground">SHARPE RATIO</span>
+          </div>
+          <div className="metric-value">{metrics.sharpeRatio.toFixed(2)}</div>
+          <div className="metric-label">Target: {'>'}1.0</div>
+        </div>
 
         {/* Max Drawdown */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Max Drawdown</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{(metrics.maxDrawdown * 100).toFixed(2)}%</div>
-            <p className="text-sm text-gray-500 mt-2">Target: {"<"}5%</p>
-            <div className={`text-xs mt-2 ${metrics.maxDrawdown < 0.05 ? "text-green-600" : "text-yellow-600"}`}>
-              {metrics.maxDrawdown < 0.05 ? "✓ Within limit" : "⚠ Exceeds limit"}
+        <div className="metric-card">
+          <div className="flex items-center justify-between mb-2">
+            <div className="p-2 bg-accent/10 rounded-lg">
+              <TrendingDown className="h-5 w-5 text-accent" />
             </div>
-          </CardContent>
-        </Card>
+            <span className="text-xs font-semibold text-muted-foreground">MAX DRAWDOWN</span>
+          </div>
+          <div className="metric-value">{metrics.maxDrawdown.toFixed(1)}%</div>
+              <div className="metric-label">Target: {'<'}5%</div>
+        </div>
       </div>
 
-      {/* Risk Status Alert */}
-      <Card className={riskLimitStatus === "EXCEEDED" ? "border-red-300 bg-red-50" : "border-green-300 bg-green-50"}>
-        <CardHeader className="pb-2">
-          <div className="flex items-center gap-2">
-            {riskLimitStatus === "EXCEEDED" ? (
-              <AlertTriangle className="text-red-600" />
-            ) : (
-              <AlertCircle className="text-green-600" />
-            )}
-            <CardTitle className="text-sm">Daily Loss Limit Status</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <p className={`font-semibold ${riskColor}`}>
-            {riskLimitStatus === "EXCEEDED" ? "⚠ LIMIT EXCEEDED" : "✓ WITHIN LIMIT"}
-          </p>
-          <p className="text-sm text-gray-600 mt-1">
-            Current daily loss: {Math.abs(metrics.dailyPnL).toFixed(2)}% (Limit: 2%)
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* Monthly Progress */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Monthly Targets</CardTitle>
-          <CardDescription>Track progress toward 10% monthly returns</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {monthlyTargets.map((target) => (
-              <div key={target.month} className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="font-medium">Month {target.month}</span>
-                  <span className="text-sm text-gray-600">
-                    £{target.actual.toFixed(2)} / £{target.target.toFixed(2)}
-                  </span>
+      {/* Monthly Targets */}
+      <div className="card-premium">
+        <div className="flex items-center gap-2 mb-6">
+          <Target className="h-5 w-5 text-primary" />
+          <h2 className="text-xl font-bold">Monthly Targets</h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {monthlyTargets.map((target) => (
+            <div key={target.month} className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="font-semibold">Month {target.month}</span>
+                {target.met === true ? (
+                  <CheckCircle className="h-5 w-5 text-accent" />
+                ) : (
+                  <AlertCircle className="h-5 w-5 text-muted-foreground" />
+                )}
+              </div>
+              <div className="space-y-1">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Target</span>
+                  <span className="font-semibold">£{target.target.toFixed(2)}</span>
                 </div>
-                <Progress value={(target.actual / target.target) * 100} />
-                <div className="flex justify-between items-center text-xs">
-                  <span className={target.met ? "text-green-600" : "text-gray-500"}>
-                    {target.met ? "✓ Target met" : "In progress"}
-                  </span>
-                  <span className="text-gray-500">
-                    {(((target.actual / target.target) * 100) - 100).toFixed(1)}% to target
-                  </span>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Actual</span>
+                  <span className="font-semibold">£{target.actual.toFixed(2)}</span>
                 </div>
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              <div className="progress-premium">
+                <div 
+                  className="progress-premium-fill" 
+                  style={{ width: `${Math.min((target.actual / target.target) * 100, 100)}%` }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
 
-      {/* Capital Growth Chart */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Capital Growth</CardTitle>
-          <CardDescription>Daily capital progression vs target</CardDescription>
-        </CardHeader>
-        <CardContent>
+      {/* Charts Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Performance Chart */}
+        <div className="card-premium">
+          <h3 className="text-lg font-bold mb-4">Capital Growth</h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={performanceHistory}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis />
-              <Tooltip />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <XAxis dataKey="date" stroke="var(--muted-foreground)" />
+              <YAxis stroke="var(--muted-foreground)" />
+              <Tooltip 
+                contentStyle={{
+                  backgroundColor: 'var(--card)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '8px'
+                }}
+              />
               <Legend />
-              <Line type="monotone" dataKey="capital" stroke="#3b82f6" name="Actual Capital" />
-              <Line type="monotone" dataKey="target" stroke="#10b981" name="Target Path" strokeDasharray="5 5" />
+              <Line 
+                type="monotone" 
+                dataKey="capital" 
+                stroke="var(--accent)" 
+                strokeWidth={2}
+                dot={{ fill: 'var(--accent)' }}
+                name="Your Capital"
+              />
+              <Line 
+                type="monotone" 
+                dataKey="target" 
+                stroke="var(--muted-foreground)" 
+                strokeDasharray="5 5"
+                strokeWidth={2}
+                name="Target"
+              />
             </LineChart>
           </ResponsiveContainer>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Win/Loss Distribution */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>Win/Loss Distribution</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={250}>
-              <PieChart>
-                <Pie data={winLossData} cx="50%" cy="50%" labelLine={false} label={({ name, value }) => `${name}: ${value}`} outerRadius={80} fill="#8884d8" dataKey="value">
-                  {COLORS.map((color, index) => (
-                    <Cell key={`cell-${index}`} fill={color} />
-                  ))}
-                </Pie>
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+        {/* Win/Loss Distribution */}
+        <div className="card-premium">
+          <h3 className="text-lg font-bold mb-4">Win/Loss Distribution</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={winLossData}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                label={({ name, value }) => `${name}: ${value}`}
+                outerRadius={80}
+                fill="#8884d8"
+                dataKey="value"
+              >
+                {COLORS.map((color, index) => (
+                  <Cell key={`cell-${index}`} fill={color} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Performance Summary</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-gray-600">Total Trades</span>
-              <span className="font-semibold">{metrics.totalTrades}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Winning Trades</span>
-              <span className="font-semibold text-green-600">{Math.round(metrics.totalTrades * metrics.winRate)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Losing Trades</span>
-              <span className="font-semibold text-red-600">{Math.round(metrics.totalTrades * (1 - metrics.winRate))}</span>
-            </div>
-            <div className="border-t pt-3 flex justify-between">
-              <span className="text-gray-600">Monthly Return</span>
-              <span className={`font-semibold ${metrics.monthlyReturn >= 0 ? "text-green-600" : "text-red-600"}`}>
-                {metrics.monthlyReturn >= 0 ? "+" : ""}{metrics.monthlyReturn.toFixed(2)}%
-              </span>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Risk Status */}
+      <div className={`card-premium border-l-4 ${riskLimitStatus === 'EXCEEDED' ? 'border-red-500' : 'border-accent'}`}>
+        <div className="flex items-center gap-3">
+          {riskLimitStatus === 'EXCEEDED' ? (
+            <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
+          ) : (
+            <CheckCircle className="h-6 w-6 text-accent" />
+          )}
+          <div>
+            <p className="font-semibold">Daily Loss Limit: 2%</p>
+            <p className={`text-sm ${riskColor}`}>
+              Status: {riskLimitStatus} - {Math.abs(metrics.dailyPnL).toFixed(2)} loss today
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Trade History */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Trades</CardTitle>
-          <CardDescription>Last 10 trades executed</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left py-2 px-2">Date</th>
-                  <th className="text-left py-2 px-2">Ticker</th>
-                  <th className="text-left py-2 px-2">Type</th>
-                  <th className="text-right py-2 px-2">Qty</th>
-                  <th className="text-right py-2 px-2">Price</th>
-                  <th className="text-right py-2 px-2">P&L</th>
+      <div className="card-premium">
+        <h3 className="text-lg font-bold mb-4">Recent Trades</h3>
+        <div className="overflow-x-auto">
+          <table className="table-premium">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Ticker</th>
+                <th>Type</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>P&L</th>
+                <th>P&L %</th>
+              </tr>
+            </thead>
+            <tbody>
+              {tradeHistory.map((trade) => (
+                <tr key={trade.id}>
+                  <td>{trade.date}</td>
+                  <td className="font-semibold">{trade.ticker}</td>
+                  <td>
+                    <span className={`badge-premium ${trade.type === 'BUY' ? 'badge-success' : 'badge-warning'}`}>
+                      {trade.type}
+                    </span>
+                  </td>
+                  <td>{trade.quantity}</td>
+                  <td>£{trade.price.toFixed(2)}</td>
+                  <td className={trade.pnl >= 0 ? 'text-accent' : 'text-red-600 dark:text-red-400'}>
+                    {trade.pnl >= 0 ? '+' : ''}£{trade.pnl.toFixed(2)}
+                  </td>
+                  <td className={trade.pnlPercent >= 0 ? 'text-accent font-semibold' : 'text-red-600 dark:text-red-400 font-semibold'}>
+                    {trade.pnlPercent >= 0 ? '+' : ''}{trade.pnlPercent.toFixed(2)}%
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {tradeHistory.map((trade) => (
-                  <tr key={trade.id} className="border-b hover:bg-gray-50">
-                    <td className="py-2 px-2">{trade.date}</td>
-                    <td className="py-2 px-2 font-semibold">{trade.ticker}</td>
-                    <td className="py-2 px-2">
-                      <span className={`px-2 py-1 rounded text-xs font-semibold ${trade.type === "BUY" ? "bg-blue-100 text-blue-800" : "bg-purple-100 text-purple-800"}`}>
-                        {trade.type}
-                      </span>
-                    </td>
-                    <td className="text-right py-2 px-2">{trade.quantity}</td>
-                    <td className="text-right py-2 px-2">£{trade.price.toFixed(2)}</td>
-                    <td className={`text-right py-2 px-2 font-semibold ${trade.pnl >= 0 ? "text-green-600" : "text-red-600"}`}>
-                      {trade.pnl >= 0 ? "+" : ""}{trade.pnl.toFixed(2)} ({trade.pnlPercent >= 0 ? "+" : ""}{trade.pnlPercent.toFixed(2)}%)
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Action Buttons */}
-      <div className="flex gap-4">
-        <Button variant="outline">Download Report</Button>
-        <Button variant="outline">Export Data</Button>
-        <Button className="bg-blue-600 hover:bg-blue-700">View Detailed Analytics</Button>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+
+      {/* Last Update */}
+      <div className="text-center text-sm text-muted-foreground">
+        Last updated: {lastUpdate}
+      </div>
+      </div>
+    </PageTransition>
   );
 }
