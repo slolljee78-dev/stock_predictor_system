@@ -121,24 +121,26 @@ export default function Home() {
         </div>
 
         {/* Demo Video Section */}
-        <div className="space-y-4">
+        <div className="space-y-4 mb-20">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold mb-2 gradient-text">See It In Action</h2>
             <p className="text-muted-foreground">Watch how Manus Stock Predictor helps you make smarter trading decisions</p>
           </div>
           <div className="card-premium p-0 overflow-hidden">
-            <video 
-              width="100%" 
-              height="auto" 
-              controls 
-              className="w-full rounded-xl"
-              poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1920 1080'%3E%3Crect fill='%23111827' width='1920' height='1080'/%3E%3C/svg%3E"
-            >
-              <source src="https://d2xsxph8kpxj0f.cloudfront.net/310519663483836922/knJ3QkdJFvivzkyeUv8kpq/stock_predictor_demo_c21a1a93.mp4" type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
+            <div className="w-full bg-black rounded-xl" style={{aspectRatio: '16/9'}}>
+              <video 
+                width="100%" 
+                height="100%" 
+                controls 
+                className="w-full h-full object-contain"
+                controlsList="nodownload"
+              >
+                <source src="https://d2xsxph8kpxj0f.cloudfront.net/310519663483836922/knJ3QkdJFvivzkyeUv8kpq/stock_predictor_demo_c21a1a93.mp4" type="video/mp4" />
+                <p className="text-white p-4">Your browser does not support the video tag. Please try a different browser.</p>
+              </video>
+            </div>
           </div>
-          <p className="text-center text-sm text-muted-foreground">2:45 minute walkthrough of all key features</p>
+          <p className="text-center text-sm text-muted-foreground">Professional 2:45 minute product walkthrough</p>
         </div>
 
         {/* CTA Section */}
