@@ -1,10 +1,9 @@
 import { z } from 'zod';
 import { protectedProcedure, router } from '../_core/trpc';
+import { getPaymentHistory, getInvoicesForUser } from '../db';
 
 /**
  * Payment and Invoice Management Router
- * Note: Requires payments and invoices tables to be added to schema
- * This router provides endpoints for payment history, invoices, and subscription management
  */
 export const paymentsRouter = router({
   /**
@@ -17,13 +16,16 @@ export const paymentsRouter = router({
     }))
     .query(async ({ ctx, input }) => {
       try {
-        // TODO: Implement once payments table is added to schema
+        const payments = await getPaymentHistory(ctx.user.id, input.limit, input.offset);
+        const succeededPayments = payments?.filter(p => p.status === 'succeeded') || [];
+        const totalSpent = succeededPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
+        
         return {
-          payments: [],
-          totalCount: 0,
-          totalSpent: 0,
-          averagePayment: 0,
-          succeededCount: 0,
+          payments: payments || [],
+          totalCount: payments?.length || 0,
+          totalSpent,
+          averagePayment: succeededPayments.length > 0 ? totalSpent / succeededPayments.length : 0,
+          succeededCount: succeededPayments.length,
         };
       } catch (error) {
         console.error('Failed to fetch payment history:', error);
@@ -41,10 +43,10 @@ export const paymentsRouter = router({
     }))
     .query(async ({ ctx, input }) => {
       try {
-        // TODO: Implement once invoices table is added to schema
+        const invoices = await getInvoicesForUser(ctx.user.id, input.limit, input.offset);
         return {
-          invoices: [],
-          totalCount: 0,
+          invoices: invoices || [],
+          totalCount: invoices?.length || 0,
         };
       } catch (error) {
         console.error('Failed to fetch invoices:', error);
@@ -61,8 +63,10 @@ export const paymentsRouter = router({
     }))
     .query(async ({ ctx, input }) => {
       try {
-        // TODO: Implement once invoices table is added to schema
-        throw new Error('Invoice not found');
+        const invoices = await getInvoicesForUser(ctx.user.id, 1000, 0);
+        const invoice = invoices?.find(i => i.id.toString() === input.invoiceId);
+        if (!invoice) throw new Error('Invoice not found');
+        return invoice;
       } catch (error) {
         console.error('Failed to fetch invoice:', error);
         throw new Error('Failed to fetch invoice');
@@ -78,8 +82,14 @@ export const paymentsRouter = router({
     }))
     .mutation(async ({ ctx, input }) => {
       try {
-        // TODO: Implement once invoices table is added to schema
-        throw new Error('Invoice not found');
+        const invoices = await getInvoicesForUser(ctx.user.id, 1000, 0);
+        const invoice = invoices?.find(i => i.id.toString() === input.invoiceId);
+        if (!invoice) throw new Error('Invoice not found');
+        
+        return { 
+          downloadUrl: invoice.pdfUrl || null,
+          invoiceNumber: invoice.invoiceNumber,
+        };
       } catch (error) {
         console.error('Failed to download invoice:', error);
         throw new Error('Failed to download invoice');
@@ -89,46 +99,46 @@ export const paymentsRouter = router({
   /**
    * Get payment summary for dashboard
    */
-  getPaymentSummary: protectedProcedure.query(async ({ ctx }) => {
-    try {
-      // TODO: Implement once payments table is added to schema
-      return {
-        totalPayments: 0,
-        totalSpent: 0,
-        currency: 'GBP',
-        lastPaymentDate: null,
-        nextBillingDate: null,
-        averagePayment: 0,
-      };
-    } catch (error) {
-      console.error('Failed to fetch payment summary:', error);
-      throw new Error('Failed to fetch payment summary');
-    }
-  }),
+  getPaymentSummary: protectedProcedure
+    .query(async ({ ctx }) => {
+      try {
+        const allPayments = await getPaymentHistory(ctx.user.id, 1000, 0);
+        const succeededPayments = allPayments?.filter(p => p.status === 'succeeded') || [];
+        const totalSpent = succeededPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
+        const averagePayment = succeededPayments.length > 0 ? totalSpent / succeededPayments.length : 0;
+        const lastPayment = succeededPayments[succeededPayments.length - 1];
+        
+        return {
+          totalSpent,
+          totalPayments: succeededPayments.length,
+          averagePayment,
+          lastPaymentDate: lastPayment?.paidAt || null,
+          nextBillingDate: lastPayment?.paidAt 
+            ? new Date(lastPayment.paidAt.getTime() + 30 * 24 * 60 * 60 * 1000) 
+            : null,
+          currency: 'GBP',
+        };
+      } catch (error) {
+        console.error('Failed to fetch payment summary:', error);
+        throw new Error('Failed to fetch payment summary');
+      }
+    }),
 
   /**
-   * Get subscription status
+   * Get current subscription status
    */
-  getSubscriptionStatus: protectedProcedure.query(async ({ ctx }) => {
-    try {
-      // TODO: Fetch from database once schema is complete
+  getSubscriptionStatus: protectedProcedure
+    .query(async ({ ctx }) => {
       return {
-        tier: 'FREEMIUM',
-        status: 'active',
-        trialStartedAt: null,
-        trialEndsAt: null,
-        subscriptionStartedAt: null,
-        subscriptionEndsAt: null,
-        autoRenew: true,
+        tier: ctx.user.subscriptionTier || 'FREE',
+        status: ctx.user.subscriptionStatus || 'inactive',
+        startDate: ctx.user.subscriptionStartedAt || null,
+        endDate: ctx.user.subscriptionEndedAt || null,
       };
-    } catch (error) {
-      console.error('Failed to fetch subscription status:', error);
-      throw new Error('Failed to fetch subscription status');
-    }
-  }),
+    }),
 
   /**
-   * Request invoice resend
+   * Resend invoice email
    */
   resendInvoice: protectedProcedure
     .input(z.object({
@@ -136,11 +146,12 @@ export const paymentsRouter = router({
     }))
     .mutation(async ({ ctx, input }) => {
       try {
-        // TODO: Implement once invoices table is added to schema
-        return {
-          success: true,
-          message: 'Invoice resent successfully',
-        };
+        const invoices = await getInvoicesForUser(ctx.user.id, 1000, 0);
+        const invoice = invoices?.find(i => i.id.toString() === input.invoiceId);
+        if (!invoice) throw new Error('Invoice not found');
+        
+        // TODO: Send email notification
+        return { success: true };
       } catch (error) {
         console.error('Failed to resend invoice:', error);
         throw new Error('Failed to resend invoice');
@@ -148,36 +159,30 @@ export const paymentsRouter = router({
     }),
 
   /**
-   * Get payment methods
+   * Get payment methods (from Stripe)
    */
-  getPaymentMethods: protectedProcedure.query(async ({ ctx }) => {
-    try {
-      // In production, fetch from Stripe
-      return {
-        methods: [],
-        defaultMethod: null,
-      };
-    } catch (error) {
-      console.error('Failed to fetch payment methods:', error);
-      throw new Error('Failed to fetch payment methods');
-    }
-  }),
+  getPaymentMethods: protectedProcedure
+    .query(async ({ ctx }) => {
+      try {
+        // TODO: Fetch from Stripe API using ctx.user.stripeCustomerId
+        return { methods: [] };
+      } catch (error) {
+        console.error('Failed to fetch payment methods:', error);
+        throw new Error('Failed to fetch payment methods');
+      }
+    }),
 
   /**
-   * Add payment method
+   * Add payment method (to Stripe)
    */
   addPaymentMethod: protectedProcedure
     .input(z.object({
       token: z.string(),
-      isDefault: z.boolean().default(false),
     }))
     .mutation(async ({ ctx, input }) => {
       try {
-        // In production, add to Stripe and save reference
-        return {
-          success: true,
-          methodId: `pm_${Date.now()}`,
-        };
+        // TODO: Save to Stripe using ctx.user.stripeCustomerId
+        return { success: true };
       } catch (error) {
         console.error('Failed to add payment method:', error);
         throw new Error('Failed to add payment method');
@@ -185,7 +190,7 @@ export const paymentsRouter = router({
     }),
 
   /**
-   * Delete payment method
+   * Delete payment method (from Stripe)
    */
   deletePaymentMethod: protectedProcedure
     .input(z.object({
@@ -193,10 +198,8 @@ export const paymentsRouter = router({
     }))
     .mutation(async ({ ctx, input }) => {
       try {
-        // In production, delete from Stripe
-        return {
-          success: true,
-        };
+        // TODO: Delete from Stripe using ctx.user.stripeCustomerId
+        return { success: true };
       } catch (error) {
         console.error('Failed to delete payment method:', error);
         throw new Error('Failed to delete payment method');

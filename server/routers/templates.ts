@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { protectedProcedure, publicProcedure, router } from '../_core/trpc';
+import { getPortfolioTemplates, createPortfolioTemplate } from '../db';
 
 /**
  * Portfolio Templates Router
@@ -11,16 +12,19 @@ export const templatesRouter = router({
    */
   getTemplates: publicProcedure
     .input(z.object({
-      category: z.enum(['aggressive', 'balanced', 'conservative', 'dividend', 'growth', 'value']).optional(),
+      category: z.enum(['TECH_GROWTH', 'DIVIDEND_INCOME', 'BALANCED', 'CUSTOM']).optional(),
       limit: z.number().min(1).max(100).default(20),
       offset: z.number().min(0).default(0),
     }))
     .query(async ({ input }) => {
       try {
-        // TODO: Fetch templates from database
+        const templates = await getPortfolioTemplates(undefined);
+        const filtered = input.category
+          ? templates?.filter(t => t.category === input.category)
+          : templates;
         return {
-          templates: [],
-          totalCount: 0,
+          templates: filtered?.slice(input.offset, input.offset + input.limit) || [],
+          totalCount: filtered?.length || 0,
         };
       } catch (error) {
         console.error('Failed to fetch templates:', error);
@@ -33,12 +37,14 @@ export const templatesRouter = router({
    */
   getTemplate: publicProcedure
     .input(z.object({
-      templateId: z.string(),
+      templateId: z.number(),
     }))
     .query(async ({ input }) => {
       try {
-        // TODO: Fetch template from database
-        throw new Error('Template not found');
+        const templates = await getPortfolioTemplates(undefined);
+        const template = templates?.find(t => t.id === input.templateId);
+        if (!template) throw new Error('Template not found');
+        return template;
       } catch (error) {
         console.error('Failed to fetch template:', error);
         throw new Error('Failed to fetch template');
@@ -50,7 +56,7 @@ export const templatesRouter = router({
    */
   createPortfolioFromTemplate: protectedProcedure
     .input(z.object({
-      templateId: z.string(),
+      templateId: z.number(),
       portfolioName: z.string(),
       investmentAmount: z.number().min(1),
     }))
@@ -59,7 +65,7 @@ export const templatesRouter = router({
         // TODO: Create portfolio with template holdings
         return {
           success: true,
-          portfolioId: `portfolio_${Date.now()}`,
+          portfolioId: Date.now(),
           createdAt: new Date(),
         };
       } catch (error) {
@@ -78,10 +84,11 @@ export const templatesRouter = router({
     }))
     .query(async ({ ctx, input }) => {
       try {
-        // TODO: Fetch user's custom templates from database
+        const templates = await getPortfolioTemplates(ctx.user.id);
+        const userTemplates = templates?.filter(t => t.userId === ctx.user.id) || [];
         return {
-          templates: [],
-          totalCount: 0,
+          templates: userTemplates.slice(input.offset, input.offset + input.limit),
+          totalCount: userTemplates.length,
         };
       } catch (error) {
         console.error('Failed to fetch user templates:', error);
@@ -96,20 +103,23 @@ export const templatesRouter = router({
     .input(z.object({
       name: z.string().min(1).max(100),
       description: z.string().max(500).optional(),
-      category: z.enum(['aggressive', 'balanced', 'conservative', 'dividend', 'growth', 'value']),
-      holdings: z.array(z.object({
-        symbol: z.string(),
-        weight: z.number().min(0).max(100),
-        sector: z.string(),
-      })),
+      category: z.enum(['TECH_GROWTH', 'DIVIDEND_INCOME', 'BALANCED', 'CUSTOM']),
+      holdings: z.record(z.string(), z.number()),
       isPublic: z.boolean().default(false),
     }))
     .mutation(async ({ ctx, input }) => {
       try {
-        // TODO: Save template to database
+        await createPortfolioTemplate(
+          ctx.user.id,
+          input.name,
+          JSON.stringify(input.holdings),
+          input.category,
+          input.description,
+          input.isPublic
+        );
         return {
           success: true,
-          templateId: `template_${Date.now()}`,
+          templateId: Date.now(),
           createdAt: new Date(),
         };
       } catch (error) {
@@ -123,14 +133,10 @@ export const templatesRouter = router({
    */
   updateTemplate: protectedProcedure
     .input(z.object({
-      templateId: z.string(),
+      templateId: z.number(),
       name: z.string().min(1).max(100).optional(),
       description: z.string().max(500).optional(),
-      holdings: z.array(z.object({
-        symbol: z.string(),
-        weight: z.number().min(0).max(100),
-        sector: z.string(),
-      })).optional(),
+      holdings: z.record(z.string(), z.number()).optional(),
       isPublic: z.boolean().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
@@ -151,7 +157,7 @@ export const templatesRouter = router({
    */
   deleteTemplate: protectedProcedure
     .input(z.object({
-      templateId: z.string(),
+      templateId: z.number(),
     }))
     .mutation(async ({ ctx, input }) => {
       try {
@@ -193,7 +199,7 @@ export const templatesRouter = router({
    */
   cloneTemplate: protectedProcedure
     .input(z.object({
-      templateId: z.string(),
+      templateId: z.number(),
       newName: z.string(),
     }))
     .mutation(async ({ ctx, input }) => {
@@ -201,7 +207,7 @@ export const templatesRouter = router({
         // TODO: Clone template for user
         return {
           success: true,
-          newTemplateId: `template_${Date.now()}`,
+          newTemplateId: Date.now(),
           createdAt: new Date(),
         };
       } catch (error) {
@@ -215,7 +221,7 @@ export const templatesRouter = router({
    */
   exportTemplate: protectedProcedure
     .input(z.object({
-      templateId: z.string(),
+      templateId: z.number(),
     }))
     .query(async ({ ctx, input }) => {
       try {
@@ -244,7 +250,7 @@ export const templatesRouter = router({
         // TODO: Import and validate template data
         return {
           success: true,
-          templateId: `template_${Date.now()}`,
+          templateId: Date.now(),
           createdAt: new Date(),
         };
       } catch (error) {

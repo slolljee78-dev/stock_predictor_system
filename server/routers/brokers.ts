@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { protectedProcedure, router } from '../_core/trpc';
+import { getBrokerAccounts, createBrokerAccount } from '../db';
 
 /**
  * Broker Account Management Router
@@ -11,10 +12,18 @@ export const brokersRouter = router({
    */
   getLinkedAccounts: protectedProcedure.query(async ({ ctx }) => {
     try {
-      // TODO: Fetch from database once broker_accounts table is added
+      const accounts = await getBrokerAccounts(ctx.user.id);
       return {
-        accounts: [],
-        totalAccounts: 0,
+        accounts: accounts?.map(a => ({
+          id: a.id,
+          brokerType: a.brokerType,
+          accountName: a.accountName,
+          status: a.status,
+          lastSyncedAt: a.lastSyncedAt,
+          cachedBalance: a.cachedBalance,
+          positionCount: a.positionCount,
+        })) || [],
+        totalAccounts: accounts?.length || 0,
       };
     } catch (error) {
       console.error('Failed to fetch broker accounts:', error);
@@ -27,17 +36,24 @@ export const brokersRouter = router({
    */
   linkBrokerAccount: protectedProcedure
     .input(z.object({
-      brokerType: z.enum(['trading212', 'alpaca', 'interactive_brokers']),
+      brokerType: z.enum(['TRADING_212', 'ALPACA', 'INTERACTIVE_BROKERS']),
       apiKey: z.string(),
       apiSecret: z.string(),
       accountName: z.string().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
       try {
-        // TODO: Implement broker API connection and credential encryption
+        // TODO: Encrypt credentials before storing
+        const encryptedCreds = JSON.stringify({ apiKey: input.apiKey, apiSecret: input.apiSecret });
+        const result = await createBrokerAccount(
+          ctx.user.id,
+          input.brokerType,
+          input.accountName || `${input.brokerType} Account`,
+          encryptedCreds
+        );
         return {
           success: true,
-          accountId: `broker_${Date.now()}`,
+          accountId: Date.now(),
           brokerType: input.brokerType,
           linkedAt: new Date(),
         };
@@ -52,11 +68,11 @@ export const brokersRouter = router({
    */
   disconnectBrokerAccount: protectedProcedure
     .input(z.object({
-      accountId: z.string(),
+      accountId: z.number(),
     }))
     .mutation(async ({ ctx, input }) => {
       try {
-        // TODO: Implement broker disconnection and credential removal
+        // TODO: Verify ownership and delete account from database
         return {
           success: true,
           message: 'Broker account disconnected',
@@ -72,7 +88,7 @@ export const brokersRouter = router({
    */
   syncBrokerData: protectedProcedure
     .input(z.object({
-      accountId: z.string(),
+      accountId: z.number(),
     }))
     .mutation(async ({ ctx, input }) => {
       try {
@@ -94,7 +110,7 @@ export const brokersRouter = router({
    */
   getBrokerStatus: protectedProcedure
     .input(z.object({
-      accountId: z.string(),
+      accountId: z.number(),
     }))
     .query(async ({ ctx, input }) => {
       try {
@@ -117,9 +133,9 @@ export const brokersRouter = router({
    */
   executeTrade: protectedProcedure
     .input(z.object({
-      accountId: z.string(),
+      accountId: z.number(),
       symbol: z.string(),
-      action: z.enum(['buy', 'sell']),
+      action: z.enum(['BUY', 'SELL']),
       quantity: z.number().min(1),
       price: z.number().min(0).optional(),
       orderType: z.enum(['market', 'limit']).default('market'),
@@ -144,7 +160,7 @@ export const brokersRouter = router({
    */
   getTradeHistory: protectedProcedure
     .input(z.object({
-      accountId: z.string(),
+      accountId: z.number(),
       limit: z.number().min(1).max(100).default(20),
       offset: z.number().min(0).default(0),
     }))
@@ -202,7 +218,7 @@ export const brokersRouter = router({
    */
   validateBrokerCredentials: protectedProcedure
     .input(z.object({
-      brokerType: z.enum(['trading212', 'alpaca', 'interactive_brokers']),
+      brokerType: z.enum(['TRADING_212', 'ALPACA', 'INTERACTIVE_BROKERS']),
       apiKey: z.string(),
       apiSecret: z.string(),
     }))

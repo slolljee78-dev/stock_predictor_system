@@ -11,7 +11,7 @@ export const analyticsRouter = router({
    */
   getPerformanceMetrics: protectedProcedure
     .input(z.object({
-      portfolioId: z.string(),
+      portfolioId: z.number(),
       timeframe: z.enum(['1d', '1w', '1m', '3m', '6m', '1y', 'all']).default('1y'),
     }))
     .query(async ({ ctx, input }) => {
@@ -38,7 +38,7 @@ export const analyticsRouter = router({
    */
   getRiskMetrics: protectedProcedure
     .input(z.object({
-      portfolioId: z.string(),
+      portfolioId: z.number(),
     }))
     .query(async ({ ctx, input }) => {
       try {
@@ -62,15 +62,12 @@ export const analyticsRouter = router({
    */
   getSectorAllocation: protectedProcedure
     .input(z.object({
-      portfolioId: z.string(),
+      portfolioId: z.number(),
     }))
     .query(async ({ ctx, input }) => {
       try {
         // TODO: Calculate sector allocation from holdings
-        return {
-          sectors: [],
-          totalHoldings: 0,
-        };
+        return { sectors: {} };
       } catch (error) {
         console.error('Failed to fetch sector allocation:', error);
         throw new Error('Failed to fetch sector allocation');
@@ -82,15 +79,12 @@ export const analyticsRouter = router({
    */
   getCorrelationMatrix: protectedProcedure
     .input(z.object({
-      portfolioId: z.string(),
+      portfolioId: z.number(),
     }))
     .query(async ({ ctx, input }) => {
       try {
-        // TODO: Calculate correlation between holdings
-        return {
-          correlations: [],
-          symbols: [],
-        };
+        // TODO: Calculate correlation matrix
+        return { correlations: {} };
       } catch (error) {
         console.error('Failed to fetch correlation matrix:', error);
         throw new Error('Failed to fetch correlation matrix');
@@ -102,16 +96,12 @@ export const analyticsRouter = router({
    */
   getPerformanceAttribution: protectedProcedure
     .input(z.object({
-      portfolioId: z.string(),
-      timeframe: z.enum(['1d', '1w', '1m', '3m', '6m', '1y', 'all']).default('1y'),
+      portfolioId: z.number(),
     }))
     .query(async ({ ctx, input }) => {
       try {
-        // TODO: Calculate contribution of each holding to returns
-        return {
-          holdings: [],
-          totalReturn: 0,
-        };
+        // TODO: Calculate attribution by holding
+        return { holdings: [] };
       } catch (error) {
         console.error('Failed to fetch performance attribution:', error);
         throw new Error('Failed to fetch performance attribution');
@@ -123,20 +113,18 @@ export const analyticsRouter = router({
    */
   getBenchmarkComparison: protectedProcedure
     .input(z.object({
-      portfolioId: z.string(),
-      benchmark: z.enum(['sp500', 'nasdaq', 'ftse100']).default('sp500'),
-      timeframe: z.enum(['1d', '1w', '1m', '3m', '6m', '1y', 'all']).default('1y'),
+      portfolioId: z.number(),
+      benchmark: z.enum(['SP500', 'NASDAQ', 'FTSE', 'DAX']).default('SP500'),
     }))
     .query(async ({ ctx, input }) => {
       try {
-        // TODO: Compare portfolio performance to benchmark
+        // TODO: Compare portfolio to benchmark
         return {
           portfolioReturn: 0,
           benchmarkReturn: 0,
           outperformance: 0,
-          alpha: 0,
+          correlation: 0,
           beta: 0,
-          informationRatio: 0,
         };
       } catch (error) {
         console.error('Failed to fetch benchmark comparison:', error);
@@ -149,16 +137,13 @@ export const analyticsRouter = router({
    */
   getMonthlyReturns: protectedProcedure
     .input(z.object({
-      portfolioId: z.string(),
+      portfolioId: z.number(),
       year: z.number().optional(),
     }))
     .query(async ({ ctx, input }) => {
       try {
         // TODO: Calculate monthly returns
-        return {
-          months: [],
-          totalReturn: 0,
-        };
+        return { months: [] };
       } catch (error) {
         console.error('Failed to fetch monthly returns:', error);
         throw new Error('Failed to fetch monthly returns');
@@ -170,16 +155,15 @@ export const analyticsRouter = router({
    */
   getDrawdownAnalysis: protectedProcedure
     .input(z.object({
-      portfolioId: z.string(),
+      portfolioId: z.number(),
     }))
     .query(async ({ ctx, input }) => {
       try {
-        // TODO: Analyze drawdown periods
+        // TODO: Calculate drawdown periods
         return {
           maxDrawdown: 0,
           currentDrawdown: 0,
-          drawdownPeriods: [],
-          averageRecoveryTime: 0,
+          periods: [],
         };
       } catch (error) {
         console.error('Failed to fetch drawdown analysis:', error);
@@ -188,45 +172,17 @@ export const analyticsRouter = router({
     }),
 
   /**
-   * Get portfolio summary
-   */
-  getPortfolioSummary: protectedProcedure
-    .input(z.object({
-      portfolioId: z.string(),
-    }))
-    .query(async ({ ctx, input }) => {
-      try {
-        // TODO: Fetch complete portfolio summary
-        return {
-          totalValue: 0,
-          totalInvested: 0,
-          totalReturn: 0,
-          returnPercentage: 0,
-          holdings: 0,
-          lastUpdated: new Date(),
-        };
-      } catch (error) {
-        console.error('Failed to fetch portfolio summary:', error);
-        throw new Error('Failed to fetch portfolio summary');
-      }
-    }),
-
-  /**
    * Export analytics report
    */
   exportAnalyticsReport: protectedProcedure
     .input(z.object({
-      portfolioId: z.string(),
+      portfolioId: z.number(),
       format: z.enum(['pdf', 'csv', 'json']).default('pdf'),
     }))
-    .mutation(async ({ ctx, input }) => {
+    .query(async ({ ctx, input }) => {
       try {
-        // TODO: Generate and export analytics report
-        return {
-          success: true,
-          downloadUrl: `/api/analytics/${input.portfolioId}/report.${input.format}`,
-          generatedAt: new Date(),
-        };
+        // TODO: Generate and return report
+        return { downloadUrl: null };
       } catch (error) {
         console.error('Failed to export analytics report:', error);
         throw new Error('Failed to export analytics report');
@@ -234,18 +190,19 @@ export const analyticsRouter = router({
     }),
 
   /**
-   * Get analytics insights
+   * Get AI-powered insights
    */
   getInsights: protectedProcedure
     .input(z.object({
-      portfolioId: z.string(),
+      portfolioId: z.number(),
     }))
     .query(async ({ ctx, input }) => {
       try {
-        // TODO: Generate AI-powered insights
+        // TODO: Generate insights using LLM
         return {
           insights: [],
           recommendations: [],
+          risks: [],
         };
       } catch (error) {
         console.error('Failed to fetch insights:', error);
