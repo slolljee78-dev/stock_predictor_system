@@ -28,9 +28,9 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-background dark:bg-gradient-to-br dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+    <div className="min-h-screen bg-background dark:bg-gradient-to-br dark:from-slate-950 dark:via-blue-950/20 dark:to-slate-950 relative overflow-hidden">
       {/* Premium Navigation */}
-      <nav className="border-b border-border/50 bg-card/50 backdrop-blur sticky top-0 z-50">
+      <nav className="border-b border-border/30 bg-gradient-to-r from-card/80 via-card/60 to-card/40 backdrop-blur-xl sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-gradient-to-br from-primary to-accent rounded-lg">
@@ -54,7 +54,7 @@ export default function Home() {
           <div className="inline-block mb-6 px-4 py-2 bg-accent/10 rounded-full border border-accent/20">
             <p className="text-sm font-semibold text-accent">🚀 Powered by AI & Machine Learning</p>
           </div>
-          <h1 className="text-6xl md:text-8xl font-black mb-6 gradient-text leading-tight tracking-tight">
+          <h1 className="text-7xl md:text-9xl font-black mb-8 gradient-text leading-tight tracking-tighter" style={{letterSpacing: '-0.04em'}}>
             Trade Smarter,<br />Not Harder
           </h1>
           <p className="text-lg text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
