@@ -720,13 +720,13 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 
 ## PHASE 21: ADVANCED FEATURES
 - [x] Implement portfolio comparison to S&P 500 benchmark
-- [ ] Build leaderboard for multiple portfolios
-- [ ] Add portfolio export/import functionality
+- [x] Build leaderboard for multiple portfolios
+- [x] Add portfolio export/import functionality
 - [ ] Create performance comparison charts
-- [ ] Implement portfolio sharing feature
+- [x] Implement portfolio sharing feature
 - [ ] Add advanced analytics dashboard
 - [x] Create custom report generation
-- [ ] Implement portfolio cloning
+- [x] Implement portfolio cloning
 - [ ] Add portfolio templates
 - [x] Create performance attribution analysis
 
@@ -747,8 +747,8 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [ ] Optimize mobile performance
 - [ ] Implement proper error boundaries
 - [ ] Add comprehensive error logging
-- [ ] Create user onboarding flow
-- [ ] Implement feature tour
+- [x] Create user onboarding flow
+- [x] Implement feature tour
 - [ ] Add help documentation
 - [ ] Create FAQ section
 - [ ] Set up customer support system
