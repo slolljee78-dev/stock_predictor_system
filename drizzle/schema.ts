@@ -226,3 +226,144 @@ export const userPreferences = mysqlTable("userPreferences", {
 
 export type UserPreferences = typeof userPreferences.$inferSelect;
 export type InsertUserPreferences = typeof userPreferences.$inferInsert;
+/**
+ * Payments table - tracks Stripe payment transactions
+ */
+export const payments = mysqlTable("payments", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Foreign key to users table */
+  userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  /** Payment amount in cents (e.g., 2999 = £29.99) */
+  amount: int("amount").notNull(),
+  /** Currency code (GBP, USD, EUR) */
+  currency: varchar("currency", { length: 3 }).default("GBP").notNull(),
+  /** Subscription tier: STARTER, PRO, ELITE */
+  tier: mysqlEnum("tier", ["STARTER", "PRO", "ELITE"]).notNull(),
+  /** Payment status: pending, succeeded, failed, refunded */
+  status: mysqlEnum("status", ["pending", "succeeded", "failed", "refunded"]).default("pending").notNull(),
+  /** Stripe Payment Intent ID for reference */
+  stripePaymentIntentId: varchar("stripePaymentIntentId", { length: 255 }).unique(),
+  /** Description of payment (e.g., "Stock Predictor - Pro Plan (Monthly)") */
+  description: text("description"),
+  /** When payment was completed */
+  paidAt: timestamp("paidAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Payment = typeof payments.$inferSelect;
+export type InsertPayment = typeof payments.$inferInsert;
+
+/**
+ * Invoices table - stores generated invoices for payments
+ */
+export const invoices = mysqlTable("invoices", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Foreign key to users table */
+  userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  /** Foreign key to payments table */
+  paymentId: int("paymentId").references(() => payments.id, { onDelete: "set null" }),
+  /** Invoice number (e.g., INV-2026-001) */
+  invoiceNumber: varchar("invoiceNumber", { length: 50 }).unique().notNull(),
+  /** Invoice amount in cents */
+  amount: int("amount").notNull(),
+  /** Invoice status: draft, sent, paid, overdue, cancelled */
+  status: mysqlEnum("status", ["draft", "sent", "paid", "overdue", "cancelled"]).default("draft").notNull(),
+  /** Issue date */
+  issueDate: timestamp("issueDate").notNull(),
+  /** Due date */
+  dueDate: timestamp("dueDate").notNull(),
+  /** When invoice was paid */
+  paidDate: timestamp("paidDate"),
+  /** Invoice PDF URL (stored in S3) */
+  pdfUrl: text("pdfUrl"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Invoice = typeof invoices.$inferSelect;
+export type InsertInvoice = typeof invoices.$inferInsert;
+
+/**
+ * Broker accounts table - stores linked broker connections
+ */
+export const brokerAccounts = mysqlTable("brokerAccounts", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Foreign key to users table */
+  userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  /** Broker type: TRADING_212, ALPACA, INTERACTIVE_BROKERS */
+  brokerType: mysqlEnum("brokerType", ["TRADING_212", "ALPACA", "INTERACTIVE_BROKERS"]).notNull(),
+  /** User-friendly account name */
+  accountName: varchar("accountName", { length: 100 }).notNull(),
+  /** Encrypted API credentials (AES-256) */
+  encryptedCredentials: text("encryptedCredentials").notNull(),
+  /** Account status: active, inactive, error */
+  status: mysqlEnum("status", ["active", "inactive", "error"]).default("active").notNull(),
+  /** Last error message if status is error */
+  lastError: text("lastError"),
+  /** Last successful sync timestamp */
+  lastSyncedAt: timestamp("lastSyncedAt"),
+  /** Account balance in cents (cached from broker) */
+  cachedBalance: int("cachedBalance"),
+  /** Number of open positions */
+  positionCount: int("positionCount").default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type BrokerAccount = typeof brokerAccounts.$inferSelect;
+export type InsertBrokerAccount = typeof brokerAccounts.$inferInsert;
+
+/**
+ * Portfolio templates table - stores reusable portfolio templates
+ */
+export const portfolioTemplates = mysqlTable("portfolioTemplates", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Foreign key to users table (creator) */
+  userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  /** Template name */
+  name: varchar("name", { length: 100 }).notNull(),
+  /** Template description */
+  description: text("description"),
+  /** Template category: TECH_GROWTH, DIVIDEND_INCOME, BALANCED, CUSTOM */
+  category: mysqlEnum("category", ["TECH_GROWTH", "DIVIDEND_INCOME", "BALANCED", "CUSTOM"]).default("CUSTOM").notNull(),
+  /** Holdings as JSON array [{symbol, weight, shares}, ...] */
+  holdings: text("holdings").notNull(), // JSON
+  /** Whether template is public for other users */
+  isPublic: int("isPublic").default(0).notNull(),
+  /** Number of times this template has been used */
+  usageCount: int("usageCount").default(0).notNull(),
+  /** Average rating (0-5) */
+  averageRating: int("averageRating").default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type PortfolioTemplate = typeof portfolioTemplates.$inferSelect;
+export type InsertPortfolioTemplate = typeof portfolioTemplates.$inferInsert;
+
+/**
+ * Notification preferences table - per-stock notification settings
+ */
+export const notificationPreferences = mysqlTable("notificationPreferences", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Foreign key to users table */
+  userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  /** Stock ticker symbol */
+  symbol: varchar("symbol", { length: 20 }).notNull(),
+  /** Notification channels: email, push, inApp (JSON array) */
+  channels: text("channels").notNull(), // JSON: ["email", "push", "inApp"]
+  /** Trigger types: buySignal, sellSignal, priceAlert, newsAlert (JSON array) */
+  triggers: text("triggers").notNull(), // JSON: ["buySignal", "sellSignal"]
+  /** Minimum confidence threshold for signals (0-100) */
+  minConfidence: int("minConfidence").default(60).notNull(),
+  /** Price alert threshold (in cents) */
+  priceAlertThreshold: int("priceAlertThreshold"),
+  /** Whether this preference is enabled */
+  isEnabled: int("isEnabled").default(1).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type NotificationPreference = typeof notificationPreferences.$inferSelect;
+export type InsertNotificationPreference = typeof notificationPreferences.$inferInsert;

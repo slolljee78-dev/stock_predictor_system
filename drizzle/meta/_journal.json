@@ -29,6 +29,20 @@
       "when": 1776006608972,
       "tag": "0003_normal_may_parker",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1776014403990,
+      "tag": "0004_bent_nightmare",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1776014489811,
+      "tag": "0005_public_tomorrow_man",
+      "breakpoints": true
     }
   ]
 }
