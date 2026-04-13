@@ -899,3 +899,12 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [ ] Complete Stripe payment setup (claim sandbox, create prices) - USER ACTION
 - [ ] Test full payment flow with test cards
 - [ ] Deploy and verify production deployment
+
+## PHASE 28: RISK STRATEGY SELECTION
+- [ ] Add risk_strategy field to users table (cautious, balanced, high_risk)
+- [ ] Update signal generation to apply risk strategy parameters
+- [ ] Create risk strategy selection UI component
+- [ ] Add risk strategy settings to user dashboard
+- [ ] Update signal generation prompts for each strategy
+- [ ] Test signal generation with different risk strategies
+- [ ] Deploy and verify risk strategy feature

@@ -14,6 +14,7 @@ import { adminRouter } from "./routers/admin";
 import { signalsRouter } from "./routers/signals";
 import { accuracyRouter } from "./routers/accuracy";
 import { portfolioRouter } from "./routers/portfolio";
+import { riskStrategyRouter } from "./routers/riskStrategy";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -37,6 +38,7 @@ export const appRouter = router({
   admin: adminRouter,
   accuracy: accuracyRouter,
   portfolio: portfolioRouter,
+  riskStrategy: riskStrategyRouter,
 
   stocks: router({
     search: publicProcedure

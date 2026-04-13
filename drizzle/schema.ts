@@ -33,6 +33,9 @@ export const users = mysqlTable("users", {
   trialStartedAt: timestamp("trialStartedAt"),
   trialExpiresAt: timestamp("trialExpiresAt"),
   watchlistCount: int("watchlistCount").default(0),
+  
+  // Risk strategy preference for signal generation
+  riskStrategy: mysqlEnum("riskStrategy", ["cautious", "balanced", "high_risk"]).default("balanced").notNull(),
 });
 
 export type User = typeof users.$inferSelect;

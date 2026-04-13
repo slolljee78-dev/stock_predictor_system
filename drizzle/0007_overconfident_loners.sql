@@ -1,0 +1,1 @@
+ALTER TABLE `users` ADD `riskStrategy` enum('cautious','balanced','high_risk') DEFAULT 'balanced' NOT NULL;
