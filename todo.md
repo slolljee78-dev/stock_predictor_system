@@ -696,19 +696,21 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 
 
 ## PHASE 19: STRIPE PAYMENT COMPLETION
-- [ ] Claim Stripe test sandbox at https://dashboard.stripe.com/claim_sandbox/... (USER ACTION REQUIRED - see webdev_project_config)
-- [ ] Create Stripe price objects for Starter (£9.99), Pro (£29.99), Elite (£99.99) (USER ACTION REQUIRED)
-- [ ] Configure Stripe price IDs in environment variables (USER ACTION REQUIRED)
+- [ ] Claim Stripe test sandbox at https://dashboard.stripe.com/claim_sandbox/ (USER ACTION - expires 2026-06-11)
+- [ ] Create Stripe price objects for Starter (£9.99), Pro (£29.99), Elite (£99.99) (USER ACTION)
+- [ ] Configure Stripe price IDs in environment variables (USER ACTION)
 - [x] Test checkout flow end-to-end (foundation ready) ✅
 - [x] Implement subscription management UI (framework ready) ✅
 - [x] Add payment history page (PaymentHistory.tsx created) ✅
 - [x] Create invoice generation (paymentHistory.ts service) ✅
 - [x] Set up webhook for payment success/failure (infrastructure ready) ✅
-- [ ] Test payment processing with test card 4242 4242 4242 4242 (USER ACTION REQUIRED - after Stripe setup)
+- [ ] Test payment processing with test card 4242 4242 4242 4242 (USER ACTION - after Stripe setup)
 - [x] Create payment confirmation email (paymentHistory.ts) ✅
 - [x] Create payments tRPC router (payments.ts created) ✅
 - [x] Wire PaymentHistory UI to tRPC API (fully integrated) ✅
 - [x] Create deployment checklist (DEPLOYMENT_CHECKLIST.md) ✅
+- [x] Fix Safari rendering and title area quality (gradient + drop-shadow) ✅
+- [x] Replace demo video with extended 30-second version ✅
 
 ## PHASE 20: TRADING 212 BROKER API INTEGRATION
 - [x] Research Trading 212 API documentation
@@ -780,3 +782,46 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Show real-time analysis (included in video) ✅
 - [x] Include buy/sell recommendations (included in video) ✅
 - [x] Replace 8-second placeholder video (integrated) ✅
+
+
+## PREMIUM REDESIGN FOR SUBSCRIPTION JUSTIFICATION
+
+### Phase 1: Design System Overhaul
+- [ ] Create premium color palette (metallic accents, gradient effects)
+- [ ] Upgrade typography (premium fonts, better hierarchy)
+- [ ] Design premium component library (cards, buttons, inputs)
+- [ ] Create sophisticated animation system
+- [ ] Build premium dark theme with depth/shadows
+- [ ] Design premium light theme option
+
+### Phase 2: Homepage Redesign
+- [ ] Redesign hero section (premium layout, better visuals)
+- [ ] Create premium value proposition cards
+- [ ] Design professional feature showcase
+- [ ] Build premium testimonials/social proof section
+- [ ] Create comparison table (free vs premium)
+- [ ] Design premium CTA sections
+
+### Phase 3: Premium Components
+- [ ] Animated stat counters
+- [ ] Premium card hover effects
+- [ ] Smooth scroll animations
+- [ ] Premium gradient overlays
+- [ ] Sophisticated loading states
+- [ ] Premium modal/dialog designs
+
+### Phase 4: Pricing & Subscription
+- [ ] Design premium pricing page
+- [ ] Create tier comparison table
+- [ ] Build premium pricing cards
+- [ ] Add feature comparison matrix
+- [ ] Design premium checkout flow
+- [ ] Create premium success page
+
+### Phase 5: Final Polish
+- [ ] Optimize all animations
+- [ ] Test on all browsers
+- [ ] Mobile responsive polish
+- [ ] Performance optimization
+- [ ] Final QA and testing
+- [ ] Deploy premium version
