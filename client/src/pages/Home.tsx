@@ -34,10 +34,10 @@ export default function Home() {
       <nav className="fixed top-0 w-full z-50 border-b border-border/30 bg-background/80 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-br from-accent-cyan to-accent rounded-lg">
+            <div className="p-2 bg-gradient-to-br from-[oklch(0.65_0.28_200)] to-accent rounded-lg">
               <TrendingUp className="h-5 w-5 text-background" />
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-accent-cyan to-accent-emerald bg-clip-text text-transparent">Vortex Trade</span>
+            <span className="text-xl font-bold bg-gradient-to-r from-[oklch(0.65_0.28_200)] to-[oklch(0.68_0.26_142)] bg-clip-text text-transparent">Vortex Trade</span>
           </div>
           {!isAuthenticated && (
             <Button asChild className="bg-accent hover:bg-accent/90 text-background font-semibold">
@@ -49,20 +49,20 @@ export default function Home() {
 
       {/* Hero Section - Asymmetrical with Device Mockup */}
       <section className="pt-32 pb-20 px-4 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-accent-cyan/5 via-transparent to-accent-gold/5 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[oklch(0.65_0.28_200)]/5 via-transparent to-accent-gold/5 pointer-events-none" />
         
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Left: Text Content */}
             <div className="animate-fade-in-up">
               <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 bg-card border border-border rounded-full">
-                <Star className="h-4 w-4 text-accent-gold fill-accent-gold" />
+                <Star className="h-4 w-4 [color:oklch(0.72_0.22_80)] [fill:oklch(0.72_0.22_80)]" />
                 <p className="text-sm font-semibold text-foreground">Enterprise-Grade AI Trading</p>
               </div>
               
               <h1 className="text-6xl sm:text-7xl font-black mb-6 leading-tight tracking-tighter">
                 <span className="block mb-2">Trade Smarter</span>
-                <span className="bg-gradient-to-r from-accent-cyan via-accent-emerald to-accent-cyan bg-clip-text text-transparent">With AI Precision</span>
+                <span className="bg-gradient-to-r from-[oklch(0.65_0.28_200)] via-[oklch(0.68_0.26_142)] to-[oklch(0.65_0.28_200)] bg-clip-text text-transparent">With AI Precision</span>
               </h1>
               
               <p className="text-lg text-muted-foreground mb-8 leading-relaxed max-w-lg">
@@ -88,20 +88,20 @@ export default function Home() {
 
             {/* Right: Stats Grid (Premium Layout) */}
             <div className="grid grid-cols-2 gap-6">
-              <div className="bg-card/50 border border-border/50 rounded-2xl p-6 backdrop-blur hover:border-accent-cyan/50 transition-colors">
-                <div className="text-4xl font-black text-accent-emerald mb-2">98%</div>
+              <div className="bg-card/50 border border-border/50 rounded-2xl p-6 backdrop-blur hover:[border-color:oklch(0.65_0.28_200)]/50 transition-colors">
+                <div className="text-4xl font-black [color:oklch(0.68_0.26_142)] mb-2">98%</div>
                 <p className="text-sm text-muted-foreground font-medium">ML Model Accuracy</p>
               </div>
-              <div className="bg-card/50 border border-border/50 rounded-2xl p-6 backdrop-blur hover:border-accent-cyan/50 transition-colors">
-                <div className="text-4xl font-black text-accent-cyan mb-2">50K+</div>
+              <div className="bg-card/50 border border-border/50 rounded-2xl p-6 backdrop-blur hover:[border-color:oklch(0.65_0.28_200)]/50 transition-colors">
+                <div className="text-4xl font-black [color:oklch(0.65_0.28_200)] mb-2">50K+</div>
                 <p className="text-sm text-muted-foreground font-medium">Active Traders</p>
               </div>
-              <div className="bg-card/50 border border-border/50 rounded-2xl p-6 backdrop-blur hover:border-accent-gold/50 transition-colors">
-                <div className="text-4xl font-black text-accent-gold mb-2">24/7</div>
+              <div className="bg-card/50 border border-border/50 rounded-2xl p-6 backdrop-blur hover:[border-color:oklch(0.72_0.22_80)]/50 transition-colors">
+                <div className="text-4xl font-black [color:oklch(0.72_0.22_80)] mb-2">24/7</div>
                 <p className="text-sm text-muted-foreground font-medium">Market Monitoring</p>
               </div>
-              <div className="bg-card/50 border border-border/50 rounded-2xl p-6 backdrop-blur hover:border-accent-emerald/50 transition-colors">
-                <div className="text-4xl font-black text-accent-emerald mb-2">87%</div>
+              <div className="bg-card/50 border border-border/50 rounded-2xl p-6 backdrop-blur hover:[border-color:oklch(0.68_0.26_142)]/50 transition-colors">
+                <div className="text-4xl font-black [color:oklch(0.68_0.26_142)] mb-2">87%</div>
                 <p className="text-sm text-muted-foreground font-medium">Win Rate</p>
               </div>
             </div>
@@ -150,14 +150,14 @@ export default function Home() {
                 benefits: ["Live execution", "Position tracking", "Trade history"]
               }
             ].map((feature, idx) => (
-              <div key={idx} className="bg-background border border-border/50 rounded-2xl p-8 hover:border-accent-cyan/50 transition-all hover:shadow-lg hover:shadow-accent-cyan/10 group">
-                <feature.icon className="h-10 w-10 text-accent-cyan mb-4 group-hover:scale-110 transition-transform" />
+              <div key={idx} className="bg-background border border-border/50 rounded-2xl p-8 hover:[border-color:oklch(0.65_0.28_200)]/50 transition-all hover:shadow-lg hover:[box-shadow:0_0_30px_oklch(0.65_0.28_200_/_0.4)]/10 group">
+                <feature.icon className="h-10 w-10 [color:oklch(0.65_0.28_200)] mb-4 group-hover:scale-110 transition-transform" />
                 <h3 className="text-lg font-bold mb-2">{feature.title}</h3>
                 <p className="text-sm text-muted-foreground mb-4">{feature.description}</p>
                 <ul className="space-y-2">
                   {feature.benefits.map((benefit, i) => (
                     <li key={i} className="text-xs text-muted-foreground flex items-center gap-2">
-                      <CheckCircle2 className="h-3 w-3 text-accent-emerald flex-shrink-0" />
+                      <CheckCircle2 className="h-3 w-3 [color:oklch(0.68_0.26_142)] flex-shrink-0" />
                       {benefit}
                     </li>
                   ))}
@@ -188,10 +188,10 @@ export default function Home() {
                 <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-10">
                   <div className="flex flex-col items-center gap-4">
                     <div className="relative w-16 h-16">
-                      <div className="absolute inset-0 rounded-full border-2 border-accent-cyan/20"></div>
+                      <div className="absolute inset-0 rounded-full border-2 [border-color:oklch(0.65_0.28_200)]/20"></div>
                       <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-accent-cyan border-r-accent-cyan animate-spin"></div>
                     </div>
-                    <p className="text-sm text-accent-cyan/80 font-medium">Loading video...</p>
+                    <p className="text-sm [color:oklch(0.65_0.28_200)]/80 font-medium">Loading video...</p>
                   </div>
                 </div>
               )}
@@ -230,17 +230,17 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
             <div className="text-center">
-              <Users className="h-12 w-12 text-accent-cyan mx-auto mb-4" />
+              <Users className="h-12 w-12 [color:oklch(0.65_0.28_200)] mx-auto mb-4" />
               <div className="text-4xl font-black mb-2">50K+</div>
               <p className="text-muted-foreground">Active Traders</p>
             </div>
             <div className="text-center">
-              <Award className="h-12 w-12 text-accent-gold mx-auto mb-4" />
+              <Award className="h-12 w-12 [color:oklch(0.72_0.22_80)] mx-auto mb-4" />
               <div className="text-4xl font-black mb-2">4.8★</div>
               <p className="text-muted-foreground">Average Rating</p>
             </div>
             <div className="text-center">
-              <TrendingUp className="h-12 w-12 text-accent-emerald mx-auto mb-4" />
+              <TrendingUp className="h-12 w-12 [color:oklch(0.68_0.26_142)] mx-auto mb-4" />
               <div className="text-4xl font-black mb-2">£2.3M</div>
               <p className="text-muted-foreground">Profits Generated</p>
             </div>
@@ -271,7 +271,7 @@ export default function Home() {
               <div key={idx} className="bg-card border border-border/50 rounded-2xl p-8">
                 <div className="flex gap-1 mb-4">
                   {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="h-4 w-4 text-accent-gold fill-accent-gold" />
+                    <Star key={i} className="h-4 w-4 [color:oklch(0.72_0.22_80)] [fill:oklch(0.72_0.22_80)]" />
                   ))}
                 </div>
                 <p className="text-muted-foreground mb-6 italic">"{testimonial.text}"</p>
@@ -332,8 +332,8 @@ export default function Home() {
                 key={idx} 
                 className={`rounded-2xl p-8 border transition-all ${
                   plan.highlighted 
-                    ? 'bg-gradient-to-br from-accent-cyan/10 to-accent-emerald/10 border-accent-cyan/50 shadow-lg shadow-accent-cyan/20 relative' 
-                    : 'bg-background border-border/50 hover:border-accent-cyan/50'
+                    ? 'bg-gradient-to-br from-[oklch(0.65_0.28_200)]/10 to-[oklch(0.68_0.26_142)]/10 [border-color:oklch(0.65_0.28_200)]/50 shadow-lg [box-shadow:0_0_30px_oklch(0.65_0.28_200_/_0.4)]/20 relative' 
+                    : 'bg-background border-border/50 hover:[border-color:oklch(0.65_0.28_200)]/50'
                 }`}
               >
                 {plan.highlighted && (
@@ -366,7 +366,7 @@ export default function Home() {
                 <ul className="space-y-3">
                   {plan.features.map((feature, i) => (
                     <li key={i} className="flex items-center gap-3 text-sm">
-                      <CheckCircle2 className="h-4 w-4 text-accent-emerald flex-shrink-0" />
+                      <CheckCircle2 className="h-4 w-4 [color:oklch(0.68_0.26_142)] flex-shrink-0" />
                       {feature}
                     </li>
                   ))}
