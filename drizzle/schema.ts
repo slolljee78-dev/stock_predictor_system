@@ -31,6 +31,7 @@ export const users = mysqlTable("users", {
   
   // Trial fields for freemium model
   trialStartedAt: timestamp("trialStartedAt"),
+  trialExpiresAt: timestamp("trialExpiresAt"),
   watchlistCount: int("watchlistCount").default(0),
 });
 

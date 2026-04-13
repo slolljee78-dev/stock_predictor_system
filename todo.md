@@ -695,6 +695,29 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Test error states
 
 
+## PHASE 24: EMAIL NOTIFICATIONS FOR TRIAL EXPIRATION
+- [x] Create email template system for trial expiration reminders ✅
+- [x] Implement 3-day before trial expiration notification ✅
+- [x] Add 1-day before trial expiration notification ✅
+- [x] Create trial expired notification ✅
+- [x] Implement upgrade recommendation emails ✅
+- [x] Set up background job for daily email checks (framework ready) ✅
+- [ ] Add email preference management UI (future enhancement)
+- [ ] Write tests for email notification system (future enhancement)
+
+## PHASE 25: ADMIN DASHBOARD
+- [x] Create admin dashboard layout and navigation ✅
+- [x] Build user management section (view all users, filter, search) ✅
+- [x] Add subscription analytics (active subscriptions, churn rate, MRR) ✅
+- [x] Create trading signal accuracy metrics dashboard ✅
+- [x] Build system health monitoring (API uptime, error rates, performance) ✅
+- [x] Implement user activity tracking and analytics ✅
+- [x] Add payment history viewer and export functionality ✅
+- [ ] Create admin settings and configuration panel (future enhancement)
+- [x] Implement role-based access control (admin only) ✅
+- [x] Add audit logging for admin actions ✅
+- [ ] Write tests for admin dashboard (future enhancement)
+
 ## PHASE 19: STRIPE PAYMENT COMPLETION
 - [ ] Claim Stripe test sandbox at https://dashboard.stripe.com/claim_sandbox/ (USER ACTION - expires 2026-06-11)
 - [ ] Create Stripe price objects for Starter (£9.99), Pro (£29.99), Elite (£99.99) (USER ACTION)
