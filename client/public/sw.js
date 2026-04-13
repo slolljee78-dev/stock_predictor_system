@@ -3,8 +3,10 @@
  * Handles offline caching, background sync, and push notifications
  */
 
-const CACHE_NAME = 'stock-predictor-v6-network-first-html';
+const CACHE_NAME = 'stock-predictor-v3-redesign-with-testimonials';
 const URLS_TO_CACHE = [
+  '/',
+  '/index.html',
   '/manifest.json',
 ];
 
@@ -40,7 +42,7 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// Fetch event - network-first for HTML, cache-first for assets
+// Fetch event - serve from cache, fallback to network
 self.addEventListener('fetch', event => {
   // Skip non-GET requests
   if (event.request.method !== 'GET') {
@@ -60,24 +62,7 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Network-first strategy for HTML navigation requests
-  if (event.request.mode === 'navigate' || event.request.destination === 'document') {
-    event.respondWith(
-      fetch(event.request)
-        .then(response => {
-          if (!response || response.status !== 200) return response;
-          const clonedResponse = response.clone();
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(event.request, clonedResponse);
-          });
-          return response;
-        })
-        .catch(() => caches.match(event.request))
-    );
-    return;
-  }
-
-  // Cache-first strategy for other assets
+  // Cache-first strategy for other requests
   event.respondWith(
     caches.match(event.request).then(response => {
       if (response) {
@@ -85,17 +70,22 @@ self.addEventListener('fetch', event => {
       }
 
       return fetch(event.request).then(response => {
+        // Don't cache non-successful responses
         if (!response || response.status !== 200 || response.type === 'error') {
           return response;
         }
 
+        // Clone the response
         const responseToCache = response.clone();
+
+        // Cache successful responses
         caches.open(CACHE_NAME).then(cache => {
           cache.put(event.request, responseToCache);
         });
 
         return response;
       }).catch(() => {
+        // Return offline page if available
         return caches.match('/');
       });
     })
@@ -211,4 +201,4 @@ self.addEventListener('periodicsync', event => {
   }
 });
 
-console.log('[Service Worker] Loaded and ready - Network-first for HTML');
+console.log('[Service Worker] Loaded and ready');

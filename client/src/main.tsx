@@ -9,15 +9,14 @@ import { getLoginUrl } from "./const";
 import "./index.css";
 
 // App Version - Updated with new homepage design and video
-const APP_VERSION = '2.0.2-premium-redesign-v5';
+const APP_VERSION = '2.0.1-premium-homepage';
 console.log('[App] Version:', APP_VERSION);
 
 // Initialize Service Worker for PWA (disabled in dev for faster updates)
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {
-    // Add version query to bust CDN cache of sw.js
     navigator.serviceWorker
-      .register(`/sw.js?v=${APP_VERSION}`, { scope: '/' })
+      .register('/sw.js', { scope: '/' })
       .then(() => console.log('[PWA] Service Worker registered'))
       .catch(err => console.error('[PWA] Service Worker registration failed:', err));
   });
