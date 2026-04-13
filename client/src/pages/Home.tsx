@@ -57,16 +57,16 @@ export default function Home() {
             <div className="animate-fade-in-up">
               <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 bg-card border border-border rounded-full">
                 <Star className="h-4 w-4 [color:oklch(0.72_0.22_80)] [fill:oklch(0.72_0.22_80)]" />
-                <p className="text-sm font-semibold text-foreground">Enterprise-Grade AI Trading</p>
+                <p className="text-sm font-semibold text-foreground">AI-Powered Trading Signals</p>
               </div>
               
               <h1 className="text-6xl sm:text-7xl font-black mb-6 leading-tight tracking-tighter">
-                <span className="block mb-2">Trade Smarter</span>
-                <span className="bg-gradient-to-r from-[oklch(0.65_0.28_200)] via-[oklch(0.68_0.26_142)] to-[oklch(0.65_0.28_200)] bg-clip-text text-transparent">With AI Precision</span>
+                <span className="block mb-2">Get AI Signals</span>
+                <span className="bg-gradient-to-r from-[oklch(0.65_0.28_200)] via-[oklch(0.68_0.26_142)] to-[oklch(0.65_0.28_200)] bg-clip-text text-transparent">Trade Your Way</span>
               </h1>
               
               <p className="text-lg text-muted-foreground mb-8 leading-relaxed max-w-lg">
-                Vortex Trade combines advanced machine learning, real-time market analysis, and professional-grade risk management to deliver trading signals that work. Join traders who are already profiting.
+                Get AI-powered buy and sell signals for any stock. Trade them on your preferred broker (Trading 212, Robinhood, Interactive Brokers, etc.). No platform lock-in, pure signal intelligence.
               </p>
 
               {!isAuthenticated && (
@@ -133,21 +133,21 @@ export default function Home() {
               },
               {
                 icon: Shield,
-                title: "Risk Management",
-                description: "Kelly Criterion sizing + correlation analysis",
-                benefits: ["Position sizing", "Drawdown limits", "VaR calculations"]
+                title: "Signal Export",
+                description: "Export signals in multiple formats",
+                benefits: ["CSV export", "Email delivery", "API access"]
               },
               {
                 icon: LineChart,
-                title: "Advanced Analytics",
-                description: "Professional-grade performance metrics",
-                benefits: ["Sharpe ratio", "Max drawdown", "Attribution analysis"]
+                title: "Performance Tracking",
+                description: "Track your signal accuracy and returns",
+                benefits: ["Win rate tracking", "ROI calculation", "Historical analysis"]
               },
               {
                 icon: Smartphone,
-                title: "Broker Integration",
-                description: "Connect to Trading 212, Alpaca, Interactive Brokers",
-                benefits: ["Live execution", "Position tracking", "Trade history"]
+                title: "Multi-Broker Support",
+                description: "Use signals on any broker you prefer",
+                benefits: ["Trading 212", "Robinhood", "Interactive Brokers"]
               }
             ].map((feature, idx) => (
               <div key={idx} className="bg-background border border-border/50 rounded-2xl p-8 hover:[border-color:oklch(0.65_0.28_200)]/50 transition-all hover:shadow-lg hover:[box-shadow:0_0_30px_oklch(0.65_0.28_200_/_0.4)]/10 group">
@@ -178,7 +178,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-5xl font-black mb-4">See It In Action</h2>
-            <p className="text-xl text-muted-foreground">Watch how Vortex Trade generates AI-powered trading signals</p>
+            <p className="text-xl text-muted-foreground">See how our AI analyzes markets and generates high-confidence buy/sell signals in real-time</p>
           </div>
           
           <div className="rounded-2xl overflow-hidden border border-border shadow-2xl relative">

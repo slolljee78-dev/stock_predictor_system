@@ -886,3 +886,16 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Add signal filtering and search UI ✅
 - [x] Test end-to-end signal generation and delivery ✅
 - [ ] Deploy and verify all systems working in production (waiting for Manus fix)
+
+## PHASE 27: PIVOT TO SIGNALS-ONLY PLATFORM
+- [x] Update homepage messaging to emphasize signal provider positioning ✅
+- [x] Remove automated trading execution code (automatedTradeExecutor.ts, automatedTrading.ts) ✅
+- [x] Remove Trading 212 broker integration from UI ✅
+- [ ] Add signal export feature (CSV, JSON, email)
+- [ ] Create signal API endpoint for third-party integration
+- [ ] Build signal accuracy tracking dashboard
+- [ ] Add portfolio performance calculator (users input their trades)
+- [ ] Update pricing page with signals-only value proposition
+- [ ] Complete Stripe payment setup (claim sandbox, create prices)
+- [ ] Test full payment flow with test cards
+- [ ] Deploy and verify production deployment

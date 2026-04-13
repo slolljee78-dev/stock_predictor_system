@@ -4,7 +4,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { validationRouter } from "./routers/validation";
 import { liveMarketRouter } from "./routers/liveMarket";
-import { automationRouter } from "./routers/automation";
+// Removed: automationRouter (signals-only pivot)
 import { paymentsRouter } from "./routers/payments";
 import { brokersRouter } from "./routers/brokers";
 import { templatesRouter } from "./routers/templates";
@@ -26,7 +26,7 @@ export const appRouter = router({
       } as const;
     }),
   }),
-  automation: automationRouter,
+  // Removed: automation router (signals-only pivot)
   payments: paymentsRouter,
   brokers: brokersRouter,
   templates: templatesRouter,

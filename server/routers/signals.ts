@@ -10,6 +10,7 @@ import { signals, stocks, notifications } from "../../drizzle/schema";
 import { eq, desc, and, gte, lte } from "drizzle-orm";
 import { getUserNotifications, markNotificationAsRead } from "../pushNotificationService";
 import { startBackgroundJobs, stopBackgroundJobs, triggerSignalGeneration, getBackgroundJobStatus } from "../backgroundJobs";
+import { exportSignalsAsCSV, exportSignalsAsJSON, generateSignalReport } from "../signalExportService";
 
 export const signalsRouter = router({
   /**
@@ -226,4 +227,40 @@ export const signalsRouter = router({
       return { success: false, message: "Failed to stop background jobs" };
     }
   }),
+
+  exportAsCSV: protectedProcedure
+    .input(z.object({ limit: z.number().default(100), includeAnalysis: z.boolean().default(false) }))
+    .query(async ({ input }) => {
+      try {
+        const csv = await exportSignalsAsCSV({ ...input, format: 'csv' });
+        return { success: true, data: csv };
+      } catch (error) {
+        console.error("[Signals] Export CSV failed:", error);
+        return { success: false, error: "Export failed" };
+      }
+    }),
+
+  exportAsJSON: protectedProcedure
+    .input(z.object({ limit: z.number().default(100), includeAnalysis: z.boolean().default(false) }))
+    .query(async ({ input }) => {
+      try {
+        const json = await exportSignalsAsJSON({ ...input, format: 'json' });
+        return { success: true, data: json };
+      } catch (error) {
+        console.error("[Signals] Export JSON failed:", error);
+        return { success: false, error: "Export failed" };
+      }
+    }),
+
+  generateReport: protectedProcedure
+    .input(z.object({ limit: z.number().default(50) }))
+    .query(async ({ ctx, input }) => {
+      try {
+        const report = await generateSignalReport(ctx.user.id, input.limit);
+        return { success: true, data: report };
+      } catch (error) {
+        console.error("[Signals] Report generation failed:", error);
+        return { success: false, error: "Report generation failed" };
+      }
+    }),
 });
