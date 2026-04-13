@@ -839,5 +839,14 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Implement subtle scroll animations and fade-ins
 - [x] Optimize spacing and whitespace throughout
 - [x] Add feature cards with outcome-focused copy
-- [ ] Test responsive design on all devices
-- [ ] Deploy redesigned version
+- [x] Test responsive design on all devices
+- [x] Deploy redesigned version
+
+## Phase 17: Service Worker Cache Fix
+- [x] Identify service worker caching issue preventing dev updates
+- [x] Disable SW registration in dev mode (import.meta.env.PROD check)
+- [x] Update cache name to invalidate old caches
+- [x] Verify redesign displays correctly in dev preview
+- [x] Fix video preview poster rendering
+- [x] Confirm testimonials and trust sections visible
+- [x] Commit fixes and verify production build
