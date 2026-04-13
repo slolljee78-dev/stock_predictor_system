@@ -254,9 +254,10 @@ export default function Home() {
                 preload="metadata"
                 className="w-full h-full object-contain"
                 controlsList="nodownload"
+                poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1280 720'%3E%3Crect fill='%230f172a' width='1280' height='720'/%3E%3Ccircle cx='640' cy='360' r='60' fill='%2300d9ff' opacity='0.8'/%3E%3Cpolygon points='620,330 620,390 680,360' fill='%23ffffff'/%3E%3C/svg%3E"
                 style={{display: 'block', width: '100%', height: '100%'}}
               >
-                <source src="https://d2xsxph8kpxj0f.cloudfront.net/310519663483836922/knJ3QkdJFvivzkyeUv8kpq/vortex-trade-demo.mp4" type="video/mp4" />
+                <source src="https://d2xsxph8kpxj0f.cloudfront.net/310519663483836922/knJ3QkdJFvivzkyeUv8kpq/vortex-trade-demo_5ac55575.mp4" type="video/mp4" />
                 <p className="text-white p-4">Your browser does not support the video tag.</p>
               </video>
             </div>
