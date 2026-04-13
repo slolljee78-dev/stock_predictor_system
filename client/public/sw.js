@@ -3,7 +3,7 @@
  * Handles offline caching, background sync, and push notifications
  */
 
-const CACHE_NAME = 'stock-predictor-v3-redesign-with-testimonials';
+const CACHE_NAME = 'stock-predictor-v4-premium-freetrade-redesign';
 const URLS_TO_CACHE = [
   '/',
   '/index.html',
