@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vortex Trade - Premium Redesign Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #0a0e27;
+            color: #e0e0e0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #00d9ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        h2 {
+            font-size: 2.5rem;
+            margin: 40px 0 20px 0;
+            color: #ffffff;
+        }
+        
+        p {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: #b0b0b0;
+        }
+        
+        .success {
+            color: #00ff88;
+            font-weight: bold;
+        }
+        
+        .section {
+            margin: 60px 0;
+            padding: 30px;
+            border: 1px solid rgba(0, 217, 255, 0.2);
+            border-radius: 12px;
+            background: rgba(0, 217, 255, 0.05);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .stat-card {
+            background: rgba(0, 217, 255, 0.1);
+            border: 1px solid rgba(0, 217, 255, 0.3);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            color: #00d9ff;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            color: #909090;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✓ OPTION 1: Static HTML Test</h1>
+        
+        <div class="section">
+            <p><span class="success">✓ If you see this page, static HTML files work!</span></p>
+            <p>This proves the web server can serve static content from <code>client/public/</code></p>
+            <p>URL: <code>/premium-test.html</code></p>
+        </div>
+        
+        <h2>Premium Redesign Preview</h2>
+        
+        <div class="section">
+            <h2>Trade Smarter With AI Precision</h2>
+            <p>Vortex Trade combines advanced machine learning, real-time market analysis, and professional-grade risk management to deliver trading signals that work. Join traders who are already profiting.</p>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">98%</div>
+                    <div class="stat-label">ML Model Accuracy</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">50K+</div>
+                    <div class="stat-label">Active Traders</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">Market Monitoring</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">87%</div>
+                    <div class="stat-label">Win Rate</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Trusted by Traders Worldwide</h2>
+            <p><span class="success">✓ This is the section that wasn't rendering in the React app!</span></p>
+            <p>50K+ Active Traders • 4.8★ Average Rating • £2.3M Profits Generated</p>
+        </div>
+        
+        <div class="section">
+            <h2>Professional Trading Tools</h2>
+            <ul style="margin-left: 20px;">
+                <li>Real-time Trading Signals</li>
+                <li>Advanced Risk Management</li>
+                <li>Portfolio Analytics</li>
+                <li>Market Sentiment Analysis</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>Pricing Tiers</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Starter</div>
+                    <div class="stat-number">£0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Professional</div>
+                    <div class="stat-number">£29</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Elite</div>
+                    <div class="stat-number">£99</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Test Result</h2>
+            <p><span class="success">✓ Static HTML renders correctly</span></p>
+            <p>This proves:</p>
+            <ul style="margin-left: 20px;">
+                <li>Web server is working</li>
+                <li>Static files are being served</li>
+                <li>The issue is with React/Vite hot reload</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
