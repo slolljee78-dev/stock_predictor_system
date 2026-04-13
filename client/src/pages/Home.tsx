@@ -58,7 +58,15 @@ export default function Home() {
           <div className="inline-block mb-6 px-4 py-2 bg-accent/10 rounded-full border border-accent/20">
             <p className="text-sm font-semibold text-accent">🚀 Powered by AI & Machine Learning</p>
           </div>
-          <h1 className="text-7xl md:text-9xl font-black mb-8 gradient-text leading-tight tracking-tighter" style={{letterSpacing: '-0.04em'}}>
+          <h1 className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-black mb-8 leading-tight tracking-tighter" style={{
+            letterSpacing: '-0.04em',
+            background: 'linear-gradient(135deg, #00d9ff 0%, #0099ff 50%, #00d9ff 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            filter: 'drop-shadow(0 0 20px rgba(0, 217, 255, 0.3))',
+            textShadow: '0 0 30px rgba(0, 217, 255, 0.2)'
+          }}>
             Catch the<br />Vortex
           </h1>
           <p className="text-lg text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
@@ -128,7 +136,7 @@ export default function Home() {
         <div className="space-y-4 mb-20 w-full">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold mb-2 gradient-text">See It In Action</h2>
-            <p className="text-muted-foreground">Watch how Manus Stock Predictor helps you make smarter trading decisions</p>
+            <p className="text-muted-foreground">Watch Vortex Trade generate AI-powered trading signals in real-time</p>
           </div>
           <div className="card-premium p-0 overflow-hidden w-full shadow-2xl">
             <div className="w-full bg-black" style={{aspectRatio: '16/9'}}>
@@ -137,17 +145,17 @@ export default function Home() {
                 height="100%" 
                 controls 
                 preload="metadata"
-                poster="https://d2xsxph8kpxj0f.cloudfront.net/310519663483836922/knJ3QkdJFvivzkyeUv8kpq/stock_predictor_video_poster-o7v85aHek2B7TV7csZwpMr.webp"
+
                 className="w-full h-full object-contain"
                 controlsList="nodownload"
                 style={{display: 'block', width: '100%', height: '100%'}}
               >
-                <source src="https://d2xsxph8kpxj0f.cloudfront.net/310519663483836922/knJ3QkdJFvivzkyeUv8kpq/stock_predictor_demo_final_3a4107dd.mp4" type="video/mp4" />
+                <source src="https://d2xsxph8kpxj0f.cloudfront.net/310519663483836922/knJ3QkdJFvivzkyeUv8kpq/vortex-trade-demo.mp4" type="video/mp4" />
                 <p className="text-white p-4">Your browser does not support the video tag. Please try a different browser.</p>
               </video>
             </div>
           </div>
-          <p className="text-center text-sm text-muted-foreground">Watch a complete walkthrough of all features</p>
+          <p className="text-center text-sm text-muted-foreground">30-second demo: Trading signals, portfolio analysis, and risk management</p>
         </div>
 
         {/* CTA Section */}
