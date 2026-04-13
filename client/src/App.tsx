@@ -29,6 +29,7 @@ function Router() {
 }
 
 function App() {
+  // Version: Premium Redesign v5 - Production Ready
   return (
     <ErrorBoundary>
       <ThemeProvider
