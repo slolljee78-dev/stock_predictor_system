@@ -2,12 +2,13 @@ import { Button } from "@/components/ui/button";
 import { TrendingUp, BarChart3, Zap, Shield, LineChart, ArrowRight, Star, CheckCircle2, Lock, Cpu } from "lucide-react";
 import { getLoginUrl } from "@/const";
 import { useLocation } from "wouter";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 
 export default function Home() {
   const { user, isAuthenticated, loading } = useAuth();
   const [, setLocation] = useLocation();
+  const [isVideoLoading, setIsVideoLoading] = useState(true);
 
   useEffect(() => {
     if (isAuthenticated && !loading) {
@@ -245,8 +246,20 @@ export default function Home() {
             <p className="text-muted-foreground">Watch how Vortex Trade generates AI-powered trading signals</p>
           </div>
           
-          <div className="rounded-xl overflow-hidden border border-border shadow-2xl">
+          <div className="rounded-xl overflow-hidden border border-border shadow-2xl relative">
             <div className="w-full bg-black" style={{aspectRatio: '16/9'}}>
+              {/* Loading Animation */}
+              {isVideoLoading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-10">
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="relative w-16 h-16">
+                      <div className="absolute inset-0 rounded-full border-2 border-accent-cyan/20"></div>
+                      <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-accent-cyan border-r-accent-cyan animate-spin"></div>
+                    </div>
+                    <p className="text-sm text-accent-cyan/80 font-medium">Loading video...</p>
+                  </div>
+                </div>
+              )}
               <video 
                 width="100%" 
                 height="100%" 
@@ -255,7 +268,8 @@ export default function Home() {
                 className="w-full h-full object-contain"
                 controlsList="nodownload"
                 poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1280 720'%3E%3Crect fill='%230f172a' width='1280' height='720'/%3E%3Ccircle cx='640' cy='360' r='60' fill='%2300d9ff' opacity='0.8'/%3E%3Cpolygon points='620,330 620,390 680,360' fill='%23ffffff'/%3E%3C/svg%3E"
-                style={{display: 'block', width: '100%', height: '100%'}}
+                onCanPlay={() => setIsVideoLoading(false)}
+                onLoadStart={() => setIsVideoLoading(true)}
               >
                 <source src="https://d2xsxph8kpxj0f.cloudfront.net/310519663483836922/knJ3QkdJFvivzkyeUv8kpq/vortex-trade-demo_5ac55575.mp4" type="video/mp4" />
                 <p className="text-white p-4">Your browser does not support the video tag.</p>
