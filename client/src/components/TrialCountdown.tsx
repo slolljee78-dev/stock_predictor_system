@@ -71,7 +71,7 @@ export function TrialCountdown({ trialStatus, onDismiss }: TrialCountdownProps) 
               </h3>
               <p className={`text-sm mt-1 ${getTextColor()} opacity-90`}>
                 {trialStatus.daysRemaining === 0
-                  ? 'Upgrade to a paid plan to continue using Stock Predictor'
+                  ? 'Upgrade to a paid plan to continue using Vortex Trade'
                   : `Your trial expires on ${new Date(trialStatus.trialEndDate).toLocaleDateString('en-US', {
                       month: 'short',
                       day: 'numeric',
@@ -174,7 +174,7 @@ export function getTrialExpirationEmailTemplate(daysRemaining: number, trialEndD
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Your Stock Predictor Trial is Ending Soon</title>
+  <title>Your Vortex Trade Trial is Ending Soon</title>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -247,7 +247,7 @@ export function getTrialExpirationEmailTemplate(daysRemaining: number, trialEndD
     <div class="content">
       <p>Hi there,</p>
       
-      <p>Your Stock Predictor trial will expire on <strong>${emailDate}</strong>. Don't miss out on the advanced AI trading signals and portfolio management tools!</p>
+      <p>Your Vortex Trade trial will expire on <strong>${emailDate}</strong>. Don't miss out on the advanced AI trading signals and portfolio management tools!</p>
 
       <h3>What You'll Lose After Your Trial Ends:</h3>
       <ul class="features">
@@ -274,11 +274,11 @@ export function getTrialExpirationEmailTemplate(daysRemaining: number, trialEndD
 
       <p>If you have any questions, feel free to reach out to our support team.</p>
 
-      <p>Best regards,<br>The Stock Predictor Team</p>
+      <p>Best regards,<br>The Vortex Trade Team</p>
     </div>
 
     <div class="footer">
-      <p>© 2026 Stock Predictor. All rights reserved.</p>
+      <p>© 2026 Vortex Trade. All rights reserved.</p>
       <p><a href="https://manuspredictor.com/help" style="color: #667eea; text-decoration: none;">Help Center</a> | <a href="https://manuspredictor.com/contact" style="color: #667eea; text-decoration: none;">Contact Us</a></p>
     </div>
   </div>

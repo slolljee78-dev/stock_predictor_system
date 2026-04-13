@@ -93,7 +93,7 @@ export default function AppInstallPrompt() {
         </CardHeader>
         <CardContent className="space-y-3">
           <p className="text-sm text-muted-foreground">
-            Install Stock Predictor on your device for quick access and offline support.
+            Install Vortex Trade on your device for quick access and offline support.
           </p>
           <div className="flex gap-2">
             <Button

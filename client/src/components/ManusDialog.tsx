@@ -70,7 +70,7 @@ export function ManusDialog({
             </DialogTitle>
           ) : null}
           <DialogDescription className="text-sm text-[#858481] leading-5 tracking-[-0.154px]">
-            Please login with Manus to continue
+            Sign in to access AI trading signals
           </DialogDescription>
         </div>
 
