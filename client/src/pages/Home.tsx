@@ -181,8 +181,8 @@ export default function Home() {
             <p className="text-xl text-muted-foreground">Watch how Vortex Trade generates AI-powered trading signals</p>
           </div>
           
-          <div className="rounded-2xl overflow-hidden border border-border shadow-2xl">
-            <div className="w-full bg-black" style={{aspectRatio: '16/9'}}>
+          <div className="rounded-2xl overflow-hidden border border-border shadow-2xl relative">
+            <div className="w-full bg-black relative" style={{aspectRatio: '16/9'}}>
               {/* Loading Animation */}
               {isVideoLoading && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-10">
