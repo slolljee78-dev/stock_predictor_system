@@ -21,9 +21,11 @@ export default function Dashboard() {
   });
 
   // Fetch active signals
-  const signalsQuery = trpc.signals.getForUser.useQuery(undefined, {
+  const signalsQuery = trpc.signals.getActiveSignals.useQuery({ limit: 10 }, {
     enabled: !!user,
   });
+
+  const signals = signalsQuery.data?.signals || [];
 
   // Search stocks
   const searchQueryTrpc = trpc.stocks.search.useQuery(searchQuery, {
@@ -31,7 +33,7 @@ export default function Dashboard() {
   });
 
   const watchlist = watchlistQuery.data || [];
-  const signals = signalsQuery.data || [];
+  // signals is already defined above from signalsQuery
 
   return (
     <DashboardLayout>
@@ -90,7 +92,7 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {signals.map(signal => (
+                {signals.map((signal: any) => (
                   <div
                     key={signal.signalId}
                     className="flex items-center justify-between p-4 rounded-lg border border-border/50 hover:bg-accent/30 transition-colors"

@@ -140,10 +140,10 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  £{(stats.monthlyRecurringRevenue / 100).toFixed(2)}
+                  £{((stats.monthlyRecurringRevenue as number) / 100).toFixed(2)}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Total: £{(stats.totalRevenue / 100).toFixed(2)}
+                  Total: £{((stats.totalRevenue as number) / 100).toFixed(2)}
                 </p>
               </CardContent>
             </Card>
@@ -173,7 +173,7 @@ export default function AdminDashboard() {
               <CardContent>
                 <div className="text-2xl font-bold">{signalMetrics?.totalSignals || 0}</div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Avg confidence: {Math.round(signalMetrics?.avgConfidence || 0)}%
+                  Avg confidence: {Math.round((signalMetrics?.avgConfidence as number) || 0)}%
                 </p>
               </CardContent>
             </Card>
@@ -447,7 +447,7 @@ export default function AdminDashboard() {
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Average Confidence</p>
-                        <p className="text-3xl font-bold">{Math.round(signalMetrics.avgConfidence)}%</p>
+                        <p className="text-3xl font-bold">{Math.round((signalMetrics.avgConfidence as number) || 0)}%</p>
                       </div>
                     </div>
 

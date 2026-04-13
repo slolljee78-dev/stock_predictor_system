@@ -32,9 +32,12 @@ export default function StockDetail() {
   });
 
   // Fetch signals for this stock
-  const signalsQuery = trpc.signals.getForStock.useQuery(stockQuery.data?.id || 0, {
-    enabled: !!stockQuery.data?.id,
-  });
+  const signalsQuery = trpc.signals.getSignalsByTicker.useQuery(
+    { ticker: ticker || '', limit: 20 },
+    { enabled: !!ticker }
+  );
+
+  const signals = signalsQuery.data || [];
 
   // Fetch watchlist
   const watchlistQuery = trpc.watchlist.list.useQuery(undefined, {
@@ -46,7 +49,7 @@ export default function StockDetail() {
   const removeFromWatchlistMutation = trpc.watchlist.remove.useMutation();
 
   const stock = stockQuery.data;
-  const signals = signalsQuery.data || [];
+  // signals is already defined above from signalsQuery
   const watchlist = watchlistQuery.data || [];
 
   useEffect(() => {
@@ -195,7 +198,7 @@ export default function StockDetail() {
                   </p>
                 ) : (
                   <div className="space-y-3">
-                    {signals.map(signal => (
+                    {signals.map((signal: any) => (
                       <div
                         key={signal.id}
                         className="flex items-center justify-between p-4 rounded-lg border border-border/50"

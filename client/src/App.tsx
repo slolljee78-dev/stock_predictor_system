@@ -12,6 +12,7 @@ import ValidationSetup from "./pages/ValidationSetup";
 import ValidationDashboard from "./pages/ValidationDashboard";
 import Pricing from "./pages/Pricing";
 import AdminDashboard from "./pages/AdminDashboard";
+import SignalsDashboard from "./pages/SignalsDashboard";
 
 function Router() {
   return (
@@ -24,6 +25,7 @@ function Router() {
       <Route path="/validation/dashboard" component={ValidationDashboard} />
       <Route path="/pricing" component={Pricing} />
       <Route path="/admin" component={AdminDashboard} />
+      <Route path="/signals" component={SignalsDashboard} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
