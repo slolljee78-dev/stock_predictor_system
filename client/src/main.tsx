@@ -12,8 +12,8 @@ import "./index.css";
 const APP_VERSION = '2.0.1-premium-homepage';
 console.log('[App] Version:', APP_VERSION);
 
-// Initialize Service Worker for PWA
-if ('serviceWorker' in navigator) {
+// Initialize Service Worker for PWA (disabled in dev for faster updates)
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
       .register('/sw.js', { scope: '/' })
