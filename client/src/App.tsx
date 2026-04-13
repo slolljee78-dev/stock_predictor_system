@@ -13,6 +13,8 @@ import ValidationDashboard from "./pages/ValidationDashboard";
 import Pricing from "./pages/Pricing";
 import AdminDashboard from "./pages/AdminDashboard";
 import SignalsDashboard from "./pages/SignalsDashboard";
+import AccuracyDashboard from "./pages/AccuracyDashboard";
+import PortfolioTracker from "./pages/PortfolioTracker";
 
 function Router() {
   return (
@@ -26,6 +28,8 @@ function Router() {
       <Route path="/pricing" component={Pricing} />
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/signals" component={SignalsDashboard} />
+      <Route path="/accuracy" component={AccuracyDashboard} />
+      <Route path="/portfolio" component={PortfolioTracker} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

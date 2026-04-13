@@ -891,8 +891,8 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Update homepage messaging to emphasize signal provider positioning ✅
 - [x] Remove automated trading execution code (automatedTradeExecutor.ts, automatedTrading.ts) ✅
 - [x] Remove Trading 212 broker integration from UI ✅
-- [ ] Add signal export feature (CSV, JSON, email)
-- [ ] Create signal API endpoint for third-party integration
+- [x] Add signal export feature (CSV, JSON, email) ✅
+- [x] Create signal API endpoint for third-party integration ✅
 - [ ] Build signal accuracy tracking dashboard
 - [ ] Add portfolio performance calculator (users input their trades)
 - [ ] Update pricing page with signals-only value proposition
