@@ -893,9 +893,9 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Remove Trading 212 broker integration from UI ✅
 - [x] Add signal export feature (CSV, JSON, email) ✅
 - [x] Create signal API endpoint for third-party integration ✅
-- [ ] Build signal accuracy tracking dashboard
-- [ ] Add portfolio performance calculator (users input their trades)
-- [ ] Update pricing page with signals-only value proposition
-- [ ] Complete Stripe payment setup (claim sandbox, create prices)
+- [x] Build signal accuracy tracking dashboard ✅
+- [x] Add portfolio performance calculator (users input their trades) ✅
+- [x] Update pricing page with signals-only value proposition ✅
+- [ ] Complete Stripe payment setup (claim sandbox, create prices) - USER ACTION
 - [ ] Test full payment flow with test cards
 - [ ] Deploy and verify production deployment
