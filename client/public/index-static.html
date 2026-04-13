@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vortex Trade - AI-Powered Trading Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            background: #0a0e27;
+            color: #e0e0e0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 50;
+            border-bottom: 1px solid rgba(0, 217, 255, 0.1);
+            background: rgba(10, 14, 39, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 1rem 0;
+        }
+        
+        .nav-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.25rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #00d9ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #00d9ff, #00ff88);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #0a0e27;
+        }
+        
+        .sign-in-btn {
+            background: linear-gradient(135deg, #00d9ff, #00ff88);
+            color: #0a0e27;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .sign-in-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        /* Hero Section */
+        .hero {
+            padding-top: 120px;
+            padding-bottom: 80px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 30% 50%, rgba(0, 217, 255, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+        }
+        
+        .hero-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 48px;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .hero-text h2 {
+            font-size: 0.875rem;
+            color: #909090;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 24px;
+            font-weight: 600;
+        }
+        
+        .hero-text h1 {
+            font-size: 4rem;
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 24px;
+        }
+        
+        .hero-text h1 .gradient {
+            background: linear-gradient(135deg, #00d9ff, #00ff88, #00d9ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hero-text p {
+            font-size: 1.1rem;
+            color: #b0b0b0;
+            margin-bottom: 32px;
+            line-height: 1.8;
+            max-width: 500px;
+        }
+        
+        .hero-buttons {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 14px 32px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #00d9ff, #00ff88);
+            color: #0a0e27;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 217, 255, 0.3);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid rgba(0, 217, 255, 0.3);
+            color: #e0e0e0;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(0, 217, 255, 0.1);
+            border-color: rgba(0, 217, 255, 0.6);
+        }
+        
+        .hero-features {
+            font-size: 0.9rem;
+            color: #909090;
+        }
+        
+        .hero-features span {
+            display: inline-block;
+            margin-right: 24px;
+        }
+        
+        .hero-features span::before {
+            content: '✓ ';
+            color: #00ff88;
+            font-weight: bold;
+        }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+        
+        .stat-card {
+            background: rgba(0, 217, 255, 0.05);
+            border: 1px solid rgba(0, 217, 255, 0.2);
+            padding: 24px;
+            border-radius: 16px;
+            transition: all 0.3s;
+        }
+        
+        .stat-card:hover {
+            border-color: rgba(0, 217, 255, 0.5);
+            background: rgba(0, 217, 255, 0.1);
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+        }
+        
+        .stat-number.cyan { color: #00d9ff; }
+        .stat-number.green { color: #00ff88; }
+        .stat-number.gold { color: #ffd700; }
+        
+        .stat-label {
+            color: #909090;
+            font-size: 0.9rem;
+        }
+        
+        /* Divider */
+        .divider {
+            height: 80px;
+            margin: 60px 0;
+            position: relative;
+        }
+        
+        .divider svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        
+        /* Testimonials Section */
+        .testimonials {
+            padding: 80px 0;
+            background: rgba(0, 217, 255, 0.02);
+        }
+        
+        .testimonials h2 {
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 60px;
+            text-align: center;
+        }
+        
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+        
+        .testimonial-card {
+            background: rgba(0, 217, 255, 0.05);
+            border: 1px solid rgba(0, 217, 255, 0.2);
+            padding: 32px;
+            border-radius: 16px;
+        }
+        
+        .testimonial-stars {
+            color: #ffd700;
+            margin-bottom: 16px;
+            font-size: 1.1rem;
+        }
+        
+        .testimonial-text {
+            color: #b0b0b0;
+            margin-bottom: 20px;
+            line-height: 1.8;
+        }
+        
+        .testimonial-author {
+            font-weight: 600;
+            color: #e0e0e0;
+        }
+        
+        .testimonial-role {
+            color: #909090;
+            font-size: 0.9rem;
+        }
+        
+        /* Trust Badges */
+        .trust-section {
+            padding: 40px;
+            background: rgba(0, 217, 255, 0.05);
+            border: 1px solid rgba(0, 217, 255, 0.2);
+            border-radius: 16px;
+            text-align: center;
+            margin-top: 60px;
+        }
+        
+        .trust-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 24px;
+            margin-top: 32px;
+        }
+        
+        .metric {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00d9ff;
+        }
+        
+        .metric-label {
+            color: #909090;
+            font-size: 0.9rem;
+            margin-top: 8px;
+        }
+        
+        /* Pricing Section */
+        .pricing {
+            padding: 80px 0;
+        }
+        
+        .pricing h2 {
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 60px;
+            text-align: center;
+        }
+        
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 32px;
+        }
+        
+        .pricing-card {
+            background: rgba(0, 217, 255, 0.05);
+            border: 1px solid rgba(0, 217, 255, 0.2);
+            padding: 40px;
+            border-radius: 16px;
+            position: relative;
+            transition: all 0.3s;
+        }
+        
+        .pricing-card:hover {
+            border-color: rgba(0, 217, 255, 0.6);
+            transform: translateY(-5px);
+        }
+        
+        .pricing-card.popular {
+            border-color: rgba(0, 217, 255, 0.6);
+            background: rgba(0, 217, 255, 0.1);
+            transform: scale(1.05);
+        }
+        
+        .pricing-card.popular::before {
+            content: 'POPULAR';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #00d9ff, #00ff88);
+            color: #0a0e27;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        
+        .pricing-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 16px;
+        }
+        
+        .pricing-price {
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+        }
+        
+        .pricing-price .currency {
+            font-size: 1.5rem;
+        }
+        
+        .pricing-period {
+            color: #909090;
+            margin-bottom: 32px;
+        }
+        
+        .pricing-features {
+            list-style: none;
+            margin-bottom: 32px;
+        }
+        
+        .pricing-features li {
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(0, 217, 255, 0.1);
+            color: #b0b0b0;
+        }
+        
+        .pricing-features li::before {
+            content: '✓ ';
+            color: #00ff88;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        
+        /* Footer */
+        footer {
+            padding: 40px 0;
+            border-top: 1px solid rgba(0, 217, 255, 0.1);
+            text-align: center;
+            color: #909090;
+        }
+        
+        @media (max-width: 768px) {
+            .hero-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .hero-text h1 {
+                font-size: 2.5rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .pricing-card.popular {
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-content">
+            <div class="logo">
+                <div class="logo-icon">↗</div>
+                Vortex Trade
+            </div>
+            <button class="sign-in-btn" onclick="alert('Sign in functionality')">Sign In</button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h2>Enterprise-Grade AI Trading</h2>
+                    <h1>Trade Smarter<br><span class="gradient">With AI Precision</span></h1>
+                    <p>Vortex Trade combines advanced machine learning, real-time market analysis, and professional-grade risk management to deliver trading signals that work. Join traders who are already profiting.</p>
+                    
+                    <div class="hero-buttons">
+                        <button class="btn btn-primary" onclick="alert('Start Free Trial')">
+                            Start Free Trial
+                            <span>→</span>
+                        </button>
+                        <button class="btn btn-secondary" onclick="document.getElementById('features').scrollIntoView()">
+                            View Features
+                        </button>
+                    </div>
+                    
+                    <div class="hero-features">
+                        <span>No credit card required</span>
+                        <span>7-day full access</span>
+                        <span>Cancel anytime</span>
+                    </div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number cyan">98%</div>
+                        <div class="stat-label">ML Model Accuracy</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number cyan">50K+</div>
+                        <div class="stat-label">Active Traders</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number gold">24/7</div>
+                        <div class="stat-label">Market Monitoring</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number green">87%</div>
+                        <div class="stat-label">Win Rate</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Divider -->
+    <div class="divider">
+        <svg viewBox="0 0 1200 100" preserveAspectRatio="none">
+            <path d="M0,50 Q300,0 600,50 T1200,50 L1200,100 L0,100 Z" fill="rgba(0, 217, 255, 0.05)"/>
+        </svg>
+    </div>
+
+    <!-- Testimonials -->
+    <section class="testimonials" id="features">
+        <div class="container">
+            <h2>Trusted by Traders Worldwide</h2>
+            
+            <div class="trust-section">
+                <p style="color: #b0b0b0; font-size: 1.1rem;">50K+ Active Traders • 4.8★ Average Rating • £2.3M Profits Generated</p>
+            </div>
+            
+            <div class="testimonials-grid" style="margin-top: 60px;">
+                <div class="testimonial-card">
+                    <div class="testimonial-stars">★★★★★</div>
+                    <div class="testimonial-text">"The accuracy of the trading signals is incredible. I've been using Vortex Trade for 3 months and my portfolio is up 23%."</div>
+                    <div class="testimonial-author">James Mitchell</div>
+                    <div class="testimonial-role">Professional Trader</div>
+                </div>
+                
+                <div class="testimonial-card">
+                    <div class="testimonial-stars">★★★★★</div>
+                    <div class="testimonial-text">"Finally, an AI trading platform that actually works. The risk management features have saved me from major losses multiple times."</div>
+                    <div class="testimonial-author">Sarah Chen</div>
+                    <div class="testimonial-role">Hedge Fund Manager</div>
+                </div>
+                
+                <div class="testimonial-card">
+                    <div class="testimonial-stars">★★★★★</div>
+                    <div class="testimonial-text">"As a beginner, I was nervous about trading. Vortex Trade's signals and education resources made it easy to get started safely."</div>
+                    <div class="testimonial-author">Michael Rodriguez</div>
+                    <div class="testimonial-role">Retail Investor</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section class="pricing">
+        <div class="container">
+            <h2>Simple, Transparent Pricing</h2>
+            
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <div class="pricing-name">Starter</div>
+                    <div class="pricing-price"><span class="currency">£</span>0</div>
+                    <div class="pricing-period">Forever free</div>
+                    <ul class="pricing-features">
+                        <li>Basic trading signals</li>
+                        <li>Market analysis tools</li>
+                        <li>Community access</li>
+                        <li>Email support</li>
+                    </ul>
+                    <button class="btn btn-secondary" style="width: 100%;">Get Started</button>
+                </div>
+                
+                <div class="pricing-card popular">
+                    <div class="pricing-name">Professional</div>
+                    <div class="pricing-price"><span class="currency">£</span>29<span style="font-size: 1rem; color: #909090;">/month</span></div>
+                    <div class="pricing-period">Most popular</div>
+                    <ul class="pricing-features">
+                        <li>Advanced trading signals</li>
+                        <li>Real-time market analysis</li>
+                        <li>Risk management tools</li>
+                        <li>Priority support</li>
+                        <li>Custom alerts</li>
+                    </ul>
+                    <button class="btn btn-primary" style="width: 100%;">Start Free Trial</button>
+                </div>
+                
+                <div class="pricing-card">
+                    <div class="pricing-name">Elite</div>
+                    <div class="pricing-price"><span class="currency">£</span>99<span style="font-size: 1rem; color: #909090;">/month</span></div>
+                    <div class="pricing-period">For professionals</div>
+                    <ul class="pricing-features">
+                        <li>Premium trading signals</li>
+                        <li>Advanced analytics</li>
+                        <li>Portfolio management</li>
+                        <li>24/7 phone support</li>
+                        <li>API access</li>
+                    </ul>
+                    <button class="btn btn-secondary" style="width: 100%;">Contact Sales</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>© 2026 Vortex Trade. All rights reserved. | FCA Regulated | Secure & Encrypted</p>
+        </div>
+    </footer>
+</body>
+</html>
