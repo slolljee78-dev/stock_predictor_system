@@ -3,7 +3,7 @@
  * Handles offline caching, background sync, and push notifications
  */
 
-const CACHE_NAME = 'stock-predictor-v3-redesign-with-testimonials';
+const CACHE_NAME = 'stock-predictor-v4-network-first';
 const URLS_TO_CACHE = [
   '/',
   '/index.html',
@@ -42,7 +42,7 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// Fetch event - serve from cache, fallback to network
+// Fetch event - network-first for HTML, cache-first for assets
 self.addEventListener('fetch', event => {
   // Skip non-GET requests
   if (event.request.method !== 'GET') {
@@ -62,7 +62,41 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Cache-first strategy for other requests
+  // Network-first strategy for HTML documents
+  if (event.request.headers.get('accept')?.includes('text/html')) {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          // Don't cache non-successful responses
+          if (!response || response.status !== 200 || response.type === 'error') {
+            return response;
+          }
+
+          // Clone the response
+          const responseToCache = response.clone();
+
+          // Cache successful responses
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, responseToCache);
+          });
+
+          return response;
+        })
+        .catch(() => {
+          // Return cached version if network fails
+          return caches.match(event.request).then(cachedResponse => {
+            if (cachedResponse) {
+              return cachedResponse;
+            }
+            // Return offline page if available
+            return caches.match('/');
+          });
+        })
+    );
+    return;
+  }
+
+  // Cache-first strategy for other assets (JS, CSS, images)
   event.respondWith(
     caches.match(event.request).then(response => {
       if (response) {
@@ -201,4 +235,4 @@ self.addEventListener('periodicsync', event => {
   }
 });
 
-console.log('[Service Worker] Loaded and ready');
+console.log('[Service Worker] Loaded and ready - Network-first strategy for HTML');
