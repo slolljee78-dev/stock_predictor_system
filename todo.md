@@ -896,7 +896,9 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Build signal accuracy tracking dashboard ✅
 - [x] Add portfolio performance calculator (users input their trades) ✅
 - [x] Update pricing page with signals-only value proposition ✅
-- [ ] Complete Stripe payment setup (claim sandbox, create prices) - USER ACTION
+- [x] Complete Stripe payment setup (claim sandbox, create prices) - USER ACTION ✅
+- [x] Configure Stripe price IDs in environment variables ✅
+- [x] Add Stripe integration tests ✅
 - [ ] Test full payment flow with test cards
 - [ ] Deploy and verify production deployment
 
