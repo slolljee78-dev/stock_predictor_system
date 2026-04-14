@@ -912,10 +912,18 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Deploy and verify risk strategy feature (integrated into Dashboard) ✅
 
 ## PHASE 29: SUBSCRIPTION TIER COMPARISON
-- [ ] Create side-by-side comparison component for all tiers
-- [ ] Add comparison table with feature matrix
-- [ ] Implement tier highlighting (recommended tier)
-- [ ] Add comparison view to pricing page
-- [ ] Create mobile-responsive comparison layout
-- [ ] Add CTA buttons in comparison for each tier
-- [ ] Test comparison UI on different screen sizes
+- [x] Create side-by-side comparison component for all tiers ✅
+- [x] Add comparison table with feature matrix ✅
+- [x] Implement tier highlighting (recommended tier) ✅
+- [x] Add comparison view to pricing page ✅
+- [x] Create mobile-responsive comparison layout ✅
+- [x] Add CTA buttons in comparison for each tier ✅
+- [x] Test comparison UI on different screen sizes ✅
+
+## PHASE 30: BUG FIX - tRPC API ERROR
+- [x] Identify tRPC API returning HTML instead of JSON error ✅
+- [x] Root cause: Vite middleware catch-all intercepting /api/trpc requests ✅
+- [x] Fix: Add /api/ route guard in Vite middleware to skip API routes ✅
+- [x] Verify API endpoints return valid JSON ✅
+- [x] Test homepage loads without errors ✅
+- [x] Confirm all tRPC procedures accessible ✅
