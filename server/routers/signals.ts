@@ -11,6 +11,7 @@ import { eq, desc, and, gte, lte } from "drizzle-orm";
 import { getUserNotifications, markNotificationAsRead } from "../pushNotificationService";
 import { startBackgroundJobs, stopBackgroundJobs, triggerSignalGeneration, getBackgroundJobStatus } from "../backgroundJobs";
 import { exportSignalsAsCSV, exportSignalsAsJSON, generateSignalReport } from "../signalExportService";
+import { hasReachedSignalLimit } from "../lib/usageTracking";
 
 export const signalsRouter = router({
   /**

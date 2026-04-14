@@ -13,6 +13,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { RiskStrategySelector, RiskStrategyBadge } from "@/components/RiskStrategySelector";
 import { WatchlistManager } from "@/components/WatchlistManager";
 import { DraggableStockList } from "@/components/DraggableStockList";
+import { UsageAnalyticsDashboard } from "@/components/UsageAnalyticsDashboard";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -54,6 +55,27 @@ export default function Dashboard() {
             <RiskStrategyBadge />
           </div>
         </div>
+
+        {/* Usage Analytics for Free Tier Users */}
+        {user?.subscriptionTier === "free" && (
+          <UsageAnalyticsDashboard
+            analytics={{
+              tier: "free",
+              signalsUsedToday: 0,
+              signalsLimit: 5,
+              signalsRemaining: 5,
+              stocksMonitored: watchlist.length,
+              stocksLimit: 3,
+              stocksRemaining: Math.max(0, 3 - watchlist.length),
+              watchlistsCount: 1,
+              watchlistsLimit: 1,
+              watchlistsRemaining: 0,
+              quotaPercentage: Math.round((watchlist.length / 3) * 100),
+              isAtLimit: watchlist.length >= 3,
+            }}
+            showUpgradePrompt={true}
+          />
+        )}
 
         <Card className="border-border/50 bg-gradient-to-br from-background to-background/50">
           <CardHeader>

@@ -22,6 +22,8 @@ import {
   X,
 } from "lucide-react";
 import { useLocation } from "wouter";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { UpgradePrompt } from "@/components/UpgradePrompt";
 
 interface Signal {
   id: number;
@@ -49,6 +51,7 @@ export default function RealtimeSignalFeed({
   autoRefresh = true,
   refreshInterval = 5000,
 }: RealtimeSignalFeedProps) {
+  const { user } = useAuth();
   const [, setLocation] = useLocation();
   const [signals, setSignals] = useState<Signal[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -275,6 +278,15 @@ export default function RealtimeSignalFeed({
             </div>
           </div>
         </div>
+
+        {/* Upgrade Prompt for Free Tier Users */}
+        {user?.subscriptionTier === "free" && signals.length > 0 && (
+          <UpgradePrompt
+            type="signal-limit"
+            message="You are viewing a limited set of signals. Upgrade to access unlimited trading signals and advanced features."
+            onDismiss={() => {}}
+          />
+        )}
 
         {/* Export Buttons */}
         <div className="flex gap-2">
