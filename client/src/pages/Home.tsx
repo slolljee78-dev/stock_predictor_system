@@ -5,6 +5,7 @@ import { useLocation } from "wouter";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 
+// Force rebuild - Ultra Premium Redesign v2
 export default function Home() {
   const { user, isAuthenticated, loading } = useAuth();
   const [, setLocation] = useLocation();
