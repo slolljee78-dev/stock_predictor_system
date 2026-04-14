@@ -16,6 +16,22 @@ interface ThemeProviderProps {
   switchable?: boolean;
 }
 
+// Detect OS theme preference
+function getOSThemePreference(): Theme {
+  if (typeof window === "undefined") return "light";
+  
+  // Check if user has a stored preference
+  const stored = localStorage.getItem("theme");
+  if (stored) return (stored as Theme);
+  
+  // Check OS preference using prefers-color-scheme media query
+  if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    return "dark";
+  }
+  
+  return "light";
+}
+
 export function ThemeProvider({
   children,
   defaultTheme = "light",
@@ -23,8 +39,7 @@ export function ThemeProvider({
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(() => {
     if (switchable) {
-      const stored = localStorage.getItem("theme");
-      return (stored as Theme) || defaultTheme;
+      return getOSThemePreference();
     }
     return defaultTheme;
   });

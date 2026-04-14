@@ -1038,3 +1038,11 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Test dark mode across all pages ✅
 - [x] Verify contrast ratios for accessibility ✅
 - [x] Create checkpoint after dark mode completion ✅
+
+## PHASE 40: OS THEME DETECTION
+- [x] Implement OS theme detection using prefers-color-scheme media query ✅
+- [x] Update ThemeProvider to detect OS preference on first visit ✅
+- [x] Apply detected theme only if no stored preference exists ✅
+- [x] Test on Windows, macOS, and Linux systems ✅
+- [x] Verify theme persists after page refresh ✅
+- [x] Create checkpoint after OS theme detection completion ✅
