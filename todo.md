@@ -1068,3 +1068,32 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Test free tier access and feature limits ✅
 - [x] Verify free tier users can upgrade to paid tiers ✅
 - [x] Create checkpoint after free tier implementation ✅
+
+## PHASE 43: OWNER-ONLY LINKS & SUGGESTED FEATURES
+- [ ] Add owner-only admin link in header (visible only to owner)
+- [ ] Add owner-only dashboard link in header (visible only to owner)
+- [ ] Implement role-based access control for owner links
+- [ ] Add email verification requirement for free tier signups
+- [ ] Build usage analytics dashboard showing signal count and quota
+- [ ] Create upgrade prompts when users hit feature limits
+- [ ] Test owner-only link visibility and access
+- [ ] Verify email verification flow works correctly
+- [ ] Test upgrade prompts trigger at correct limits
+- [ ] Create checkpoint after all features completion
+
+
+## PHASE 43: OWNER-ONLY LINKS & SUGGESTED FEATURES
+- [x] Add owner-only admin link in header (visible only to owner)
+- [x] Add owner-only dashboard link in header (visible only to owner)
+- [x] Implement role-based access control for owner links
+- [x] Create backend owner access utilities (ownerAccess.ts)
+- [x] Create usage tracking utilities (usageTracking.ts)
+- [x] Build UsageAnalyticsDashboard component
+- [x] Create UpgradePrompt component for feature limits
+- [x] Create OwnerAdminLink component
+- [ ] Integrate UsageAnalyticsDashboard into Dashboard page
+- [ ] Integrate UpgradePrompt into RealtimeSignalFeed
+- [ ] Add usage tracking to backend routers
+- [ ] Test owner-only link visibility and access
+- [ ] Test upgrade prompts trigger at correct limits
+- [ ] Create checkpoint after all features completion

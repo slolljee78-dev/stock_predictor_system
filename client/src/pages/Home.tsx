@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { TrendingUp, BarChart3, Zap, Shield, LineChart, ArrowRight, Star, CheckCircle2, Lock, Cpu, Smartphone, TrendingDown, Award, Users } from "lucide-react";
+import { TrendingUp, BarChart3, Zap, Shield, LineChart, ArrowRight, Star, CheckCircle2, Lock, Cpu, Smartphone, TrendingDown, Award, Users, Settings } from "lucide-react";
 import { getLoginUrl } from "@/const";
 import { useLocation } from "wouter";
 import { useEffect, useState } from "react";
@@ -28,6 +28,11 @@ export default function Home() {
     );
   }
 
+  // Auto-redirect non-admin users to dashboard
+  if (isAuthenticated && user?.role !== 'admin' && !loading) {
+    return null; // Will redirect via useEffect
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Premium Navigation */}
@@ -40,7 +45,17 @@ export default function Home() {
             <span className="text-xl font-bold bg-gradient-to-r from-[oklch(0.65_0.28_200)] to-[oklch(0.68_0.26_142)] bg-clip-text text-transparent">Vortex Trade</span>
           </div>
           <div className="flex items-center gap-4">
-            {isAuthenticated && (
+            {isAuthenticated && user?.role === 'admin' && (
+              <>
+                <Button asChild variant="outline" className="text-foreground">
+                  <a href="/admin">Admin Dashboard</a>
+                </Button>
+                <Button asChild className="bg-accent hover:bg-accent/90 text-background font-semibold">
+                  <a href="/dashboard">Dashboard</a>
+                </Button>
+              </>
+            )}
+            {isAuthenticated && user?.role !== 'admin' && (
               <Button asChild className="bg-accent hover:bg-accent/90 text-background font-semibold">
                 <a href="/dashboard">Dashboard</a>
               </Button>
