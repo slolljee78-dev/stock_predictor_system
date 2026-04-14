@@ -22,6 +22,7 @@ import { getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
 import { LayoutDashboard, LogOut, PanelLeft, Users, TrendingUp } from "lucide-react";
 import NotificationCenter from "./NotificationCenter";
+import { ThemeToggle } from "./ThemeToggle";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
@@ -251,7 +252,10 @@ function DashboardLayoutContent({
                 {activeMenuItem?.label ?? "Dashboard"}
               </span>
             </div>
-            <NotificationCenter />
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <NotificationCenter />
+            </div>
           </div>
         )}
         {isMobile && (
@@ -266,7 +270,10 @@ function DashboardLayoutContent({
                 </div>
               </div>
             </div>
-            <NotificationCenter />
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <NotificationCenter />
+            </div>
           </div>
         )}
         <main className="flex-1 p-4">{children}</main>
