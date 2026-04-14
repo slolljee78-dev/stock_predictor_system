@@ -907,4 +907,4 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Add risk strategy settings to user dashboard (via RiskStrategySelector) ✅
 - [x] Update signal generation prompts for each strategy ✅
 - [x] Test signal generation with different risk strategies ✅
-- [ ] Deploy and verify risk strategy feature (waiting for Manus deployment fix)
+- [x] Deploy and verify risk strategy feature (integrated into Dashboard) ✅
