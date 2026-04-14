@@ -12,6 +12,7 @@ import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { RiskStrategySelector, RiskStrategyBadge } from "@/components/RiskStrategySelector";
 import { WatchlistManager } from "@/components/WatchlistManager";
+import { DraggableStockList } from "@/components/DraggableStockList";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -109,13 +110,13 @@ export default function Dashboard() {
           selectedGroupId={selectedWatchlistId}
         />
 
-        {/* Watchlist Section */}
+        {/* Watchlist Section with Drag-and-Drop */}
         <Card className="border-border/50">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle>Your Watchlist</CardTitle>
-                <CardDescription>Tracked stocks and ETFs</CardDescription>
+                <CardDescription>Drag to reorder • Click to view details</CardDescription>
               </div>
               <Button
                 size="sm"
@@ -128,42 +129,21 @@ export default function Dashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            {watchlist.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground mb-4">No stocks in your watchlist yet</p>
-                <Button
-                  variant="outline"
-                  onClick={() => setSearchQuery('AAPL')}
-                >
-                  Add Your First Stock
-                </Button>
-              </div>
+            {selectedWatchlistId ? (
+              <DraggableStockList
+                stocks={watchlist}
+                groupId={selectedWatchlistId}
+                onStocksReordered={() => {
+                  // Refresh watchlist after reordering
+                }}
+                onStockRemoved={() => {
+                  // Refresh watchlist after removing stock
+                }}
+              />
             ) : (
-              <div className="space-y-2">
-                {watchlist.map(item => (
-                  <div
-                    key={item.id}
-                    className="flex items-center justify-between p-4 rounded-lg border border-border/50 hover:bg-accent/30 transition-colors cursor-pointer"
-                    onClick={() => setLocation(`/stock/${item.ticker}`)}
-                  >
-                    <div>
-                      <p className="font-semibold">{item.ticker}</p>
-                      <p className="text-sm text-muted-foreground">{item.name}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {item.alertOnBuy && (
-                        <Badge variant="outline" className="text-xs">
-                          Buy Alerts
-                        </Badge>
-                      )}
-                      {item.alertOnSell && (
-                        <Badge variant="outline" className="text-xs">
-                          Sell Alerts
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                ))}
+              <div className="text-center py-8">
+                <p className="text-muted-foreground mb-4">Select a watchlist to view and manage stocks</p>
+                <p className="text-xs text-muted-foreground">Use the watchlist manager above to create or select a watchlist</p>
               </div>
             )}
           </CardContent>

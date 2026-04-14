@@ -965,3 +965,13 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Verify stock order persists after page refresh ✅
 - [x] Write tests for stock reordering procedures ✅
 - [x] Create checkpoint after feature completion ✅
+
+## PHASE 34: INTEGRATE DRAGGABLE STOCK LIST INTO DASHBOARD
+- [x] Update Dashboard to import and use DraggableStockList component ✅
+- [x] Add watchlist group selection dropdown to Dashboard ✅
+- [x] Fetch stocks for selected watchlist group ✅
+- [x] Replace static watchlist display with DraggableStockList ✅
+- [x] Test drag-and-drop functionality in Dashboard ✅
+- [x] Verify stock order persists after page refresh ✅
+- [x] Test on multiple browsers for compatibility ✅
+- [x] Create checkpoint after integration completion ✅

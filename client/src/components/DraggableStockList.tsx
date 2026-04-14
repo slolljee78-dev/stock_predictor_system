@@ -10,7 +10,7 @@ interface Stock {
   name: string;
   alertOnBuy: number;
   alertOnSell: number;
-  displayOrder: number;
+  displayOrder?: number;
 }
 
 interface DraggableStockListProps {
@@ -27,7 +27,7 @@ export function DraggableStockList({
   onStockRemoved,
 }: DraggableStockListProps) {
   const [localStocks, setLocalStocks] = useState<Stock[]>(
-    [...stocks].sort((a, b) => a.displayOrder - b.displayOrder)
+    [...stocks].sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0))
   );
   const [draggedItem, setDraggedItem] = useState<number | null>(null);
   const [dragOverItem, setDragOverItem] = useState<number | null>(null);
