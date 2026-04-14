@@ -953,3 +953,15 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Write tests for watchlist management procedures ✅
 - [x] Verify watchlist renaming works in browser ✅
 - [x] Create checkpoint after feature completion ✅
+
+## PHASE 33: DRAG-AND-DROP STOCK REORDERING
+- [x] Add displayOrder field to watchlists table for stock ordering ✅
+- [x] Generate and apply migration SQL for watchlist ordering ✅
+- [x] Create tRPC procedure for reordering stocks within watchlist ✅
+- [x] Build DraggableStockList component with drag-and-drop functionality ✅
+- [x] Integrate drag-and-drop into watchlist display ✅
+- [x] Add visual feedback during drag operations (animations, hover states) ✅
+- [x] Test drag-and-drop functionality across browsers ✅
+- [x] Verify stock order persists after page refresh ✅
+- [x] Write tests for stock reordering procedures ✅
+- [x] Create checkpoint after feature completion ✅

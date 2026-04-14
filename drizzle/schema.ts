@@ -144,6 +144,8 @@ export const watchlists = mysqlTable("watchlists", {
   emailNotifications: int("emailNotifications").default(1).notNull(),
   /** In-app notification enabled for this stock */
   inAppNotifications: int("inAppNotifications").default(1).notNull(),
+  /** Display order within watchlist group for drag-and-drop reordering */
+  displayOrder: int("displayOrder").default(0).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

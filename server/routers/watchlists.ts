@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
-import { watchlistGroups } from "../../drizzle/schema";
+import { watchlistGroups, watchlists } from "../../drizzle/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 
@@ -246,6 +246,61 @@ export const watchlistsRouter = router({
       await db
         .delete(watchlistGroups)
         .where(eq(watchlistGroups.id, input.groupId));
+
+      return { success: true };
+    }),
+
+  /**
+   * Reorder stocks within a watchlist group
+   * Updates displayOrder for each stock
+   */
+  reorderStocks: protectedProcedure
+    .input(
+      z.object({
+        groupId: z.number(),
+        stockIds: z.array(z.number()),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database connection failed",
+        });
+      }
+
+      // Verify user owns this watchlist group
+      const groups = await db
+        .select({ id: watchlistGroups.id })
+        .from(watchlistGroups)
+        .where(
+          and(
+            eq(watchlistGroups.id, input.groupId),
+            eq(watchlistGroups.userId, ctx.user.id)
+          )
+        )
+        .limit(1);
+
+      if (groups.length === 0) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Cannot reorder stocks in a watchlist you don't own",
+        });
+      }
+
+      // Update displayOrder for each stock
+      for (let i = 0; i < input.stockIds.length; i++) {
+        await db
+          .update(watchlists)
+          .set({ displayOrder: i })
+          .where(
+            and(
+              eq(watchlists.id, input.stockIds[i]),
+              eq(watchlists.userId, ctx.user.id)
+            )
+          );
+      }
 
       return { success: true };
     }),
