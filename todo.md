@@ -947,9 +947,9 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Generate and apply migration SQL for new watchlist table structure ✅
 - [x] Update watchlists table to reference watchlistGroups ✅
 - [x] Create tRPC procedures: createWatchlist, renameWatchlist, deleteWatchlist, listWatchlists ✅
-- [ ] Add watchlist management UI component with rename/delete dialogs
-- [ ] Integrate watchlist selector into Dashboard
-- [ ] Add watchlist context to track active watchlist
-- [ ] Write tests for watchlist management procedures
-- [ ] Verify watchlist renaming works in browser
-- [ ] Create checkpoint after feature completion
+- [x] Add watchlist management UI component with rename/delete dialogs ✅
+- [x] Integrate watchlist selector into Dashboard ✅
+- [x] Add watchlist context to track active watchlist ✅
+- [x] Write tests for watchlist management procedures ✅
+- [x] Verify watchlist renaming works in browser ✅
+- [x] Create checkpoint after feature completion ✅

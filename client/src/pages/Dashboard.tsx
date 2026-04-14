@@ -11,11 +11,13 @@ import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { RiskStrategySelector, RiskStrategyBadge } from "@/components/RiskStrategySelector";
+import { WatchlistManager } from "@/components/WatchlistManager";
 
 export default function Dashboard() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedWatchlistId, setSelectedWatchlistId] = useState<number | undefined>();
 
   // Fetch watchlist
   const watchlistQuery = trpc.watchlist.list.useQuery(undefined, {
@@ -100,6 +102,12 @@ export default function Dashboard() {
 
         {/* Real-Time Signal Feed */}
         <RealtimeSignalFeed limit={15} autoRefresh={true} refreshInterval={5000} />
+
+        {/* Watchlist Management */}
+        <WatchlistManager 
+          onSelectWatchlist={setSelectedWatchlistId}
+          selectedGroupId={selectedWatchlistId}
+        />
 
         {/* Watchlist Section */}
         <Card className="border-border/50">
