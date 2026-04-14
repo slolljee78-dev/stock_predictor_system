@@ -16,6 +16,7 @@ import { DraggableStockList } from "@/components/DraggableStockList";
 import { UsageAnalyticsDashboard } from "@/components/UsageAnalyticsDashboard";
 import { EmailVerificationModal } from "@/components/EmailVerificationModal";
 import { OnboardingTutorial } from "@/components/OnboardingTutorial";
+import { LiveStockTicker } from "@/components/LiveStockTicker";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -147,6 +148,9 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Live Market Ticker */}
+        <LiveStockTicker />
 
         {/* Real-Time Signal Feed - Full Width */}
         <Card className="border-slate-800/50 bg-gradient-to-br from-slate-900 to-slate-800/50 hover:border-slate-700/50 transition-colors">
