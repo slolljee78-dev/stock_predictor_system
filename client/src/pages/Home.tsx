@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { TrendingUp, Play, ArrowRight, CheckCircle2, Star, Users, Zap, Shield } from "lucide-react";
+import { TrendingUp, Play, ArrowRight, CheckCircle2, Star, Users, Zap, Shield, Lock, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getLoginUrl } from "@/const";
 import { useLocation } from "wouter";
@@ -18,10 +18,10 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400 mx-auto mb-4"></div>
-          <p className="text-white">Loading...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-400 mx-auto mb-4"></div>
+          <p className="text-slate-300">Loading...</p>
         </div>
       </div>
     );
@@ -32,34 +32,40 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-50 overflow-hidden">
+      {/* Subtle background elements */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl"></div>
+      </div>
+
       {/* Premium Navigation */}
-      <nav className="fixed top-0 w-full z-50 border-b border-gray-900 bg-black/80 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-6 flex items-center justify-between">
+      <nav className="fixed top-0 w-full z-50 border-b border-slate-800/50 bg-slate-950/80 backdrop-blur-md">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-5 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-lg">
-              <TrendingUp className="h-6 w-6 text-black font-bold" />
+            <div className="p-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
+              <TrendingUp className="h-5 w-5 text-emerald-400" />
             </div>
-            <span className="text-2xl font-black tracking-tight">Vortex</span>
+            <span className="text-lg font-semibold text-slate-50 tracking-tight">Vortex</span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             {isAuthenticated && user?.role === 'admin' && (
               <>
-                <Button asChild variant="ghost" className="text-gray-300 hover:text-white">
+                <Button asChild variant="ghost" className="text-slate-400 hover:text-slate-50 text-sm">
                   <a href="/admin">Admin</a>
                 </Button>
-                <Button asChild className="bg-cyan-500 hover:bg-cyan-600 text-black font-bold px-6">
+                <Button asChild className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-6 py-2 h-auto text-sm rounded-lg">
                   <a href="/dashboard">Dashboard</a>
                 </Button>
               </>
             )}
             {isAuthenticated && user?.role !== 'admin' && (
-              <Button asChild className="bg-cyan-500 hover:bg-cyan-600 text-black font-bold px-6">
+              <Button asChild className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-6 py-2 h-auto text-sm rounded-lg">
                 <a href="/dashboard">Dashboard</a>
               </Button>
             )}
             {!isAuthenticated && (
-              <Button asChild className="bg-cyan-500 hover:bg-cyan-600 text-black font-bold px-8 py-2 h-auto text-base">
+              <Button asChild className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-6 py-2 h-auto text-sm rounded-lg">
                 <a href={getLoginUrl()}>Sign In</a>
               </Button>
             )}
@@ -67,103 +73,92 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* Hero Section - Truly Premium */}
-      <section className="pt-32 pb-20 px-6 lg:px-8 relative overflow-hidden">
-        {/* Background gradient elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl"></div>
-          <div className="absolute top-1/2 -left-40 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl"></div>
-        </div>
-
+      {/* Hero Section */}
+      <section className="pt-32 pb-24 px-6 lg:px-8 relative">
         <div className="max-w-7xl mx-auto relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             {/* Left: Text Content */}
-            <div className="space-y-12">
-              {/* Badge */}
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-500/10 border border-cyan-500/30 rounded-full backdrop-blur">
-                <Star className="h-4 w-4 text-cyan-400 fill-cyan-400" />
-                <p className="text-sm font-semibold text-cyan-400">AI-Powered Trading Intelligence</p>
+            <div className="space-y-8">
+              {/* Subtitle */}
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/30 rounded-full">
+                <Star className="h-3.5 w-3.5 text-emerald-400 fill-emerald-400" />
+                <p className="text-xs font-medium text-emerald-400 uppercase tracking-wide">AI Trading Intelligence</p>
               </div>
 
-              {/* Main Headline - HUGE and Bold */}
-              <h1 className="text-7xl sm:text-8xl lg:text-9xl font-black leading-none tracking-tighter">
-                <span className="block text-white">Trade</span>
-                <span className="block bg-gradient-to-r from-cyan-400 via-blue-400 to-cyan-400 bg-clip-text text-transparent">Smarter</span>
+              {/* Main Headline */}
+              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-light leading-tight tracking-tight">
+                <span className="block text-slate-50 font-light">Trade with</span>
+                <span className="block text-emerald-400 font-semibold">Precision</span>
               </h1>
 
               {/* Subheading */}
-              <p className="text-xl lg:text-2xl text-gray-300 leading-relaxed max-w-lg font-light">
-                AI-powered signals with 87% accuracy. Trade any stock, any broker. No lock-in. Pure intelligence.
+              <p className="text-lg text-slate-400 leading-relaxed max-w-lg font-light">
+                AI-powered signals with institutional-grade accuracy. Trade any stock, any broker. No platform lock-in.
               </p>
 
               {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                <Button asChild size="lg" className="bg-cyan-500 hover:bg-cyan-600 text-black font-bold text-lg px-10 py-7 h-auto rounded-lg">
+              <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                <Button asChild className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-8 py-3 h-auto rounded-lg text-base">
                   <a href={getLoginUrl()}>Start Free Trial</a>
                 </Button>
-                <Button asChild variant="outline" size="lg" className="border-2 border-gray-600 hover:border-cyan-400 text-white font-bold text-lg px-10 py-7 h-auto rounded-lg">
-                  <a href="#features">View Features</a>
+                <Button asChild variant="outline" className="border border-slate-700 hover:border-emerald-500/50 text-slate-300 hover:text-slate-50 font-medium px-8 py-3 h-auto rounded-lg text-base">
+                  <a href="#features">Learn More</a>
                 </Button>
               </div>
 
               {/* Trust Indicators */}
-              <div className="space-y-4 pt-8 border-t border-gray-800">
+              <div className="space-y-3 pt-8 border-t border-slate-800">
                 <div className="flex items-center gap-3">
-                  <CheckCircle2 className="h-5 w-5 text-cyan-400" />
-                  <span className="text-gray-300">No credit card required • 7-day full access</span>
+                  <CheckCircle2 className="h-4 w-4 text-emerald-400 flex-shrink-0" />
+                  <span className="text-sm text-slate-400">No credit card required • 7-day full access</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <CheckCircle2 className="h-5 w-5 text-cyan-400" />
-                  <span className="text-gray-300">50K+ active traders worldwide</span>
+                  <CheckCircle2 className="h-4 w-4 text-emerald-400 flex-shrink-0" />
+                  <span className="text-sm text-slate-400">50K+ active traders worldwide</span>
                 </div>
               </div>
             </div>
 
-            {/* Right: Stats Grid */}
-            <div className="grid grid-cols-2 gap-6">
-              <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-8 backdrop-blur hover:border-cyan-500/30 transition-colors">
-                <p className="text-5xl font-black text-cyan-400 mb-2">87%</p>
-                <p className="text-gray-400 font-medium">Win Rate</p>
-              </div>
-              <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-8 backdrop-blur hover:border-cyan-500/30 transition-colors">
-                <p className="text-5xl font-black text-cyan-400 mb-2">50K+</p>
-                <p className="text-gray-400 font-medium">Active Traders</p>
-              </div>
-              <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-8 backdrop-blur hover:border-cyan-500/30 transition-colors">
-                <p className="text-5xl font-black text-cyan-400 mb-2">24/7</p>
-                <p className="text-gray-400 font-medium">Market Monitoring</p>
-              </div>
-              <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-8 backdrop-blur hover:border-cyan-500/30 transition-colors">
-                <p className="text-5xl font-black text-cyan-400 mb-2">98%</p>
-                <p className="text-gray-400 font-medium">Accuracy</p>
-              </div>
+            {/* Right: Stats Cards */}
+            <div className="grid grid-cols-2 gap-4">
+              {[
+                { label: "Win Rate", value: "87%" },
+                { label: "Active Traders", value: "50K+" },
+                { label: "Market Monitoring", value: "24/7" },
+                { label: "Accuracy", value: "98%" },
+              ].map((stat, i) => (
+                <div key={i} className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-6 backdrop-blur-sm hover:border-emerald-500/30 transition-colors">
+                  <p className="text-3xl font-semibold text-emerald-400 mb-2">{stat.value}</p>
+                  <p className="text-sm text-slate-400">{stat.label}</p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
       </section>
 
       {/* Divider */}
-      <div className="h-px bg-gradient-to-r from-transparent via-gray-800 to-transparent"></div>
+      <div className="h-px bg-gradient-to-r from-transparent via-slate-700/50 to-transparent"></div>
 
       {/* Features Section */}
       <section id="features" className="py-24 px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-20">
-            <h2 className="text-5xl sm:text-6xl font-black mb-6">Why Traders Choose Vortex</h2>
-            <p className="text-xl text-gray-400 max-w-2xl mx-auto">Everything you need to trade smarter, faster, and more profitably</p>
+          <div className="mb-20">
+            <h2 className="text-4xl sm:text-5xl font-light mb-6 text-slate-50">Why Choose Vortex</h2>
+            <p className="text-lg text-slate-400 max-w-2xl font-light">Everything you need to trade smarter and more profitably</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { icon: Zap, title: "Lightning Fast", desc: "Real-time signals delivered instantly" },
-              { icon: Shield, title: "Risk Management", desc: "Smart stop-loss and position sizing" },
-              { icon: Users, title: "Community", desc: "Join 50K+ profitable traders" },
-              { icon: TrendingUp, title: "Proven Results", desc: "87% win rate across all markets" },
+              { icon: Zap, title: "Real-Time Signals", desc: "Instant AI-generated buy and sell signals" },
+              { icon: Shield, title: "Risk Management", desc: "Smart position sizing and stop-loss" },
+              { icon: BarChart3, title: "Advanced Analytics", desc: "Deep market insights and trends" },
+              { icon: Lock, title: "Secure & Private", desc: "Enterprise-grade security standards" },
             ].map((feature, i) => (
-              <div key={i} className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-8 hover:border-cyan-500/50 transition-all group">
-                <feature.icon className="h-12 w-12 text-cyan-400 mb-4 group-hover:scale-110 transition-transform" />
-                <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
-                <p className="text-gray-400">{feature.desc}</p>
+              <div key={i} className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-8 backdrop-blur-sm hover:border-emerald-500/30 transition-colors group">
+                <feature.icon className="h-10 w-10 text-emerald-400 mb-4 group-hover:scale-110 transition-transform" />
+                <h3 className="text-lg font-medium mb-2 text-slate-50">{feature.title}</h3>
+                <p className="text-sm text-slate-400 font-light">{feature.desc}</p>
               </div>
             ))}
           </div>
@@ -173,23 +168,19 @@ export default function Home() {
       {/* Video Section */}
       <section className="py-24 px-6 lg:px-8">
         <div className="max-w-5xl mx-auto">
-          <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-3xl blur-2xl opacity-20 group-hover:opacity-30 transition-opacity"></div>
-            <div 
-              className="relative bg-black rounded-3xl border border-gray-800 overflow-hidden cursor-pointer group"
-              onClick={() => setShowVideoModal(true)}
-            >
-              {/* Video Thumbnail */}
-              <div className="aspect-video bg-gradient-to-br from-gray-900 to-black flex items-center justify-center relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-blue-500/20"></div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-24 h-24 bg-cyan-500/20 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <Play className="h-12 w-12 text-cyan-400 fill-cyan-400 ml-1" />
-                  </div>
+          <div 
+            className="relative bg-slate-800/40 border border-slate-700/50 rounded-2xl overflow-hidden cursor-pointer group backdrop-blur-sm hover:border-emerald-500/30 transition-colors"
+            onClick={() => setShowVideoModal(true)}
+          >
+            <div className="aspect-video bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <div className="flex flex-col items-center gap-4">
+                <div className="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform border border-emerald-500/30">
+                  <Play className="h-8 w-8 text-emerald-400 fill-emerald-400 ml-0.5" />
                 </div>
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-8">
-                  <p className="text-lg font-semibold">See Vortex in Action</p>
-                  <p className="text-gray-400 text-sm">2 min demo</p>
+                <div className="text-center">
+                  <p className="text-base font-medium text-slate-50">Watch Demo</p>
+                  <p className="text-sm text-slate-400">2 minutes</p>
                 </div>
               </div>
             </div>
@@ -200,9 +191,9 @@ export default function Home() {
       {/* Pricing Section */}
       <section className="py-24 px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-20">
-            <h2 className="text-5xl sm:text-6xl font-black mb-6">Simple, Transparent Pricing</h2>
-            <p className="text-xl text-gray-400">Choose the plan that fits your trading style</p>
+          <div className="mb-20">
+            <h2 className="text-4xl sm:text-5xl font-light mb-6 text-slate-50">Simple Pricing</h2>
+            <p className="text-lg text-slate-400 font-light">Choose the plan that fits your needs</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -229,30 +220,30 @@ export default function Home() {
             ].map((plan, i) => (
               <div
                 key={i}
-                className={`rounded-2xl p-10 border transition-all ${
+                className={`rounded-xl p-8 border transition-all ${
                   plan.featured
-                    ? "bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border-cyan-500/50 scale-105 shadow-2xl shadow-cyan-500/20"
-                    : "bg-gradient-to-br from-gray-900 to-black border-gray-800 hover:border-cyan-500/30"
+                    ? "bg-emerald-500/10 border-emerald-500/50 ring-1 ring-emerald-500/20"
+                    : "bg-slate-800/30 border-slate-700/50 hover:border-emerald-500/30"
                 }`}
               >
                 {plan.featured && (
-                  <div className="inline-block px-4 py-1 bg-cyan-500 text-black font-bold text-sm rounded-full mb-4">
-                    Most Popular
+                  <div className="inline-block px-3 py-1 bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-medium text-xs rounded-full mb-4">
+                    Recommended
                   </div>
                 )}
-                <h3 className="text-2xl font-black mb-2">{plan.name}</h3>
-                <p className="text-gray-400 mb-6">{plan.desc}</p>
+                <h3 className="text-xl font-medium mb-2 text-slate-50">{plan.name}</h3>
+                <p className="text-sm text-slate-400 mb-6 font-light">{plan.desc}</p>
                 <div className="mb-8">
-                  <span className="text-5xl font-black">{plan.price}</span>
-                  <span className="text-gray-400">/month</span>
+                  <span className="text-4xl font-semibold text-slate-50">{plan.price}</span>
+                  <span className="text-slate-400 text-sm">/month</span>
                 </div>
-                <Button asChild className={`w-full font-bold py-3 h-auto mb-8 ${plan.featured ? "bg-cyan-500 hover:bg-cyan-600 text-black" : "bg-gray-800 hover:bg-gray-700 text-white"}`}>
+                <Button asChild className={`w-full font-medium py-2.5 h-auto mb-8 rounded-lg ${plan.featured ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-slate-700 hover:bg-slate-600 text-slate-50"}`}>
                   <a href={getLoginUrl()}>Get Started</a>
                 </Button>
-                <ul className="space-y-4">
+                <ul className="space-y-3">
                   {plan.features.map((feature, j) => (
-                    <li key={j} className="flex items-center gap-3 text-gray-300">
-                      <CheckCircle2 className="h-5 w-5 text-cyan-400 flex-shrink-0" />
+                    <li key={j} className="flex items-center gap-3 text-sm text-slate-300">
+                      <CheckCircle2 className="h-4 w-4 text-emerald-400 flex-shrink-0" />
                       {feature}
                     </li>
                   ))}
@@ -264,19 +255,19 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 px-6 lg:px-8 border-t border-gray-900">
+      <section className="py-24 px-6 lg:px-8 border-t border-slate-800/50">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-5xl sm:text-6xl font-black mb-8">Ready to Trade Smarter?</h2>
-          <p className="text-xl text-gray-400 mb-12">Join thousands of traders already using Vortex to beat the market</p>
-          <Button asChild size="lg" className="bg-cyan-500 hover:bg-cyan-600 text-black font-bold text-lg px-12 py-7 h-auto rounded-lg">
+          <h2 className="text-4xl sm:text-5xl font-light mb-6 text-slate-50">Ready to Start?</h2>
+          <p className="text-lg text-slate-400 mb-10 font-light">Join thousands of traders using Vortex to beat the market</p>
+          <Button asChild className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-10 py-3 h-auto rounded-lg text-base">
             <a href={getLoginUrl()}>Start Your Free Trial</a>
           </Button>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-gray-900 py-12 px-6 lg:px-8 bg-black/50">
-        <div className="max-w-7xl mx-auto text-center text-gray-500 text-sm">
+      <footer className="border-t border-slate-800/50 py-12 px-6 lg:px-8 bg-slate-950/50">
+        <div className="max-w-7xl mx-auto text-center text-slate-500 text-sm">
           <p>© 2024 Vortex Trade. All rights reserved. | Trading involves risk.</p>
         </div>
       </footer>
@@ -284,17 +275,17 @@ export default function Home() {
       {/* Video Modal */}
       {showVideoModal && (
         <div 
-          className="fixed inset-0 z-50 bg-black/80 backdrop-blur flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
           onClick={() => setShowVideoModal(false)}
         >
           <div className="relative w-full max-w-4xl" onClick={(e) => e.stopPropagation()}>
             <button
               onClick={() => setShowVideoModal(false)}
-              className="absolute -top-12 right-0 text-gray-400 hover:text-white text-2xl"
+              className="absolute -top-12 right-0 text-slate-400 hover:text-slate-50 text-2xl font-light"
             >
               ✕
             </button>
-            <div className="aspect-video bg-black rounded-2xl overflow-hidden">
+            <div className="aspect-video bg-slate-900 rounded-xl overflow-hidden border border-slate-700/50">
               <iframe
                 width="100%"
                 height="100%"
