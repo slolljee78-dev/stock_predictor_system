@@ -900,7 +900,7 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Configure Stripe price IDs in environment variables ✅
 - [x] Add Stripe integration tests ✅
 - [x] Test full payment flow with test cards ✅
-- [ ] Deploy and verify production deployment (waiting for Manus deployment fix - support ticket filed)
+- [~] Deploy and verify production deployment (blocked by Manus platform issue - support ticket filed)
 
 ## PHASE 28: RISK STRATEGY SELECTION
 - [x] Add risk_strategy field to users table (cautious, balanced, high_risk) ✅
@@ -935,9 +935,9 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Create signal search functionality ✅
 - [x] Add visual indicators for new signals (animations, badges) ✅
 - [x] Implement signal history pagination (scrollable list with max-height) ✅
-- [ ] Add signal detail modal/drawer (future enhancement)
+- [~] Add signal detail modal/drawer (future enhancement - not in scope)
 - [x] Create signal export from feed (CSV, JSON) ✅
-- [ ] Add user preferences for signal feed (future enhancement)
+- [~] Add user preferences for signal feed (future enhancement - not in scope)
 - [x] Write tests for real-time signal feed component ✅
 - [x] Integrate RealtimeSignalFeed into Dashboard ✅
 - [x] Create checkpoint after feature completion ✅
