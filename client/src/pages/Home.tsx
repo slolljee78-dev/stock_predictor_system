@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { TrendingUp, Play, CheckCircle2, Star, Zap, Shield, Cpu, Gauge, BarChart3, ArrowRight, ShoppingCart } from "lucide-react";
+import { TrendingUp, Play, CheckCircle2, Star, Zap, Shield, Cpu, BarChart3, ArrowRight, ShoppingCart, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getLoginUrl } from "@/const";
 import { useLocation } from "wouter";
@@ -67,61 +67,158 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* Hero Section - Clean, Text-Focused */}
-      <section className="pt-32 pb-16 px-6 lg:px-8 relative">
-        <div className="max-w-4xl mx-auto relative z-10">
+      {/* Hero Section - Split Layout with Product Mockup */}
+      <section className="pt-32 pb-20 px-6 lg:px-8 relative">
+        <div className="max-w-7xl mx-auto">
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-5 py-3 border border-emerald-500/50 rounded-full bg-emerald-500/10 mb-8">
             <Zap className="h-5 w-5 text-emerald-400" />
-            <p className="text-sm font-bold text-emerald-400 uppercase tracking-widest">AI-POWERED TRADING SIGNALS</p>
+            <p className="text-sm font-bold text-emerald-400 uppercase tracking-widest">AI-Powered Trading Signals</p>
           </div>
 
-          {/* Main Headline */}
-          <h1 className="text-6xl lg:text-7xl font-black leading-tight tracking-tight mb-8">
-            <span className="block text-white">Trade with</span>
-            <span className="block text-emerald-400">Precision</span>
-          </h1>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Left: Product Mockup */}
+            <div className="relative">
+              <div className="border-2 border-dashed border-emerald-500 rounded-2xl p-8 bg-gray-900/50 backdrop-blur-sm">
+                <div className="aspect-square bg-gradient-to-br from-emerald-900/20 to-gray-900 rounded-xl flex items-center justify-center border border-emerald-500/30">
+                  <div className="text-center">
+                    <Smartphone className="h-24 w-24 text-emerald-500/40 mx-auto mb-4" />
+                    <p className="text-emerald-500/60 font-bold text-lg">Trading Dashboard</p>
+                    <p className="text-gray-500 text-sm mt-2">Real-time signals & analytics</p>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-          {/* Description */}
-          <p className="text-lg lg:text-xl text-gray-300 leading-relaxed mb-8 font-medium max-w-3xl">
-            Institutional-grade AI signals with 87% accuracy. Get real-time buy and sell signals powered by ensemble ML models. Trade any stock, any broker. No platform lock-in, pure signal intelligence.
-          </p>
+            {/* Right: Text & CTA */}
+            <div className="space-y-8">
+              {/* Main Headline */}
+              <div>
+                <h1 className="text-5xl lg:text-6xl font-black leading-tight tracking-tight mb-6">
+                  <span className="block text-white">Trade with</span>
+                  <span className="block text-emerald-400">Precision</span>
+                </h1>
+                <p className="text-lg text-gray-300 leading-relaxed font-medium">
+                  Institutional-grade AI signals with 87% accuracy. Get real-time buy and sell signals powered by ensemble ML models. Trade any stock, any broker. No platform lock-in, pure signal intelligence.
+                </p>
+              </div>
 
-          {/* Additional Info */}
-          <p className="text-base text-gray-400 mb-12 font-medium max-w-3xl">
-            ✨ NOW WITH ADVANCED RISK MANAGEMENT: Smart position sizing, stop-loss automation, and portfolio-level correlation analysis. Works with any broker.
-          </p>
+              {/* CTA Buttons with Pricing */}
+              <div className="space-y-3">
+                <Button asChild className="w-full bg-emerald-500 hover:bg-emerald-600 text-black font-bold px-8 py-4 h-auto rounded-lg text-base flex items-center justify-center gap-2 group">
+                  <a href={getLoginUrl()}>
+                    <ShoppingCart className="h-5 w-5" />
+                    Start Free Trial
+                  </a>
+                </Button>
+                <Button asChild className="w-full border-2 border-emerald-500/60 hover:border-emerald-400 text-emerald-400 hover:text-emerald-300 font-bold px-8 py-4 h-auto rounded-lg text-base bg-transparent hover:bg-emerald-500/5 flex items-center justify-center gap-2">
+                  <a href="#pricing">
+                    View Pricing
+                    <ArrowRight className="h-5 w-5" />
+                  </a>
+                </Button>
+              </div>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-12">
-            <Button asChild className="bg-emerald-500 hover:bg-emerald-600 text-black font-bold px-8 py-4 h-auto rounded-lg text-base flex items-center gap-2 group">
-              <a href={getLoginUrl()}>
-                <ShoppingCart className="h-5 w-5" />
-                Start Free Trial
-              </a>
-            </Button>
-            <Button asChild className="border-2 border-emerald-500/60 hover:border-emerald-400 text-emerald-400 hover:text-emerald-300 font-bold px-8 py-4 h-auto rounded-lg text-base bg-transparent hover:bg-emerald-500/5 flex items-center gap-2">
-              <a href="#features">
-                View Features
-                <ArrowRight className="h-5 w-5" />
-              </a>
-            </Button>
+              {/* Trust Indicators */}
+              <div className="space-y-3 border-t border-emerald-500/20 pt-6">
+                <div className="flex items-center gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-400 flex-shrink-0" />
+                  <span className="text-sm text-gray-300 font-medium">No credit card required • 7-day full access</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-400 flex-shrink-0" />
+                  <span className="text-sm text-gray-300 font-medium">50K+ active traders worldwide</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-400 flex-shrink-0" />
+                  <span className="text-sm text-gray-300 font-medium">✨ NOW WITH ADVANCED RISK MANAGEMENT</span>
+                </div>
+              </div>
+            </div>
           </div>
+        </div>
+      </section>
 
-          {/* Trust Indicators */}
-          <div className="space-y-3 border-t border-emerald-500/20 pt-8">
-            <div className="flex items-center gap-3">
-              <CheckCircle2 className="h-5 w-5 text-emerald-400 flex-shrink-0" />
-              <span className="text-sm text-gray-300 font-medium">No credit card required • 7-day full access • Cancel anytime</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <CheckCircle2 className="h-5 w-5 text-emerald-400 flex-shrink-0" />
-              <span className="text-sm text-gray-300 font-medium">50K+ active traders worldwide</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <CheckCircle2 className="h-5 w-5 text-emerald-400 flex-shrink-0" />
-              <span className="text-sm text-gray-300 font-medium">24/7 market monitoring & instant alerts</span>
-            </div>
+      {/* Divider */}
+      <div className="h-px bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent"></div>
+
+      {/* Products Section */}
+      <section id="pricing" className="py-20 px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-4xl lg:text-5xl font-black mb-4 text-white">Premium Trading Packages</h2>
+          <p className="text-lg text-gray-400 mb-12 font-medium">Choose the plan that fits your trading style</p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                name: "Signal Feed",
+                price: "$29.99",
+                badge: "Best Seller",
+                description: "Real-time AI trading signals with 87% accuracy",
+                features: ["50 signals/day", "Email alerts", "Performance analytics", "7-day trial"],
+                image: "📊",
+              },
+              {
+                name: "Trading Simulator",
+                price: "$14.99",
+                badge: "Popular",
+                description: "Backtest strategies with realistic market conditions",
+                features: ["Unlimited backtests", "Slippage modeling", "Performance reports", "Strategy optimization"],
+                image: "🎯",
+                highlighted: true,
+              },
+              {
+                name: "Elite Bundle",
+                price: "$49.99",
+                description: "Complete trading intelligence suite",
+                features: ["Signals + Simulator", "API access", "Priority support", "Custom strategies"],
+                image: "⚡",
+              },
+            ].map((product, i) => (
+              <div key={i} className={`rounded-2xl overflow-hidden transition-all ${
+                product.highlighted 
+                  ? "border-2 border-dashed border-emerald-500 bg-emerald-500/5" 
+                  : "border-2 border-dashed border-emerald-500/40 bg-gray-900/30 hover:border-emerald-500"
+              }`}>
+                {product.badge && (
+                  <div className="bg-emerald-500 text-black px-4 py-2 font-bold text-xs uppercase inline-block m-4">
+                    {product.badge}
+                  </div>
+                )}
+                
+                {/* Product Image Area */}
+                <div className="h-40 bg-gradient-to-br from-emerald-900/20 to-gray-900 flex items-center justify-center text-6xl border-b border-emerald-500/20">
+                  {product.image}
+                </div>
+
+                <div className="p-8">
+                  <h3 className="text-2xl font-black mb-2 text-white">{product.name}</h3>
+                  <p className="text-gray-400 text-sm mb-6 font-medium">{product.description}</p>
+                  
+                  <div className="mb-6">
+                    <span className="text-4xl font-black text-emerald-400">{product.price}</span>
+                    <span className="text-gray-400 text-sm font-medium">/month</span>
+                  </div>
+
+                  <Button asChild className={`w-full font-bold py-3 h-auto rounded-lg mb-6 ${
+                    product.highlighted
+                      ? "bg-emerald-500 hover:bg-emerald-600 text-black"
+                      : "border-2 border-emerald-500/60 text-emerald-400 hover:text-emerald-300 bg-transparent hover:bg-emerald-500/5"
+                  }`}>
+                    <a href={getLoginUrl()}>Get Started</a>
+                  </Button>
+
+                  <ul className="space-y-3">
+                    {product.features.map((feature, j) => (
+                      <li key={j} className="flex items-center gap-3 text-sm text-gray-300 font-medium">
+                        <CheckCircle2 className="h-5 w-5 text-emerald-400 flex-shrink-0" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -130,10 +227,10 @@ export default function Home() {
       <div className="h-px bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent"></div>
 
       {/* Features Section */}
-      <section id="features" className="py-20 px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-4xl lg:text-5xl font-black mb-4 text-white">Powerful Trading Features</h2>
-          <p className="text-lg text-gray-400 mb-12 font-medium">Everything you need to trade smarter with institutional-grade technology</p>
+      <section className="py-20 px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-4xl lg:text-5xl font-black mb-4 text-white">Why Choose Vortex</h2>
+          <p className="text-lg text-gray-400 mb-12 font-medium">Built for traders who take their strategy seriously</p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {[
@@ -142,16 +239,12 @@ export default function Home() {
               { icon: Cpu, title: "ML Models", desc: "LSTM, XGBoost, and Ensemble algorithms for market prediction" },
               { icon: BarChart3, title: "Advanced Analytics", desc: "Deep market insights, trend analysis, and performance tracking" },
             ].map((feature, i) => (
-              <div key={i} className="space-y-4">
-                <div className="flex items-start gap-4">
-                  <div className="p-3 bg-emerald-500/10 rounded-lg flex-shrink-0">
-                    <feature.icon className="h-6 w-6 text-emerald-400" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold mb-2 text-white">{feature.title}</h3>
-                    <p className="text-sm text-gray-400 font-medium">{feature.desc}</p>
-                  </div>
+              <div key={i} className="border-l-2 border-emerald-500/40 pl-6 space-y-2">
+                <div className="flex items-center gap-3">
+                  <feature.icon className="h-6 w-6 text-emerald-400" />
+                  <h3 className="text-lg font-bold text-white">{feature.title}</h3>
                 </div>
+                <p className="text-sm text-gray-400 font-medium">{feature.desc}</p>
               </div>
             ))}
           </div>
@@ -161,103 +254,10 @@ export default function Home() {
       {/* Divider */}
       <div className="h-px bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent"></div>
 
-      {/* Pricing Section */}
+      {/* Testimonials */}
       <section className="py-20 px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-4xl lg:text-5xl font-black mb-4 text-white">Simple Pricing</h2>
-          <p className="text-lg text-gray-400 mb-12 font-medium">Choose the plan that fits your trading style</p>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              {
-                name: "Starter",
-                price: "$9.99",
-                features: ["10 signals/day", "Basic analytics", "Email support"],
-              },
-              {
-                name: "Professional",
-                price: "$29.99",
-                badge: "Most Popular",
-                features: ["50 signals/day", "Advanced analytics", "Priority support", "Risk management tools"],
-                highlighted: true,
-              },
-              {
-                name: "Elite",
-                price: "$99.99",
-                features: ["Unlimited signals", "Full API access", "Dedicated support", "Custom strategies"],
-              },
-            ].map((plan, i) => (
-              <div key={i} className={`rounded-2xl p-8 transition-all ${
-                plan.highlighted 
-                  ? "bg-emerald-500/10 border-2 border-emerald-500/60" 
-                  : "bg-gray-900/30 border border-gray-800 hover:border-emerald-500/40"
-              }`}>
-                {plan.badge && (
-                  <div className="bg-emerald-500 text-black px-4 py-1 rounded-full font-bold text-xs uppercase mb-4 inline-block">
-                    {plan.badge}
-                  </div>
-                )}
-                <h3 className="text-2xl font-black mb-2 text-white">{plan.name}</h3>
-                <div className="mb-6">
-                  <span className="text-4xl font-black text-emerald-400">{plan.price}</span>
-                  <span className="text-gray-400 text-sm font-medium">/month</span>
-                </div>
-                <Button asChild className={`w-full font-bold py-3 h-auto rounded-lg mb-6 ${
-                  plan.highlighted
-                    ? "bg-emerald-500 hover:bg-emerald-600 text-black"
-                    : "border-2 border-emerald-500/60 text-emerald-400 hover:text-emerald-300 bg-transparent hover:bg-emerald-500/5"
-                }`}>
-                  <a href={getLoginUrl()}>Get Started</a>
-                </Button>
-                <ul className="space-y-3">
-                  {plan.features.map((feature, j) => (
-                    <li key={j} className="flex items-center gap-3 text-sm text-gray-300 font-medium">
-                      <CheckCircle2 className="h-5 w-5 text-emerald-400 flex-shrink-0" />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Divider */}
-      <div className="h-px bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent"></div>
-
-      {/* Video Section */}
-      <section className="py-20 px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-4xl lg:text-5xl font-black mb-4 text-white">See It In Action</h2>
-          <p className="text-lg text-gray-400 mb-12 font-medium">Watch how Vortex generates high-accuracy trading signals</p>
-          
-          <div 
-            className="rounded-2xl overflow-hidden cursor-pointer group bg-gray-900/30 border border-emerald-500/30 hover:border-emerald-400 transition-all"
-            onClick={() => setShowVideoModal(true)}
-          >
-            <div className="aspect-video bg-gradient-to-br from-gray-800 to-black flex items-center justify-center relative">
-              <div className="flex flex-col items-center gap-4">
-                <div className="w-24 h-24 bg-emerald-500/20 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform border-2 border-emerald-500/50">
-                  <Play className="h-10 w-10 text-emerald-400 fill-emerald-400 ml-1" />
-                </div>
-                <div className="text-center">
-                  <p className="text-lg font-bold text-white">Watch Demo</p>
-                  <p className="text-sm text-gray-400 font-medium">2 minutes</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Divider */}
-      <div className="h-px bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent"></div>
-
-      {/* Testimonials Section */}
-      <section className="py-20 px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-4xl lg:text-5xl font-black mb-12 text-white">Loved by Traders</h2>
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-4xl lg:text-5xl font-black mb-12 text-white">Loved by 50K+ Traders</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
@@ -265,13 +265,13 @@ export default function Home() {
               { name: "Mike Johnson", role: "Swing Trader", quote: "Finally, a platform that doesn't lock you in. Pure signal intelligence." },
               { name: "Alex Rodriguez", role: "Portfolio Manager", quote: "The risk management tools are institutional-grade. Highly recommend." },
             ].map((testimonial, i) => (
-              <div key={i} className="bg-gray-900/30 border border-emerald-500/20 rounded-2xl p-8 hover:border-emerald-500/40 transition-colors">
+              <div key={i} className="border-2 border-dashed border-emerald-500/40 rounded-xl p-6 hover:border-emerald-500 transition-colors">
                 <div className="flex gap-1 mb-4">
                   {[...Array(5)].map((_, j) => (
                     <Star key={j} className="h-5 w-5 text-yellow-400 fill-yellow-400" />
                   ))}
                 </div>
-                <p className="text-gray-300 mb-6 font-medium italic">"{testimonial.quote}"</p>
+                <p className="text-gray-300 mb-4 font-medium italic">"{testimonial.quote}"</p>
                 <div>
                   <p className="font-bold text-white">{testimonial.name}</p>
                   <p className="text-sm text-emerald-400 font-medium">{testimonial.role}</p>
@@ -302,34 +302,6 @@ export default function Home() {
           <p>© 2024 Vortex Trade. All rights reserved. | Trading involves risk.</p>
         </div>
       </footer>
-
-      {/* Video Modal */}
-      {showVideoModal && (
-        <div 
-          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
-          onClick={() => setShowVideoModal(false)}
-        >
-          <div className="relative w-full max-w-4xl" onClick={(e) => e.stopPropagation()}>
-            <button
-              onClick={() => setShowVideoModal(false)}
-              className="absolute -top-12 right-0 text-gray-400 hover:text-emerald-400 text-3xl font-bold"
-            >
-              ✕
-            </button>
-            <div className="aspect-video bg-gray-900 rounded-2xl overflow-hidden border-2 border-emerald-500/60">
-              <iframe
-                width="100%"
-                height="100%"
-                src="https://www.youtube.com/embed/dQw4w9WgXcQ"
-                title="Vortex Trade Demo"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              ></iframe>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
