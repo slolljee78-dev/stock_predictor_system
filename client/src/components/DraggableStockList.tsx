@@ -1,8 +1,9 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { GripVertical, Trash2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
+import { StockDetailsModal } from "./StockDetailsModal";
 
 interface Stock {
   id: number;
@@ -31,6 +32,8 @@ export function DraggableStockList({
   );
   const [draggedItem, setDraggedItem] = useState<number | null>(null);
   const [dragOverItem, setDragOverItem] = useState<number | null>(null);
+  const [selectedStock, setSelectedStock] = useState<Stock | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Mutations
   const reorderMutation = trpc.watchlists.reorderStocks.useMutation({
@@ -122,7 +125,13 @@ export function DraggableStockList({
           <GripVertical className="h-5 w-5 text-muted-foreground flex-shrink-0" />
 
           {/* Stock Info */}
-          <div className="flex-1 min-w-0">
+          <div
+            className="flex-1 min-w-0 cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={() => {
+              setSelectedStock(stock);
+              setIsModalOpen(true);
+            }}
+          >
             <p className="font-semibold text-sm">{stock.ticker}</p>
             <p className="text-xs text-muted-foreground truncate">{stock.name}</p>
           </div>
@@ -158,6 +167,17 @@ export function DraggableStockList({
         <div className="text-xs text-muted-foreground text-center py-2">
           Saving order...
         </div>
+      )}
+
+      {/* Stock Details Modal */}
+      {selectedStock && (
+        <StockDetailsModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          stockId={selectedStock.id}
+          ticker={selectedStock.ticker}
+          name={selectedStock.name}
+        />
       )}
     </div>
   );

@@ -975,3 +975,15 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Verify stock order persists after page refresh ✅
 - [x] Test on multiple browsers for compatibility ✅
 - [x] Create checkpoint after integration completion ✅
+
+## PHASE 35: STOCK DETAILS MODAL
+- [x] Design StockDetailsModal component structure ✅
+- [x] Create backend procedure to fetch detailed stock information ✅
+- [x] Build modal UI with stock price, signals, alerts, and analysis ✅
+- [x] Add exchange information display ✅
+- [x] Implement modal open/close functionality ✅
+- [x] Integrate modal into DraggableStockList component ✅
+- [x] Add click handlers to stock items to open modal ✅
+- [x] Test modal functionality and data loading ✅
+- [x] Verify modal closes on background click or close button ✅
+- [x] Create checkpoint after modal completion ✅
