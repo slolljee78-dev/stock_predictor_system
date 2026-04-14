@@ -29,6 +29,29 @@ export const appRouter = router({
         success: true,
       } as const;
     }),
+    sendVerificationEmail: protectedProcedure.mutation(async ({ ctx }) => {
+      const crypto = await import('crypto');
+      const token = crypto.randomBytes(32).toString('hex');
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      await import('./db').then(db => db.updateUserVerificationToken(ctx.user.id, token, expiresAt));
+      return { success: true, token, expiresAt };
+    }),
+    verifyEmail: protectedProcedure.input((val: unknown) => {
+      if (typeof val === 'object' && val !== null && 'token' in val) {
+        return val as { token: string };
+      }
+      throw new Error('Invalid input');
+    }).mutation(async ({ ctx, input }) => {
+      const user = await import('./db').then(db => db.getUserById(ctx.user.id));
+      if (!user || user.emailVerificationToken !== input.token) {
+        throw new Error('Invalid verification token');
+      }
+      if (user.emailVerificationTokenExpiresAt && user.emailVerificationTokenExpiresAt < new Date()) {
+        throw new Error('Verification token expired');
+      }
+      await import('./db').then(db => db.markEmailAsVerified(ctx.user.id));
+      return { success: true };
+    }),
   }),
   // Removed: automation router (signals-only pivot)
   payments: paymentsRouter,

@@ -671,3 +671,42 @@ export async function setNotificationPreference(
     });
   }
 }
+
+
+/**
+ * Update user verification token and expiration
+ */
+export async function updateUserVerificationToken(userId: number, token: string, expiresAt: Date) {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+  const { eq } = await import('drizzle-orm');
+  return db.update(users).set({
+    emailVerificationToken: token,
+    emailVerificationTokenExpiresAt: expiresAt,
+  }).where(eq(users.id, userId));
+}
+
+/**
+ * Mark email as verified
+ */
+export async function markEmailAsVerified(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+  const { eq } = await import('drizzle-orm');
+  return db.update(users).set({
+    emailVerified: 1,
+    emailVerificationToken: null,
+    emailVerificationTokenExpiresAt: null,
+  }).where(eq(users.id, userId));
+}
+
+/**
+ * Get user by ID
+ */
+export async function getUserById(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+  const { eq } = await import('drizzle-orm');
+  const result = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+  return result[0] || null;
+}

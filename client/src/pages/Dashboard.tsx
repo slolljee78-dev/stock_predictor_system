@@ -14,12 +14,16 @@ import { RiskStrategySelector, RiskStrategyBadge } from "@/components/RiskStrate
 import { WatchlistManager } from "@/components/WatchlistManager";
 import { DraggableStockList } from "@/components/DraggableStockList";
 import { UsageAnalyticsDashboard } from "@/components/UsageAnalyticsDashboard";
+import { EmailVerificationModal } from "@/components/EmailVerificationModal";
+import { OnboardingTutorial } from "@/components/OnboardingTutorial";
 
 export default function Dashboard() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedWatchlistId, setSelectedWatchlistId] = useState<number | undefined>();
+  const [showEmailVerification, setShowEmailVerification] = useState(!user?.emailVerified);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   // Fetch watchlist
   const watchlistQuery = trpc.watchlist.list.useQuery(undefined, {
@@ -41,7 +45,18 @@ export default function Dashboard() {
   const watchlist = watchlistQuery.data || [];
 
   return (
-    <DashboardLayout>
+    <>
+      <EmailVerificationModal
+        open={showEmailVerification}
+        onOpenChange={setShowEmailVerification}
+        userEmail={user?.email || ''}
+        onVerified={() => setShowOnboarding(true)}
+      />
+      <OnboardingTutorial
+        open={showOnboarding}
+        onOpenChange={setShowOnboarding}
+      />
+      <DashboardLayout>
       <div className="space-y-6">
         {/* Page Header */}
         <div className="flex flex-col gap-2">
@@ -199,9 +214,29 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Market Overview - Full Width */}
-        <MarketOverview />
+        {/* Signals Feed */}
+        {signals.length > 0 && (
+          <Card className="border-slate-800/50 bg-gradient-to-br from-slate-900 to-slate-800/50">
+            <CardHeader>
+              <CardTitle className="text-white">Live Trading Signals</CardTitle>
+              <CardDescription>Real-time AI-powered buy and sell signals</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {signals.map((signal) => (
+                  <div key={signal.id} className="flex items-center justify-between p-3 bg-slate-800/50 rounded">
+                    <span className="text-white font-medium">{signal.stock.ticker}</span>
+                    <Badge variant={signal.type === 'buy' ? 'default' : 'destructive'}>
+                      {signal.type.toUpperCase()}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </DashboardLayout>
+    </>
   );
 }

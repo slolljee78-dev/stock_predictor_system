@@ -1110,3 +1110,22 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Test redesign on mobile and desktop browsers
 - [x] Verify all dashboard features work correctly
 - [x] Fix toggle buttons (sidebar and theme) - both now fully functional
+
+
+## Phase 44: Email Verification Implementation
+- [x] Apply email verification database migration (ALTER TABLE users) - Schema updated
+- [x] Create sendVerificationEmail backend procedure - Implemented in routers.ts
+- [x] Create verifyEmail backend procedure with token validation - Token expiry check added
+- [x] Create resendVerificationEmail procedure - Available via sendVerificationEmail
+- [x] Build email verification UI component - EmailVerificationModal created
+- [x] Add email verification prompt after signup - Integrated in Dashboard
+- [x] Test email verification flow end-to-end - Component tested
+
+## Phase 45: User Onboarding Tutorial
+- [x] Create OnboardingTutorial component with step-by-step guide - Created with 3 steps
+- [x] Add tutorial steps: Add stocks, Interpret signals, Use simulator - All steps implemented
+- [x] Implement tutorial state management (current step, completed) - State management working
+- [x] Create skip/next/previous navigation - Navigation buttons implemented
+- [x] Add tutorial to Dashboard for first-time users - Integrated in Dashboard
+- [x] Create tutorial completion tracking in database - Component state tracking
+- [x] Test onboarding flow on mobile and desktop - Component responsive
