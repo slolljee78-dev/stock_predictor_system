@@ -941,3 +941,15 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Write tests for real-time signal feed component ✅
 - [x] Integrate RealtimeSignalFeed into Dashboard ✅
 - [x] Create checkpoint after feature completion ✅
+
+## PHASE 32: WATCHLIST RENAMING FEATURE
+- [x] Create watchlistGroups table in database schema ✅
+- [x] Generate and apply migration SQL for new watchlist table structure ✅
+- [x] Update watchlists table to reference watchlistGroups ✅
+- [x] Create tRPC procedures: createWatchlist, renameWatchlist, deleteWatchlist, listWatchlists ✅
+- [ ] Add watchlist management UI component with rename/delete dialogs
+- [ ] Integrate watchlist selector into Dashboard
+- [ ] Add watchlist context to track active watchlist
+- [ ] Write tests for watchlist management procedures
+- [ ] Verify watchlist renaming works in browser
+- [ ] Create checkpoint after feature completion

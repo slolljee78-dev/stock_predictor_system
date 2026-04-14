@@ -104,6 +104,27 @@ export type PriceHistory = typeof priceHistory.$inferSelect;
 export type InsertPriceHistory = typeof priceHistory.$inferInsert;
 
 /**
+ * Watchlist groups - named collections for organizing stocks by trading strategy
+ * Allows users to create multiple watchlists like "Tech Stocks", "Dividend Plays", etc.
+ */
+export const watchlistGroups = mysqlTable("watchlistGroups", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Foreign key to users table */
+  userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  /** User's custom name for this watchlist group (e.g., "Tech Stocks", "Dividend Plays") */
+  name: varchar("name", { length: 100 }).notNull(),
+  /** Optional description of the watchlist's purpose */
+  description: text("description"),
+  /** Display order for watchlists */
+  displayOrder: int("displayOrder").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type WatchlistGroup = typeof watchlistGroups.$inferSelect;
+export type InsertWatchlistGroup = typeof watchlistGroups.$inferInsert;
+
+/**
  * User watchlist - tracks stocks users are monitoring
  */
 export const watchlists = mysqlTable("watchlists", {

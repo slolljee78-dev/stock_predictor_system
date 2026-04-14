@@ -5,6 +5,7 @@ import {
   users,
   stocks,
   priceHistory,
+  watchlistGroups,
   watchlists,
   signals,
   notifications,

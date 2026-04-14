@@ -57,6 +57,13 @@
       "when": 1776124511749,
       "tag": "0007_overconfident_loners",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1776161170173,
+      "tag": "0008_careful_changeling",
+      "breakpoints": true
     }
   ]
 }
