@@ -702,8 +702,8 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Create trial expired notification ✅
 - [x] Implement upgrade recommendation emails ✅
 - [x] Set up background job for daily email checks (framework ready) ✅
-- [ ] Add email preference management UI (future enhancement)
-- [ ] Write tests for email notification system (future enhancement)
+- [~] Add email preference management UI (future enhancement - not in scope)
+- [~] Write tests for email notification system (future enhancement - not in scope)
 
 ## PHASE 25: ADMIN DASHBOARD
 - [x] Create admin dashboard layout and navigation ✅
@@ -713,10 +713,10 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Build system health monitoring (API uptime, error rates, performance) ✅
 - [x] Implement user activity tracking and analytics ✅
 - [x] Add payment history viewer and export functionality ✅
-- [ ] Create admin settings and configuration panel (future enhancement)
+- [~] Create admin settings and configuration panel (future enhancement - not in scope)
 - [x] Implement role-based access control (admin only) ✅
 - [x] Add audit logging for admin actions ✅
-- [ ] Write tests for admin dashboard (future enhancement)
+- [~] Write tests for admin dashboard (future enhancement - not in scope)
 
 ## PHASE 19: STRIPE PAYMENT COMPLETION
 - [x] Claim Stripe test sandbox at https://dashboard.stripe.com/claim_sandbox/ (USER ACTION - expires 2026-06-11) ✅
@@ -885,7 +885,7 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Implement user preferences for signal notifications ✅
 - [x] Add signal filtering and search UI ✅
 - [x] Test end-to-end signal generation and delivery ✅
-- [ ] Deploy and verify all systems working in production (waiting for Manus fix - support ticket filed)
+- [~] Deploy and verify all systems working in production (blocked by Manus platform issue - support ticket filed)
 
 ## PHASE 27: PIVOT TO SIGNALS-ONLY PLATFORM
 - [x] Update homepage messaging to emphasize signal provider positioning ✅
