@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TrendingUp, TrendingDown, AlertCircle, Bell, X } from "lucide-react";
 import { trpc } from "@/lib/trpc";
+import { PriceDisplay } from "./PriceDisplay";
 
 interface StockDetailsModalProps {
   isOpen: boolean;
@@ -85,32 +86,8 @@ export function StockDetailsModal({
             <TabsContent value="overview" className="space-y-4">
               {stockDetails && (
                 <div className="space-y-4">
-                  {/* Price Information */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Price Information</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Ticker</p>
-                          <p className="text-2xl font-bold">{stockDetails.ticker}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-muted-foreground">Exchange</p>
-                          <p className="text-2xl font-bold">{stockDetails.exchange}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-muted-foreground">Type</p>
-                          <p className="text-lg font-semibold capitalize">{stockDetails.type}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-muted-foreground">Currency</p>
-                          <p className="text-lg font-semibold">{stockDetails.currency}</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  {/* Live Price Display */}
+                  <PriceDisplay ticker={ticker} autoRefresh={true} refreshInterval={10000} />
 
                   {/* Stock Information */}
                   <Card>
