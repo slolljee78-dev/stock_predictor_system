@@ -901,10 +901,10 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [ ] Deploy and verify production deployment
 
 ## PHASE 28: RISK STRATEGY SELECTION
-- [ ] Add risk_strategy field to users table (cautious, balanced, high_risk)
-- [ ] Update signal generation to apply risk strategy parameters
-- [ ] Create risk strategy selection UI component
-- [ ] Add risk strategy settings to user dashboard
-- [ ] Update signal generation prompts for each strategy
-- [ ] Test signal generation with different risk strategies
-- [ ] Deploy and verify risk strategy feature
+- [x] Add risk_strategy field to users table (cautious, balanced, high_risk) ✅
+- [x] Update signal generation to apply risk strategy parameters ✅
+- [x] Create risk strategy selection UI component ✅
+- [x] Add risk strategy settings to user dashboard (via RiskStrategySelector) ✅
+- [x] Update signal generation prompts for each strategy ✅
+- [x] Test signal generation with different risk strategies ✅
+- [ ] Deploy and verify risk strategy feature (waiting for Manus deployment fix)

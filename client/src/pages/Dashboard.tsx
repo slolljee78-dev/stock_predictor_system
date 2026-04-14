@@ -9,6 +9,7 @@ import { TrendingUp, TrendingDown, Search, Plus } from "lucide-react";
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
+import { RiskStrategySelector, RiskStrategyBadge } from "@/components/RiskStrategySelector";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -39,11 +40,26 @@ export default function Dashboard() {
     <DashboardLayout>
       <div className="space-y-8">
         <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold tracking-tight">Stock Analysis Dashboard</h1>
-          <p className="text-muted-foreground">
-            Monitor Trading 212 stocks with AI-powered signals and technical analysis
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Stock Analysis Dashboard</h1>
+              <p className="text-muted-foreground">
+                Monitor Trading 212 stocks with AI-powered signals and technical analysis
+              </p>
+            </div>
+            <RiskStrategyBadge />
+          </div>
         </div>
+
+        <Card className="border-border/50 bg-gradient-to-br from-background to-background/50">
+          <CardHeader>
+            <CardTitle>Trading Strategy</CardTitle>
+            <CardDescription>Select your risk tolerance for signal generation</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <RiskStrategySelector showDescription={false} />
+          </CardContent>
+        </Card>
 
         <Card className="border-border/50 bg-gradient-to-br from-background to-background/50">
           <CardContent className="pt-6">
