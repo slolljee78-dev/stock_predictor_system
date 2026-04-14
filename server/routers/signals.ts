@@ -16,17 +16,24 @@ export const signalsRouter = router({
   /**
    * Get all active signals
    */
-  getActiveSignals: publicProcedure
+  getActiveSignals: protectedProcedure
     .input(
       z.object({
         limit: z.number().min(1).max(100).default(50),
         offset: z.number().min(0).default(0),
       })
     )
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       try {
         const db = await getDb();
         if (!db) throw new Error("Database not available");
+
+        // Apply feature limits based on subscription tier
+        let limit = input.limit;
+        if (ctx.user.subscriptionTier === "free") {
+          // Free tier: max 5 signals per day
+          limit = Math.min(input.limit, 5);
+        }
 
         const activeSignals = await db
           .select({
@@ -47,7 +54,7 @@ export const signalsRouter = router({
           .innerJoin(stocks, eq(signals.stockId, stocks.id))
           .where(eq(signals.status, "active"))
           .orderBy(desc(signals.confidenceScore))
-          .limit(input.limit)
+          .limit(limit)
           .offset(input.offset);
 
         return {

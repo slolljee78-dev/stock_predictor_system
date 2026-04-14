@@ -6,6 +6,23 @@ import { TierComparison } from "@/components/TierComparison";
 
 const PRICING_TIERS = [
   {
+    name: "Free",
+    price: 0,
+    currency: "£",
+    description: "Test the platform",
+    features: [
+      { name: "3 stocks monitoring", included: true },
+      { name: "5 signals per day", included: true },
+      { name: "Basic signal export (CSV)", included: true },
+      { name: "Email support", included: true },
+      { name: "50 stocks monitoring", included: false },
+      { name: "Real-time SMS alerts", included: false },
+      { name: "API access", included: false },
+    ],
+    cta: "Start Free",
+    tier: "FREE",
+  },
+  {
     name: "Starter",
     price: 9.99,
     currency: "£",
@@ -76,6 +93,12 @@ export default function Pricing() {
   const handleSubscribe = async (tier: string) => {
     if (!isAuthenticated) {
       setLocation("/");
+      return;
+    }
+
+    // Handle free tier - no checkout needed
+    if (tier === "FREE") {
+      setLocation("/dashboard");
       return;
     }
 

@@ -1055,3 +1055,16 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Test animation smoothness and performance ✅
 - [x] Verify no jarring visual changes during theme switch ✅
 - [x] Create checkpoint after animation implementation ✅
+
+## PHASE 42: OWNER DASHBOARD LINKS & FREE TIER
+- [x] Add owner dashboard link to website header/navigation ✅
+- [x] Add owner dashboard link to homepage CTA ✅
+- [x] Check current free trial implementation ✅
+- [x] Implement free tier with limited signals per day (Option C) ✅
+- [x] Add free tier to subscription tiers (Starter, Professional, Elite) ✅
+- [x] Update subscription logic to handle free tier users ✅
+- [x] Add feature limits display in pricing page ✅
+- [x] Create dashboard access links for authenticated users ✅
+- [x] Test free tier access and feature limits ✅
+- [x] Verify free tier users can upgrade to paid tiers ✅
+- [x] Create checkpoint after free tier implementation ✅

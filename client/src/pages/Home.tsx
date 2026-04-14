@@ -39,11 +39,18 @@ export default function Home() {
             </div>
             <span className="text-xl font-bold bg-gradient-to-r from-[oklch(0.65_0.28_200)] to-[oklch(0.68_0.26_142)] bg-clip-text text-transparent">Vortex Trade</span>
           </div>
-          {!isAuthenticated && (
-            <Button asChild className="bg-accent hover:bg-accent/90 text-background font-semibold">
-              <a href={getLoginUrl()}>Sign In</a>
-            </Button>
-          )}
+          <div className="flex items-center gap-4">
+            {isAuthenticated && (
+              <Button asChild className="bg-accent hover:bg-accent/90 text-background font-semibold">
+                <a href="/dashboard">Dashboard</a>
+              </Button>
+            )}
+            {!isAuthenticated && (
+              <Button asChild className="bg-accent hover:bg-accent/90 text-background font-semibold">
+                <a href={getLoginUrl()}>Sign In</a>
+              </Button>
+            )}
+          </div>
         </div>
       </nav>
 
@@ -69,7 +76,19 @@ export default function Home() {
                 Get AI-powered buy and sell signals for any stock. Trade them on your preferred broker (Trading 212, Robinhood, Interactive Brokers, etc.). No platform lock-in, pure signal intelligence.
               </p>
 
-              {!isAuthenticated && (
+              {isAuthenticated ? (
+                <div className="flex flex-col sm:flex-row gap-4 mb-8">
+                  <Button asChild className="bg-accent hover:bg-accent/90 text-background font-semibold h-12 px-8 text-base gap-2 rounded-lg">
+                    <a href="/dashboard">
+                      Go to Dashboard
+                      <ArrowRight className="h-4 w-4" />
+                    </a>
+                  </Button>
+                  <Button asChild className="border border-border hover:bg-card font-semibold h-12 px-8 text-base rounded-lg">
+                    <a href="/pricing">View Pricing</a>
+                  </Button>
+                </div>
+              ) : (
                 <div className="flex flex-col sm:flex-row gap-4 mb-8">
                   <Button asChild className="bg-accent hover:bg-accent/90 text-background font-semibold h-12 px-8 text-base gap-2 rounded-lg">
                     <a href={getLoginUrl()}>
