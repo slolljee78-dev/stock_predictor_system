@@ -5,6 +5,7 @@ import { getLoginUrl } from "@/const";
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 
+// FINAL DEPLOY - 2026-04-14 19:00 UTC
 export default function Home() {
   const { user, isAuthenticated, loading } = useAuth();
   const [, setLocation] = useLocation();
