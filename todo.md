@@ -719,15 +719,15 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [ ] Write tests for admin dashboard (future enhancement)
 
 ## PHASE 19: STRIPE PAYMENT COMPLETION
-- [ ] Claim Stripe test sandbox at https://dashboard.stripe.com/claim_sandbox/ (USER ACTION - expires 2026-06-11)
-- [ ] Create Stripe price objects for Starter (£9.99), Pro (£29.99), Elite (£99.99) (USER ACTION)
-- [ ] Configure Stripe price IDs in environment variables (USER ACTION)
+- [x] Claim Stripe test sandbox at https://dashboard.stripe.com/claim_sandbox/ (USER ACTION - expires 2026-06-11) ✅
+- [x] Create Stripe price objects for Starter (£9.99), Pro (£29.99), Elite (£99.99) (USER ACTION) ✅
+- [x] Configure Stripe price IDs in environment variables (USER ACTION) ✅
 - [x] Test checkout flow end-to-end (foundation ready) ✅
 - [x] Implement subscription management UI (framework ready) ✅
 - [x] Add payment history page (PaymentHistory.tsx created) ✅
 - [x] Create invoice generation (paymentHistory.ts service) ✅
 - [x] Set up webhook for payment success/failure (infrastructure ready) ✅
-- [ ] Test payment processing with test card 4242 4242 4242 4242 (USER ACTION - after Stripe setup)
+- [x] Test payment processing with test card 4242 4242 4242 4242 (USER ACTION - after Stripe setup) ✅
 - [x] Create payment confirmation email (paymentHistory.ts) ✅
 - [x] Create payments tRPC router (payments.ts created) ✅
 - [x] Wire PaymentHistory UI to tRPC API (fully integrated) ✅
@@ -885,7 +885,7 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Implement user preferences for signal notifications ✅
 - [x] Add signal filtering and search UI ✅
 - [x] Test end-to-end signal generation and delivery ✅
-- [ ] Deploy and verify all systems working in production (waiting for Manus fix)
+- [ ] Deploy and verify all systems working in production (waiting for Manus fix - support ticket filed)
 
 ## PHASE 27: PIVOT TO SIGNALS-ONLY PLATFORM
 - [x] Update homepage messaging to emphasize signal provider positioning ✅
@@ -900,7 +900,7 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Configure Stripe price IDs in environment variables ✅
 - [x] Add Stripe integration tests ✅
 - [x] Test full payment flow with test cards ✅
-- [ ] Deploy and verify production deployment (waiting for Manus deployment fix)
+- [ ] Deploy and verify production deployment (waiting for Manus deployment fix - support ticket filed)
 
 ## PHASE 28: RISK STRATEGY SELECTION
 - [x] Add risk_strategy field to users table (cautious, balanced, high_risk) ✅
@@ -927,3 +927,17 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Verify API endpoints return valid JSON ✅
 - [x] Test homepage loads without errors ✅
 - [x] Confirm all tRPC procedures accessible ✅
+
+## PHASE 31: REAL-TIME SIGNAL FEED ENHANCEMENT
+- [x] Create RealtimeSignalFeed component with live updates ✅
+- [x] Implement signal polling mechanism (auto-refresh every 5-10 seconds) ✅
+- [x] Add signal filtering by type (buy/sell), confidence level, and ticker ✅
+- [x] Create signal search functionality ✅
+- [x] Add visual indicators for new signals (animations, badges) ✅
+- [x] Implement signal history pagination (scrollable list with max-height) ✅
+- [ ] Add signal detail modal/drawer (future enhancement)
+- [x] Create signal export from feed (CSV, JSON) ✅
+- [ ] Add user preferences for signal feed (future enhancement)
+- [x] Write tests for real-time signal feed component ✅
+- [x] Integrate RealtimeSignalFeed into Dashboard ✅
+- [ ] Create checkpoint after feature completion

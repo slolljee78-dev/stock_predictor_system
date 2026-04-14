@@ -1,6 +1,6 @@
-import { useAuth } from "@/_core/hooks/useAuth";
 import DashboardLayout from "@/components/DashboardLayout";
 import MarketOverview from "@/components/MarketOverview";
+import RealtimeSignalFeed from "@/components/RealtimeSignalFeed";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { TrendingUp, TrendingDown, Search, Plus } from "lucide-react";
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { RiskStrategySelector, RiskStrategyBadge } from "@/components/RiskStrategySelector";
 
 export default function Dashboard() {
@@ -97,55 +98,10 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        {signals.length > 0 && (
-          <Card className="border-border/50">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-green-500" />
-                Active Trading Signals
-              </CardTitle>
-              <CardDescription>Latest AI-generated buy/sell recommendations</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {signals.map((signal: any) => (
-                  <div
-                    key={signal.signalId}
-                    className="flex items-center justify-between p-4 rounded-lg border border-border/50 hover:bg-accent/30 transition-colors"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div>
-                        <p className="font-semibold">{signal.ticker}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {new Date(signal.createdAt).toLocaleDateString()}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="text-right">
-                        <Badge
-                          variant={signal.type === 'buy' ? 'default' : 'destructive'}
-                          className="mb-1"
-                        >
-                          {signal.type.toUpperCase()}
-                        </Badge>
-                        <p className="text-sm font-medium">{signal.confidenceScore}% confidence</p>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setLocation(`/stock/${signal.ticker}`)}
-                      >
-                        View
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        {/* Real-Time Signal Feed */}
+        <RealtimeSignalFeed limit={15} autoRefresh={true} refreshInterval={5000} />
 
+        {/* Watchlist Section */}
         <Card className="border-border/50">
           <CardHeader>
             <div className="flex items-center justify-between">
