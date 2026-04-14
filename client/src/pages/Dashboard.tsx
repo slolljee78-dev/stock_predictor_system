@@ -1,11 +1,11 @@
-import DashboardLayout from "@/components/DashboardLayout";
 import MarketOverview from "@/components/MarketOverview";
 import RealtimeSignalFeed from "@/components/RealtimeSignalFeed";
+import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, Search, Plus } from "lucide-react";
+import { TrendingUp, TrendingDown, Search, Plus, AlertCircle, Zap } from "lucide-react";
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
@@ -39,21 +39,16 @@ export default function Dashboard() {
   });
 
   const watchlist = watchlistQuery.data || [];
-  // signals is already defined above from signalsQuery
 
   return (
     <DashboardLayout>
-      <div className="space-y-8">
+      <div className="space-y-6">
+        {/* Page Header */}
         <div className="flex flex-col gap-2">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">Stock Analysis Dashboard</h1>
-              <p className="text-muted-foreground">
-                Monitor Trading 212 stocks with AI-powered signals and technical analysis
-              </p>
-            </div>
-            <RiskStrategyBadge />
-          </div>
+          <h1 className="text-3xl font-bold tracking-tight text-white">Stock Analysis Dashboard</h1>
+          <p className="text-sm text-slate-400">
+            Monitor Trading 212 stocks with AI-powered signals and technical analysis
+          </p>
         </div>
 
         {/* Usage Analytics for Free Tier Users */}
@@ -77,101 +72,134 @@ export default function Dashboard() {
           />
         )}
 
-        <Card className="border-border/50 bg-gradient-to-br from-background to-background/50">
-          <CardHeader>
-            <CardTitle>Trading Strategy</CardTitle>
-            <CardDescription>Select your risk tolerance for signal generation</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <RiskStrategySelector showDescription={false} />
-          </CardContent>
-        </Card>
+        {/* Grid Layout - 2 columns on desktop, 1 on mobile */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Trading Strategy Card */}
+          <Card className="border-slate-800/50 bg-gradient-to-br from-slate-900 to-slate-800/50 hover:border-slate-700/50 transition-colors">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg text-white flex items-center gap-2">
+                <Zap className="h-5 w-5 text-amber-400" />
+                Trading Strategy
+              </CardTitle>
+              <CardDescription className="text-slate-400">Select your risk tolerance</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <RiskStrategySelector showDescription={false} />
+            </CardContent>
+          </Card>
 
-        <Card className="border-border/50 bg-gradient-to-br from-background to-background/50">
-          <CardContent className="pt-6">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search stocks by ticker or name (e.g., AAPL, Microsoft)..."
-                className="pl-10 h-11 text-base"
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-              />
-            </div>
+          {/* Stock Search Card */}
+          <Card className="border-slate-800/50 bg-gradient-to-br from-slate-900 to-slate-800/50 hover:border-slate-700/50 transition-colors">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg text-white flex items-center gap-2">
+                <Search className="h-5 w-5 text-blue-400" />
+                Find Stocks
+              </CardTitle>
+              <CardDescription className="text-slate-400">Search by ticker or name</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+                <Input
+                  placeholder="AAPL, Microsoft, Tesla..."
+                  className="pl-10 h-10 bg-slate-800/50 border-slate-700/50 text-white placeholder:text-slate-500 focus:border-blue-500/50"
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                />
+              </div>
 
-            {searchQuery && searchQueryTrpc.data && searchQueryTrpc.data.length > 0 && (
-              <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                {searchQueryTrpc.data.map(stock => (
-                  <div
-                    key={stock.id}
-                    className="p-3 rounded-lg border border-border/50 hover:bg-accent/50 cursor-pointer transition-colors"
-                    onClick={() => setLocation(`/stock/${stock.ticker}`)}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-semibold text-sm">{stock.ticker}</p>
-                        <p className="text-xs text-muted-foreground">{stock.name}</p>
+              {searchQuery && searchQueryTrpc.data && searchQueryTrpc.data.length > 0 && (
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {searchQueryTrpc.data.slice(0, 5).map(stock => (
+                    <div
+                      key={stock.id}
+                      className="p-3 rounded-lg border border-slate-700/50 bg-slate-800/30 hover:bg-slate-700/50 cursor-pointer transition-colors"
+                      onClick={() => setLocation(`/stock/${stock.ticker}`)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-semibold text-sm text-white">{stock.ticker}</p>
+                          <p className="text-xs text-slate-400">{stock.name}</p>
+                        </div>
+                        <Badge variant="outline" className="text-xs bg-slate-800/50 border-slate-700/50 text-slate-300">
+                          {stock.type}
+                        </Badge>
                       </div>
-                      <Badge variant="outline" className="text-xs">
-                        {stock.type}
-                      </Badge>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
 
-        {/* Real-Time Signal Feed */}
-        <RealtimeSignalFeed limit={15} autoRefresh={true} refreshInterval={5000} />
-
-        {/* Watchlist Management */}
-        <WatchlistManager 
-          onSelectWatchlist={setSelectedWatchlistId}
-          selectedGroupId={selectedWatchlistId}
-        />
-
-        {/* Watchlist Section with Drag-and-Drop */}
-        <Card className="border-border/50">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Your Watchlist</CardTitle>
-                <CardDescription>Drag to reorder • Click to view details</CardDescription>
-              </div>
-              <Button
-                size="sm"
-                onClick={() => setSearchQuery('')}
-                className="gap-2"
-              >
-                <Plus className="h-4 w-4" />
-                Add Stock
-              </Button>
-            </div>
+        {/* Real-Time Signal Feed - Full Width */}
+        <Card className="border-slate-800/50 bg-gradient-to-br from-slate-900 to-slate-800/50 hover:border-slate-700/50 transition-colors">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg text-white flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-green-400" />
+              Live Trading Signals
+            </CardTitle>
+            <CardDescription className="text-slate-400">Real-time AI-powered signals updated every 5 seconds</CardDescription>
           </CardHeader>
           <CardContent>
-            {selectedWatchlistId ? (
-              <DraggableStockList
-                stocks={watchlist}
-                groupId={selectedWatchlistId}
-                onStocksReordered={() => {
-                  // Refresh watchlist after reordering
-                }}
-                onStockRemoved={() => {
-                  // Refresh watchlist after removing stock
-                }}
-              />
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground mb-4">Select a watchlist to view and manage stocks</p>
-                <p className="text-xs text-muted-foreground">Use the watchlist manager above to create or select a watchlist</p>
-              </div>
-            )}
+            <RealtimeSignalFeed limit={15} autoRefresh={true} refreshInterval={5000} />
           </CardContent>
         </Card>
 
-        {/* Market Overview */}
+        {/* Watchlist Management - 2 columns on desktop */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Watchlist Manager */}
+          <Card className="border-slate-800/50 bg-gradient-to-br from-slate-900 to-slate-800/50 hover:border-slate-700/50 transition-colors">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg text-white">My Watchlists</CardTitle>
+              <CardDescription className="text-slate-400">Organize stocks by strategy</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <WatchlistManager 
+                onSelectWatchlist={setSelectedWatchlistId}
+                selectedGroupId={selectedWatchlistId}
+              />
+            </CardContent>
+          </Card>
+
+          {/* Watchlist Stocks */}
+          <Card className="border-slate-800/50 bg-gradient-to-br from-slate-900 to-slate-800/50 hover:border-slate-700/50 transition-colors">
+            <CardHeader className="pb-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg text-white">Stocks</CardTitle>
+                  <CardDescription className="text-slate-400">Drag to reorder • Click to view</CardDescription>
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => setSearchQuery('')}
+                  className="gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {selectedWatchlistId ? (
+                <DraggableStockList
+                  stocks={watchlist}
+                  groupId={selectedWatchlistId}
+                  onStocksReordered={() => {}}
+                  onStockRemoved={() => {}}
+                />
+              ) : (
+                <div className="text-center py-8">
+                  <AlertCircle className="h-8 w-8 text-slate-600 mx-auto mb-3" />
+                  <p className="text-slate-400 text-sm">Select a watchlist to view stocks</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Market Overview - Full Width */}
         <MarketOverview />
       </div>
     </DashboardLayout>
