@@ -46,15 +46,27 @@ export function ThemeProvider({
 
   useEffect(() => {
     const root = document.documentElement;
+    
+    // Add transition class to enable smooth animations
+    root.classList.add("theme-transitioning");
+    
+    // Apply theme change
     if (theme === "dark") {
       root.classList.add("dark");
     } else {
       root.classList.remove("dark");
     }
 
+    // Remove transition class after animation completes
+    const timer = setTimeout(() => {
+      root.classList.remove("theme-transitioning");
+    }, 300);
+
     if (switchable) {
       localStorage.setItem("theme", theme);
     }
+    
+    return () => clearTimeout(timer);
   }, [theme, switchable]);
 
   const toggleTheme = switchable

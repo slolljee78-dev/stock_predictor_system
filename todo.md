@@ -1046,3 +1046,12 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Test on Windows, macOS, and Linux systems ✅
 - [x] Verify theme persists after page refresh ✅
 - [x] Create checkpoint after OS theme detection completion ✅
+
+## PHASE 41: THEME TRANSITION ANIMATIONS
+- [x] Create CSS transitions for theme switching ✅
+- [x] Add fade effect to all UI elements during theme change ✅
+- [x] Implement smooth color transitions for background and text ✅
+- [x] Update ThemeProvider to apply transition class ✅
+- [x] Test animation smoothness and performance ✅
+- [x] Verify no jarring visual changes during theme switch ✅
+- [x] Create checkpoint after animation implementation ✅
