@@ -203,3 +203,66 @@ export function getCachedPrice(ticker: string): StockPrice | null {
   }
   return null;
 }
+
+
+/**
+ * Fetch historical OHLCV data for a stock
+ * Returns mock data for now - in production, integrate with a real API
+ */
+export async function fetchPriceHistory(
+  ticker: string,
+  timeframe: "1h" | "4h" | "1d" | "1w" = "1d"
+): Promise<IntraDayData[]> {
+  try {
+    // Generate mock historical data for demonstration
+    // In production, this would fetch from a real API like Alpha Vantage or IEX Cloud
+    const now = new Date();
+    const data: IntraDayData[] = [];
+    
+    let periods = 20; // Number of candles
+    let intervalMs = 24 * 60 * 60 * 1000; // 1 day
+    
+    if (timeframe === "1h") {
+      periods = 24;
+      intervalMs = 60 * 60 * 1000;
+    } else if (timeframe === "4h") {
+      periods = 30;
+      intervalMs = 4 * 60 * 60 * 1000;
+    } else if (timeframe === "1w") {
+      periods = 12;
+      intervalMs = 7 * 24 * 60 * 60 * 1000;
+    }
+    
+    // Get current price as base
+    const currentPrice = await fetchStockPrice(ticker);
+    const basePrice = currentPrice?.price || 100;
+    
+    for (let i = periods - 1; i >= 0; i--) {
+      const timestamp = new Date(now.getTime() - i * intervalMs);
+      
+      // Generate realistic OHLCV data with some volatility
+      const volatility = 0.02; // 2% volatility
+      const randomChange = (Math.random() - 0.5) * 2 * volatility;
+      const close = basePrice * (1 + randomChange);
+      const open = close * (1 + (Math.random() - 0.5) * volatility);
+      const high = Math.max(open, close) * (1 + Math.random() * 0.01);
+      const low = Math.min(open, close) * (1 - Math.random() * 0.01);
+      const volume = Math.floor(Math.random() * 5000000) + 1000000;
+      
+      data.push({
+        ticker,
+        timestamp: timestamp.toISOString(),
+        open: parseFloat(open.toFixed(2)),
+        high: parseFloat(high.toFixed(2)),
+        low: parseFloat(low.toFixed(2)),
+        close: parseFloat(close.toFixed(2)),
+        volume,
+      });
+    }
+    
+    return data;
+  } catch (error) {
+    console.error(`Error fetching price history for ${ticker}:`, error);
+    return [];
+  }
+}

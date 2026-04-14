@@ -11,6 +11,7 @@ import {
   fetchMarketData,
   fetchStockPriceWithCache,
   clearPriceCache,
+  fetchPriceHistory,
 } from "../liveMarketData";
 
 export const liveMarketRouter = router({
@@ -66,6 +67,19 @@ export const liveMarketRouter = router({
       const prices = await fetchMultipleStockPrices(input.tickers);
       const sorted = prices.sort((a, b) => a.changePercent - b.changePercent);
       return sorted.slice(0, input.limit);
+    }),
+
+  // Get historical price data
+  getPriceHistory: publicProcedure
+    .input(
+      z.object({
+        ticker: z.string(),
+        timeframe: z.enum(["1h", "4h", "1d", "1w"]).default("1d"),
+      })
+    )
+    .query(async ({ input }) => {
+      const history = await fetchPriceHistory(input.ticker, input.timeframe);
+      return history;
     }),
 
   // Refresh price cache

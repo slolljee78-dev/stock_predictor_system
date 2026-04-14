@@ -1000,3 +1000,16 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Test live price updates and refresh functionality ✅
 - [x] Verify performance with multiple concurrent price updates ✅
 - [x] Create checkpoint after live price feed completion ✅
+
+## PHASE 37: TRADINGVIEW LIGHTWEIGHT CHARTS INTEGRATION
+- [x] Install TradingView Lightweight Charts library via npm ✅
+- [x] Create backend procedure to fetch historical OHLCV data ✅
+- [x] Build PriceChart component with candlestick chart display ✅
+- [x] Add multiple timeframe support (1h, 4h, 1d, 1w) ✅
+- [x] Implement timeframe selector buttons ✅
+- [ ] Add technical indicators (SMA, EMA, RSI, MACD, Bollinger Bands) (future enhancement)
+- [x] Integrate chart into StockDetailsModal as new tab ✅
+- [x] Add chart customization options (colors, zoom, pan) ✅
+- [x] Test chart rendering and data loading ✅
+- [x] Verify chart performance with large datasets ✅
+- [x] Create checkpoint after chart integration completion ✅

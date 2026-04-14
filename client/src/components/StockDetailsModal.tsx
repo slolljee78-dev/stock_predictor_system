@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TrendingUp, TrendingDown, AlertCircle, Bell, X } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { PriceDisplay } from "./PriceDisplay";
+import { PriceChart } from "./PriceChart";
 
 interface StockDetailsModalProps {
   isOpen: boolean;
@@ -75,12 +76,18 @@ export function StockDetailsModal({
           </div>
         ) : (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="chart">Chart</TabsTrigger>
               <TabsTrigger value="signals">Signals</TabsTrigger>
               <TabsTrigger value="alerts">Alerts</TabsTrigger>
               <TabsTrigger value="analysis">Analysis</TabsTrigger>
             </TabsList>
+
+            {/* Chart Tab */}
+            <TabsContent value="chart" className="space-y-4">
+              <PriceChart ticker={ticker} timeframe="1d" height={400} />
+            </TabsContent>
 
             {/* Overview Tab */}
             <TabsContent value="overview" className="space-y-4">
