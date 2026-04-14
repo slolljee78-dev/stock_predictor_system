@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, tinyint } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -36,6 +36,11 @@ export const users = mysqlTable("users", {
   
   // Risk strategy preference for signal generation
   riskStrategy: mysqlEnum("riskStrategy", ["cautious", "balanced", "high_risk"]).default("balanced").notNull(),
+  
+  // Email verification for free tier
+  emailVerified: tinyint("emailVerified").default(0).notNull(),
+  emailVerificationToken: varchar("emailVerificationToken", { length: 255 }),
+  emailVerificationTokenExpiresAt: timestamp("emailVerificationTokenExpiresAt"),
 });
 
 export type User = typeof users.$inferSelect;

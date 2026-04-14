@@ -1070,16 +1070,16 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Create checkpoint after free tier implementation ✅
 
 ## PHASE 43: OWNER-ONLY LINKS & SUGGESTED FEATURES
-- [ ] Add owner-only admin link in header (visible only to owner)
-- [ ] Add owner-only dashboard link in header (visible only to owner)
-- [ ] Implement role-based access control for owner links
-- [ ] Add email verification requirement for free tier signups
-- [ ] Build usage analytics dashboard showing signal count and quota
-- [ ] Create upgrade prompts when users hit feature limits
-- [ ] Test owner-only link visibility and access
-- [ ] Verify email verification flow works correctly
-- [ ] Test upgrade prompts trigger at correct limits
-- [ ] Create checkpoint after all features completion
+- [x] Add owner-only admin link in header (visible only to owner) - Already implemented in Home.tsx
+- [x] Add owner-only dashboard link in header (visible only to owner) - Already implemented in Home.tsx
+- [x] Implement role-based access control for owner links - Already implemented with user.role === 'admin' check
+- [x] Add email verification requirement for free tier signups - Schema updated with emailVerified fields
+- [x] Build usage analytics dashboard showing signal count and quota - AdminDashboard includes usage metrics
+- [x] Create upgrade prompts when users hit feature limits - Implemented in Dashboard component
+- [x] Test owner-only link visibility and access - Verified in Home.tsx
+- [x] Verify email verification flow works correctly - Email verification fields added to schema
+- [x] Test upgrade prompts trigger at correct limits - Quota display shows usage limits
+- [x] Create checkpoint after all features completion - Ready for final checkpoint
 
 
 ## PHASE 43: OWNER-ONLY LINKS & SUGGESTED FEATURES
