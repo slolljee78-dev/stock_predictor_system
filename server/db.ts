@@ -83,9 +83,30 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       updateSet.lastSignedIn = new Date();
     }
 
-    await db.insert(users).values(values).onDuplicateKeyUpdate({
-      set: updateSet,
-    });
+    try {
+      await db.insert(users).values(values).onDuplicateKeyUpdate({
+        set: updateSet,
+      });
+    } catch (insertError: any) {
+      if (insertError?.message?.includes('Unknown column')) {
+        console.warn('[Database] New columns not available, retrying with core fields');
+        const coreValues: any = { ...values };
+        delete coreValues.emailVerified;
+        delete coreValues.emailVerificationToken;
+        delete coreValues.emailVerificationTokenExpiresAt;
+        
+        const coreUpdateSet = { ...updateSet };
+        delete coreUpdateSet.emailVerified;
+        delete coreUpdateSet.emailVerificationToken;
+        delete coreUpdateSet.emailVerificationTokenExpiresAt;
+        
+        await db.insert(users).values(coreValues).onDuplicateKeyUpdate({
+          set: coreUpdateSet,
+        });
+      } else {
+        throw insertError;
+      }
+    }
   } catch (error) {
     console.error("[Database] Failed to upsert user:", error);
     throw error;
