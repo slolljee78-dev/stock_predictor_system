@@ -899,8 +899,8 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Complete Stripe payment setup (claim sandbox, create prices) - USER ACTION ✅
 - [x] Configure Stripe price IDs in environment variables ✅
 - [x] Add Stripe integration tests ✅
-- [ ] Test full payment flow with test cards
-- [ ] Deploy and verify production deployment
+- [x] Test full payment flow with test cards ✅
+- [ ] Deploy and verify production deployment (waiting for Manus deployment fix)
 
 ## PHASE 28: RISK STRATEGY SELECTION
 - [x] Add risk_strategy field to users table (cautious, balanced, high_risk) ✅
@@ -910,3 +910,12 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Update signal generation prompts for each strategy ✅
 - [x] Test signal generation with different risk strategies ✅
 - [x] Deploy and verify risk strategy feature (integrated into Dashboard) ✅
+
+## PHASE 29: SUBSCRIPTION TIER COMPARISON
+- [ ] Create side-by-side comparison component for all tiers
+- [ ] Add comparison table with feature matrix
+- [ ] Implement tier highlighting (recommended tier)
+- [ ] Add comparison view to pricing page
+- [ ] Create mobile-responsive comparison layout
+- [ ] Add CTA buttons in comparison for each tier
+- [ ] Test comparison UI on different screen sizes

@@ -2,6 +2,7 @@ import { Check, X } from "lucide-react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
 import { useEffect, useState } from "react";
+import { TierComparison } from "@/components/TierComparison";
 
 const PRICING_TIERS = [
   {
@@ -175,6 +176,11 @@ export default function Pricing() {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Comparison Section */}
+        <div className="mt-20 mb-20">
+          <TierComparison />
         </div>
 
         {/* FAQ Section */}
