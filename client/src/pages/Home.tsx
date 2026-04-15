@@ -57,10 +57,10 @@ export default function Home() {
             <p className="text-sm font-semibold text-accent">🚀 Powered by AI & Machine Learning</p>
           </div>
           <h1 className="text-5xl md:text-7xl font-black mb-8 gradient-text leading-tight tracking-tighter" style={{letterSpacing: '-0.04em'}}>
-            Trade Smarter,<br />Not Harder
+            AI-Powered Stock Trading Signals<br />for Trading 212
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground mb-16 max-w-3xl mx-auto leading-relaxed">
-            Get intelligent buy/sell signals for Trading 212 stocks with advanced technical indicators, machine learning insights, and real-time market analysis.
+            Get intelligent buy/sell signals for Trading 212 stocks with advanced technical analysis, machine learning insights, and real-time market analysis. Automated trading alerts powered by AI.
           </p>
           {!isAuthenticated && (
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
