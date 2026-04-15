@@ -53,12 +53,15 @@ class OAuthService {
     code: string,
     state: string
   ): Promise<ExchangeTokenResponse> {
+    const redirectUri = this.decodeState(state);
+    console.log('[OAuth] Token exchange - decoded redirectUri from state:', redirectUri);
     const payload: ExchangeTokenRequest = {
       clientId: ENV.appId,
       grantType: "authorization_code",
       code,
-      redirectUri: this.decodeState(state),
+      redirectUri,
     };
+    console.log('[OAuth] Token exchange payload:', { clientId: payload.clientId, grantType: payload.grantType, redirectUri: payload.redirectUri });
 
     const { data } = await this.client.post<ExchangeTokenResponse>(
       EXCHANGE_TOKEN_PATH,
