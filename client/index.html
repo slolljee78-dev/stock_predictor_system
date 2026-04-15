@@ -19,6 +19,24 @@
 
   <body>
     <div id="root"></div>
+    <script>
+      // Suppress Vite WebSocket connection errors from debug collector
+      const originalError = console.error;
+      console.error = function(...args) {
+        const errorStr = String(args[0] || '');
+        if (errorStr.includes('[vite]') && errorStr.includes('failed to connect to websocket')) {
+          return; // Silently ignore this specific error
+        }
+        originalError.apply(console, args);
+      };
+      
+      // Also prevent the error from being reported via window.onerror
+      window.addEventListener('error', (event) => {
+        if (event.message && event.message.includes('[vite]') && event.message.includes('websocket')) {
+          event.preventDefault();
+        }
+      });
+    </script>
     <script type="module" src="/src/main.tsx"></script>
     <script
       defer
