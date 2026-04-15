@@ -16,23 +16,58 @@
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text x='50' y='50' font-size='80' text-anchor='middle' dominant-baseline='central'>📈</text></svg>" />    
     
     <script>
-      // Suppress Vite WebSocket connection errors from debug collector
-      // This must run BEFORE the debug collector loads
-      const originalError = console.error;
-      console.error = function(...args) {
-        const errorStr = String(args[0] || '');
-        if (errorStr.includes('[vite]') && errorStr.includes('failed to connect to websocket')) {
-          return; // Silently ignore this specific error
+      // Aggressive Vite client removal and error suppression
+      (function() {
+        // Store original console.error before anything else wraps it
+        const originalConsoleError = console.error;
+        
+        // Override console.error to suppress Vite WebSocket errors
+        console.error = function(...args) {
+          const errorStr = String(args[0] || '');
+          if (errorStr.includes('[vite]') && errorStr.includes('failed to connect to websocket')) {
+            return; // Silently ignore this specific error
+          }
+          return originalConsoleError.apply(this, args);
+        };
+        
+        // Remove any Vite client scripts that get injected
+        function removeViteClient() {
+          const scripts = document.querySelectorAll('script[src*="@vite/client"]');
+          scripts.forEach(script => {
+            script.remove();
+          });
         }
-        originalError.apply(console, args);
-      };
-      
-      // Also prevent the error from being reported via window.onerror
-      window.addEventListener('error', (event) => {
-        if (event.message && event.message.includes('[vite]') && event.message.includes('websocket')) {
-          event.preventDefault();
-        }
-      });
+        
+        // Remove Vite client immediately
+        removeViteClient();
+        
+        // Watch for new scripts being added and remove Vite client
+        const observer = new MutationObserver(() => {
+          removeViteClient();
+        });
+        
+        observer.observe(document.documentElement, {
+          childList: true,
+          subtree: true,
+        });
+        
+        // Also prevent window.onerror from reporting these errors
+        window.addEventListener('error', (event) => {
+          if (event.message && event.message.includes('[vite]') && event.message.includes('websocket')) {
+            event.preventDefault();
+            event.stopPropagation();
+            event.stopImmediatePropagation();
+            return false;
+          }
+        }, true);
+        
+        // Prevent unhandledrejection events for Vite WebSocket errors
+        window.addEventListener('unhandledrejection', (event) => {
+          if (event.reason && String(event.reason).includes('[vite]') && String(event.reason).includes('websocket')) {
+            event.preventDefault();
+          }
+        }, true);
+      })();
     </script>
 
   </head>
