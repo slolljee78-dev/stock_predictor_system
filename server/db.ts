@@ -45,7 +45,8 @@ export async function upsertUser(user: InsertUser): Promise<void> {
   }
 
   try {
-    // Only use core fields that are guaranteed to exist
+    // Only use core fields that are guaranteed to exist in production
+    // Do NOT include email verification fields or other optional fields
     const values: any = {
       openId: user.openId,
     };
@@ -65,9 +66,13 @@ export async function upsertUser(user: InsertUser): Promise<void> {
 
     textFields.forEach(assignNullable);
 
+    // Only set lastSignedIn if provided
     if (user.lastSignedIn !== undefined) {
       values.lastSignedIn = user.lastSignedIn;
       updateSet.lastSignedIn = user.lastSignedIn;
+    } else {
+      values.lastSignedIn = new Date();
+      updateSet.lastSignedIn = new Date();
     }
     
     // Only set role if explicitly provided or if this is the owner
@@ -79,15 +84,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       updateSet.role = 'admin';
     }
 
-    if (!values.lastSignedIn) {
-      values.lastSignedIn = new Date();
-    }
-
-    if (Object.keys(updateSet).length === 0) {
-      updateSet.lastSignedIn = new Date();
-    }
-
-    // Remove any undefined or problematic fields
+    // Remove any undefined fields to prevent database errors
     Object.keys(values).forEach(key => {
       if (values[key] === undefined) {
         delete values[key];
