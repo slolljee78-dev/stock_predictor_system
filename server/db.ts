@@ -45,56 +45,27 @@ export async function upsertUser(user: InsertUser): Promise<void> {
   }
 
   try {
-    // Only use core fields that are guaranteed to exist in production
-    // Do NOT include email verification fields or other optional fields
-    const values: any = {
+    const lastSignedIn = user.lastSignedIn || new Date();
+    const role = user.role || (user.openId === ENV.ownerOpenId ? 'admin' : 'user');
+
+    console.log("[Database] Upserting user:", { openId: user.openId, name: user.name, email: user.email });
+    
+    // Insert with only core columns to avoid schema mismatch
+    const result = await db.insert(users).values({
       openId: user.openId,
-    };
-    const updateSet: Record<string, unknown> = {};
-
-    // Core fields that should always exist
-    const textFields = ["name", "email", "loginMethod"] as const;
-    type TextField = (typeof textFields)[number];
-
-    const assignNullable = (field: TextField) => {
-      const value = user[field];
-      if (value === undefined) return;
-      const normalized = value ?? null;
-      values[field] = normalized;
-      updateSet[field] = normalized;
-    };
-
-    textFields.forEach(assignNullable);
-
-    // Only set lastSignedIn if provided
-    if (user.lastSignedIn !== undefined) {
-      values.lastSignedIn = user.lastSignedIn;
-      updateSet.lastSignedIn = user.lastSignedIn;
-    } else {
-      values.lastSignedIn = new Date();
-      updateSet.lastSignedIn = new Date();
-    }
-    
-    // Only set role if explicitly provided or if this is the owner
-    if (user.role !== undefined) {
-      values.role = user.role;
-      updateSet.role = user.role;
-    } else if (user.openId === ENV.ownerOpenId) {
-      values.role = 'admin';
-      updateSet.role = 'admin';
-    }
-
-    // Remove any undefined fields to prevent database errors
-    Object.keys(values).forEach(key => {
-      if (values[key] === undefined) {
-        delete values[key];
-      }
-    });
-
-    console.log("[Database] Upserting user with values:", { openId: values.openId, keys: Object.keys(values) });
-    
-    await db.insert(users).values(values).onDuplicateKeyUpdate({
-      set: updateSet,
+      name: user.name ?? null,
+      email: user.email ?? null,
+      loginMethod: user.loginMethod ?? null,
+      role: role as 'user' | 'admin',
+      lastSignedIn: lastSignedIn,
+    }).onDuplicateKeyUpdate({
+      set: {
+        name: user.name ?? null,
+        email: user.email ?? null,
+        loginMethod: user.loginMethod ?? null,
+        role: role as 'user' | 'admin',
+        lastSignedIn: lastSignedIn,
+      },
     });
     
     console.log("[Database] User upserted successfully");
