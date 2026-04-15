@@ -307,13 +307,18 @@ class SDKServer {
     // Regular authentication flow
     // With cookie-parser middleware, cookies are available on req.cookies
     // Fall back to manual parsing if req.cookies is not available
+    console.log('[Auth] authenticateRequest - req.cookies:', Object.keys((req as any).cookies || {}));
+    console.log('[Auth] authenticateRequest - Cookie header:', req.headers.cookie?.substring(0, 100));
     const sessionCookie = (req as any).cookies?.[COOKIE_NAME] || 
                           this.parseCookies(req.headers.cookie).get(COOKIE_NAME);
+    console.log('[Auth] authenticateRequest - sessionCookie found:', !!sessionCookie);
     const session = await this.verifySession(sessionCookie);
 
     if (!session) {
+      console.error('[Auth] Session verification failed - no valid session');
       throw ForbiddenError("Invalid session cookie");
     }
+    console.log('[Auth] Session verified successfully for openId:', session.openId);
 
     const sessionUserId = session.openId;
     const signedInAt = new Date();
@@ -338,13 +343,16 @@ class SDKServer {
     }
 
     if (!user) {
+      console.error('[Auth] User not found in database for openId:', session.openId);
       throw ForbiddenError("User not found");
     }
+    console.log('[Auth] User authenticated successfully:', user.openId);
 
     await db.upsertUser({
       openId: user.openId,
       lastSignedIn: signedInAt,
     });
+    console.log('[Auth] User lastSignedIn updated');
 
     return user;
   }

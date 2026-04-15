@@ -9,12 +9,24 @@ export default function Home() {
   const { user, isAuthenticated, loading } = useAuth();
   const [, setLocation] = useLocation();
   const [showVideoModal, setShowVideoModal] = useState(false);
+  const [loginUrl, setLoginUrl] = useState<string>("");
+
+  useEffect(() => {
+    // Set login URL once on mount
+    setLoginUrl(getLoginUrl());
+  }, []);
 
   useEffect(() => {
     if (isAuthenticated && !loading) {
       setLocation("/dashboard");
     }
   }, [isAuthenticated, loading, setLocation]);
+
+  const handleSignIn = () => {
+    if (loginUrl) {
+      window.location.href = loginUrl;
+    }
+  };
 
   if (loading) {
     return (
@@ -59,8 +71,8 @@ export default function Home() {
               </Button>
             )}
             {!isAuthenticated && (
-              <Button asChild className="bg-emerald-500 hover:bg-emerald-600 text-black font-bold px-6 py-2 h-auto text-sm rounded-lg">
-                <a href={getLoginUrl()}>Sign In</a>
+              <Button onClick={handleSignIn} className="bg-emerald-500 hover:bg-emerald-600 text-black font-bold px-6 py-2 h-auto text-sm rounded-lg">
+                Sign In
               </Button>
             )}
           </div>
