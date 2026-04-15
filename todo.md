@@ -692,3 +692,11 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Test on different browsers
 - [x] Verify loading states
 - [x] Test error states
+
+
+## Design & UX Improvements (Current Sprint)
+- [x] Fix background color from pure black to a more readable dark gray/navy
+- [x] Improve title spacing and sizing for better visual hierarchy
+- [x] Replace 8-second demo video with longer comprehensive walkthrough
+- [x] Fix dashboard button functionality (Add Stock, etc. not working) - Added missing useAuth import
+- [x] Improve overall visual contrast and readability

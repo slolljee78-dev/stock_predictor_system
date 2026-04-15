@@ -94,11 +94,11 @@
   --sidebar-primary: oklch(0.55 0.2 262);
   --sidebar-primary-foreground: oklch(0.98 0.01 262);
   
-  --background: oklch(0.08 0.01 262);
+  --background: oklch(0.15 0.01 262);
   --foreground: oklch(0.95 0.01 262);
-  --card: oklch(0.12 0.01 262);
+  --card: oklch(0.18 0.01 262);
   --card-foreground: oklch(0.95 0.01 262);
-  --popover: oklch(0.15 0.02 262);
+  --popover: oklch(0.2 0.02 262);
   --popover-foreground: oklch(0.92 0.02 262);
   
   --secondary: oklch(0.2 0.02 262);

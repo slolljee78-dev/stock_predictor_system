@@ -1,4 +1,3 @@
-import { useAuth } from "@/_core/hooks/useAuth";
 import DashboardLayout from "@/components/DashboardLayout";
 import MarketOverview from "@/components/MarketOverview";
 import { Button } from "@/components/ui/button";
@@ -9,6 +8,7 @@ import { TrendingUp, TrendingDown, Search, Plus } from "lucide-react";
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 export default function Dashboard() {
   const { user } = useAuth();
