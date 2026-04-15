@@ -1,60 +1,43 @@
+import { Button } from "@/components/ui/button";
 import { Check, X } from "lucide-react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
 import { useEffect, useState } from "react";
-import { TierComparison } from "@/components/TierComparison";
 
 const PRICING_TIERS = [
-  {
-    name: "Free",
-    price: 0,
-    currency: "£",
-    description: "Test the platform",
-    features: [
-      { name: "3 stocks monitoring", included: true },
-      { name: "5 signals per day", included: true },
-      { name: "Basic signal export (CSV)", included: true },
-      { name: "Email support", included: true },
-      { name: "50 stocks monitoring", included: false },
-      { name: "Real-time SMS alerts", included: false },
-      { name: "API access", included: false },
-    ],
-    cta: "Start Free",
-    tier: "FREE",
-  },
   {
     name: "Starter",
     price: 9.99,
     currency: "£",
     description: "Perfect for beginners",
     features: [
-      { name: "5 stocks monitoring", included: true },
-      { name: "AI-powered buy/sell signals", included: true },
-      { name: "Signal export (CSV, JSON)", included: true },
+      { name: "50 stocks monitoring", included: true },
+      { name: "Basic AI signals", included: true },
+      { name: "Weekly reports", included: true },
       { name: "Email support", included: true },
-      { name: "50 stocks monitoring", included: false },
-      { name: "Real-time SMS alerts", included: false },
+      { name: "All 212 stocks", included: false },
+      { name: "Real-time alerts", included: false },
       { name: "API access", included: false },
     ],
     cta: "Start Free Trial",
     tier: "STARTER",
   },
   {
-    name: "Professional",
+    name: "Pro",
     price: 29.99,
     currency: "£",
     description: "Most popular choice",
     features: [
       { name: "50 stocks monitoring", included: true },
-      { name: "AI-powered buy/sell signals", included: true },
-      { name: "Signal export (CSV, JSON)", included: true },
-      { name: "Email & SMS alerts", included: true },
-      { name: "Portfolio performance tracker", included: true },
-      { name: "Signal accuracy dashboard", included: true },
+      { name: "Basic AI signals", included: true },
+      { name: "Weekly reports", included: true },
+      { name: "Email support", included: true },
+      { name: "All 212 stocks", included: true },
+      { name: "Real-time alerts", included: true },
       { name: "API access", included: false },
     ],
-    cta: "Start Professional Trial",
-    tier: "PROFESSIONAL",
+    cta: "Start Pro Trial",
+    tier: "PRO",
     recommended: true,
   },
   {
@@ -63,13 +46,13 @@ const PRICING_TIERS = [
     currency: "£",
     description: "For professional traders",
     features: [
-      { name: "Unlimited stocks monitoring", included: true },
-      { name: "AI-powered buy/sell signals", included: true },
-      { name: "Signal export (CSV, JSON, API)", included: true },
-      { name: "Email & SMS alerts", included: true },
-      { name: "Portfolio performance tracker", included: true },
-      { name: "Signal accuracy dashboard", included: true },
-      { name: "Full API access", included: true },
+      { name: "50 stocks monitoring", included: true },
+      { name: "Basic AI signals", included: true },
+      { name: "Weekly reports", included: true },
+      { name: "Email support", included: true },
+      { name: "All 212 stocks", included: true },
+      { name: "Real-time alerts", included: true },
+      { name: "API access", included: true },
     ],
     cta: "Start Elite Trial",
     tier: "ELITE",
@@ -93,12 +76,6 @@ export default function Pricing() {
   const handleSubscribe = async (tier: string) => {
     if (!isAuthenticated) {
       setLocation("/");
-      return;
-    }
-
-    // Handle free tier - no checkout needed
-    if (tier === "FREE") {
-      setLocation("/dashboard");
       return;
     }
 
@@ -130,119 +107,134 @@ export default function Pricing() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background dark:bg-gradient-to-br dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       {/* Header */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 py-16">
-        <div className="text-center mb-12">
-          <h1 className="text-5xl font-black mb-4">Simple, Transparent Pricing</h1>
+      <div className="bg-card/50 border-b border-border/50 backdrop-blur sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <Button
+            variant="ghost"
+            onClick={() => setLocation("/")}
+            className="text-sm"
+          >
+            ← Back to Home
+          </Button>
+        </div>
+      </div>
+
+      {/* Pricing Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="text-center mb-16">
+          <h1 className="text-4xl font-bold gradient-text mb-4">
+            Simple, Transparent Pricing
+          </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Get AI-powered trading signals for any broker. No platform lock-in, pure signal intelligence.
+            Choose the perfect plan for your trading needs. All plans include a 7-day free trial.
           </p>
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+        <div className="grid md:grid-cols-3 gap-8 mb-16">
           {PRICING_TIERS.map((tier) => (
             <div
               key={tier.name}
-              className={`relative rounded-2xl border transition-all ${
+              className={`card-premium p-8 relative transition-all duration-300 ${
                 tier.recommended
-                  ? "border-accent-gold/50 bg-card/80 shadow-lg shadow-accent-gold/20 scale-105"
-                  : "border-border bg-card/50"
+                  ? "ring-2 ring-accent scale-105 md:scale-100"
+                  : ""
               }`}
             >
               {tier.recommended && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <span className="bg-accent-gold text-black px-4 py-1 rounded-full text-sm font-bold">
-                    POPULAR
+                  <span className="bg-accent text-white px-4 py-1 rounded-full text-sm font-semibold">
+                    Most Popular
                   </span>
                 </div>
               )}
 
-              <div className="p-8">
-                <h3 className="text-2xl font-black mb-2">{tier.name}</h3>
-                <p className="text-muted-foreground mb-6">{tier.description}</p>
+              <div className="mb-6">
+                <h3 className="text-2xl font-bold mb-2">{tier.name}</h3>
+                <p className="text-muted-foreground text-sm">{tier.description}</p>
+              </div>
 
-                <div className="mb-6">
-                  <span className="text-5xl font-black">{tier.currency}{tier.price}</span>
+              <div className="mb-6">
+                <div className="flex items-baseline gap-1">
+                  <span className="text-4xl font-bold">{tier.currency}</span>
+                  <span className="text-4xl font-bold">{tier.price}</span>
                   <span className="text-muted-foreground">/month</span>
                 </div>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Billed monthly, cancel anytime
+                </p>
+              </div>
 
-                <button
-                  onClick={() => handleSubscribe(tier.tier)}
-                  disabled={isProcessing && selectedTier === tier.tier}
-                  className={`w-full py-3 rounded-lg font-bold mb-8 transition-all ${
-                    tier.recommended
-                      ? "bg-accent-gold text-black hover:bg-accent-gold/90"
-                      : "bg-accent text-black hover:bg-accent/90"
-                  } disabled:opacity-50`}
-                >
-                  {isProcessing && selectedTier === tier.tier ? "Processing..." : tier.cta}
-                </button>
+              <Button
+                onClick={() => handleSubscribe(tier.tier)}
+                disabled={isProcessing && selectedTier === tier.tier}
+                className={`w-full mb-8 btn-premium ${
+                  tier.recommended ? "bg-accent hover:bg-accent/90" : ""
+                }`}
+              >
+                {isProcessing && selectedTier === tier.tier
+                  ? "Processing..."
+                  : tier.cta}
+              </Button>
 
-                <div className="space-y-4">
-                  {tier.features.map((feature) => (
-                    <div key={feature.name} className="flex items-center gap-3">
-                      {feature.included ? (
-                        <Check className="h-5 w-5 text-accent-emerald flex-shrink-0" />
-                      ) : (
-                        <X className="h-5 w-5 text-muted-foreground/50 flex-shrink-0" />
-                      )}
-                      <span
-                        className={feature.included ? "text-foreground" : "text-muted-foreground/50"}
-                      >
-                        {feature.name}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+              <div className="space-y-4">
+                {tier.features.map((feature, idx) => (
+                  <div key={idx} className="flex items-center gap-3">
+                    {feature.included ? (
+                      <Check className="h-5 w-5 text-accent flex-shrink-0" />
+                    ) : (
+                      <X className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                    )}
+                    <span
+                      className={
+                        feature.included
+                          ? "text-foreground"
+                          : "text-muted-foreground"
+                      }
+                    >
+                      {feature.name}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
           ))}
         </div>
 
-        {/* Comparison Section */}
-        <div className="mt-20 mb-20">
-          <TierComparison />
-        </div>
-
         {/* FAQ Section */}
         <div className="max-w-3xl mx-auto">
-          <h2 className="text-3xl font-black mb-8 text-center">Frequently Asked Questions</h2>
+          <h2 className="text-2xl font-bold mb-8 text-center gradient-text">
+            Frequently Asked Questions
+          </h2>
 
           <div className="space-y-6">
-            <div className="border border-border rounded-lg p-6">
-              <h3 className="text-lg font-bold mb-2">Can I trade on any broker?</h3>
+            <div className="card-premium p-6">
+              <h3 className="font-semibold mb-2">Can I change plans anytime?</h3>
               <p className="text-muted-foreground">
-                Yes! Our signals work with any broker - Trading 212, Robinhood, Interactive Brokers, etc. Export signals and trade them yourself.
+                Yes! You can upgrade or downgrade your plan at any time. Changes take effect on your next billing cycle.
               </p>
             </div>
 
-            <div className="border border-border rounded-lg p-6">
-              <h3 className="text-lg font-bold mb-2">What if I don't like the signals?</h3>
+            <div className="card-premium p-6">
+              <h3 className="font-semibold mb-2">Is there a free trial?</h3>
               <p className="text-muted-foreground">
-                Cancel anytime, no questions asked. We offer a 7-day free trial so you can test the signals risk-free.
+                Yes, all plans include a 7-day free trial. No credit card required to start.
               </p>
             </div>
 
-            <div className="border border-border rounded-lg p-6">
-              <h3 className="text-lg font-bold mb-2">How accurate are the signals?</h3>
+            <div className="card-premium p-6">
+              <h3 className="font-semibold mb-2">What payment methods do you accept?</h3>
               <p className="text-muted-foreground">
-                Our ML model achieves 98% accuracy on historical data. Check the accuracy dashboard to see real-time performance metrics.
+                We accept all major credit cards (Visa, Mastercard, American Express) through Stripe.
               </p>
             </div>
 
-            <div className="border border-border rounded-lg p-6">
-              <h3 className="text-lg font-bold mb-2">Do you manage my money?</h3>
+            <div className="card-premium p-6">
+              <h3 className="font-semibold mb-2">Can I cancel anytime?</h3>
               <p className="text-muted-foreground">
-                No. We provide signals only. You control all trades and keep 100% of your profits. We never touch your funds.
-              </p>
-            </div>
-
-            <div className="border border-border rounded-lg p-6">
-              <h3 className="text-lg font-bold mb-2">Can I get an API for my platform?</h3>
-              <p className="text-muted-foreground">
-                Yes! Elite tier includes full API access. Contact support for integration details and custom pricing.
+                Absolutely! You can cancel your subscription at any time. No questions asked, no hidden fees.
               </p>
             </div>
           </div>

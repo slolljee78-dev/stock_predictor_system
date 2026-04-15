@@ -21,7 +21,7 @@ const isNonEmptyString = (value: unknown): value is string =>
 export type SessionPayload = {
   openId: string;
   appId: string;
-  name?: string;
+  name: string;
 };
 
 const EXCHANGE_TOKEN_PATH = `/webdev.v1.WebDevAuthPublicService/ExchangeToken`;
@@ -39,29 +39,20 @@ class OAuthService {
   }
 
   private decodeState(state: string): string {
-    try {
-      // Use Node.js Buffer instead of atob (which doesn't exist in Node.js)
-      const decoded = Buffer.from(state, 'base64').toString('utf8');
-      return decoded;
-    } catch (error) {
-      console.error('[OAuth] Failed to decode state:', error);
-      throw new Error('Invalid state parameter');
-    }
+    const redirectUri = atob(state);
+    return redirectUri;
   }
 
   async getTokenByCode(
     code: string,
     state: string
   ): Promise<ExchangeTokenResponse> {
-    const redirectUri = this.decodeState(state);
-    console.log('[OAuth] Token exchange - decoded redirectUri from state:', redirectUri);
     const payload: ExchangeTokenRequest = {
       clientId: ENV.appId,
       grantType: "authorization_code",
       code,
-      redirectUri,
+      redirectUri: this.decodeState(state),
     };
-    console.log('[OAuth] Token exchange payload:', { clientId: payload.clientId, grantType: payload.grantType, redirectUri: payload.redirectUri });
 
     const { data } = await this.client.post<ExchangeTokenResponse>(
       EXCHANGE_TOKEN_PATH,
@@ -85,50 +76,11 @@ class OAuthService {
   }
 }
 
-const createOAuthHttpClient = (): AxiosInstance => {
-  const client = axios.create({
+const createOAuthHttpClient = (): AxiosInstance =>
+  axios.create({
     baseURL: ENV.oAuthServerUrl,
     timeout: AXIOS_TIMEOUT_MS,
   });
-  
-  client.interceptors.request.use(
-    config => {
-      console.log('[OAuth] Request:', {
-        method: config.method,
-        url: config.url,
-        baseURL: config.baseURL,
-        dataKeys: config.data ? Object.keys(config.data) : null,
-      });
-      return config;
-    },
-    error => {
-      console.error('[OAuth] Request Error:', error.message);
-      throw error;
-    }
-  );
-  
-  client.interceptors.response.use(
-    response => {
-      console.log('[OAuth] Response:', {
-        status: response.status,
-        statusText: response.statusText,
-        dataKeys: response.data ? Object.keys(response.data) : null,
-      });
-      return response;
-    },
-    error => {
-      console.error('[OAuth] API Error:', {
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        data: error.response?.data,
-        message: error.message,
-      });
-      throw error;
-    }
-  );
-  
-  return client;
-};
 
 class SDKServer {
   private readonly client: AxiosInstance;
@@ -220,7 +172,7 @@ class SDKServer {
       {
         openId,
         appId: ENV.appId,
-        name: options.name,
+        name: options.name || "",
       },
       options
     );
@@ -247,7 +199,7 @@ class SDKServer {
 
   async verifySession(
     cookieValue: string | undefined | null
-  ): Promise<{ openId: string; appId: string; name?: string } | null> {
+  ): Promise<{ openId: string; appId: string; name: string } | null> {
     if (!cookieValue) {
       console.warn("[Auth] Missing session cookie");
       return null;
@@ -262,7 +214,8 @@ class SDKServer {
 
       if (
         !isNonEmptyString(openId) ||
-        !isNonEmptyString(appId)
+        !isNonEmptyString(appId) ||
+        !isNonEmptyString(name)
       ) {
         console.warn("[Auth] Session payload missing required fields");
         return null;
@@ -271,7 +224,7 @@ class SDKServer {
       return {
         openId,
         appId,
-        name: isNonEmptyString(name) ? name : undefined,
+        name,
       };
     } catch (error) {
       console.warn("[Auth] Session verification failed", String(error));
@@ -305,20 +258,13 @@ class SDKServer {
 
   async authenticateRequest(req: Request): Promise<User> {
     // Regular authentication flow
-    // With cookie-parser middleware, cookies are available on req.cookies
-    // Fall back to manual parsing if req.cookies is not available
-    console.log('[Auth] authenticateRequest - req.cookies:', Object.keys((req as any).cookies || {}));
-    console.log('[Auth] authenticateRequest - Cookie header:', req.headers.cookie?.substring(0, 100));
-    const sessionCookie = (req as any).cookies?.[COOKIE_NAME] || 
-                          this.parseCookies(req.headers.cookie).get(COOKIE_NAME);
-    console.log('[Auth] authenticateRequest - sessionCookie found:', !!sessionCookie);
+    const cookies = this.parseCookies(req.headers.cookie);
+    const sessionCookie = cookies.get(COOKIE_NAME);
     const session = await this.verifySession(sessionCookie);
 
     if (!session) {
-      console.error('[Auth] Session verification failed - no valid session');
       throw ForbiddenError("Invalid session cookie");
     }
-    console.log('[Auth] Session verified successfully for openId:', session.openId);
 
     const sessionUserId = session.openId;
     const signedInAt = new Date();
@@ -343,16 +289,13 @@ class SDKServer {
     }
 
     if (!user) {
-      console.error('[Auth] User not found in database for openId:', session.openId);
       throw ForbiddenError("User not found");
     }
-    console.log('[Auth] User authenticated successfully:', user.openId);
 
     await db.upsertUser({
       openId: user.openId,
       lastSignedIn: signedInAt,
     });
-    console.log('[Auth] User lastSignedIn updated');
 
     return user;
   }

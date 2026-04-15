@@ -12,8 +12,8 @@ import "./index.css";
 const APP_VERSION = '2.0.1-premium-homepage';
 console.log('[App] Version:', APP_VERSION);
 
-// Initialize Service Worker for PWA (disabled in dev for faster updates)
-if ('serviceWorker' in navigator && import.meta.env.PROD) {
+// Initialize Service Worker for PWA
+if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
       .register('/sw.js', { scope: '/' })
@@ -31,24 +31,23 @@ const redirectToLoginIfUnauthorized = (error: unknown) => {
   const isUnauthorized = error.message === UNAUTHED_ERR_MSG;
 
   if (!isUnauthorized) return;
-  
-  console.warn('[Auth] Unauthorized error detected, redirecting to login');
+
   window.location.href = getLoginUrl();
 };
 
 queryClient.getQueryCache().subscribe(event => {
   if (event.type === "updated" && event.action.type === "error") {
     const error = event.query.state.error;
-    console.error("[API Query Error]", error);
     redirectToLoginIfUnauthorized(error);
+    console.error("[API Query Error]", error);
   }
 });
 
 queryClient.getMutationCache().subscribe(event => {
   if (event.type === "updated" && event.action.type === "error") {
     const error = event.mutation.state.error;
-    console.error("[API Mutation Error]", error);
     redirectToLoginIfUnauthorized(error);
+    console.error("[API Mutation Error]", error);
   }
 });
 
@@ -58,12 +57,10 @@ const trpcClient = trpc.createClient({
       url: "/api/trpc",
       transformer: superjson,
       fetch(input, init) {
-        const fetchOptions = {
+        return globalThis.fetch(input, {
           ...(init ?? {}),
-          credentials: "include" as const,
-        };
-        console.log('[tRPC] Fetch request:', { url: input, credentials: fetchOptions.credentials });
-        return globalThis.fetch(input, fetchOptions);
+          credentials: "include",
+        });
       },
     }),
   ],

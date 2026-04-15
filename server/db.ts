@@ -5,16 +5,10 @@ import {
   users,
   stocks,
   priceHistory,
-  watchlistGroups,
   watchlists,
   signals,
   notifications,
   userPreferences,
-  payments,
-  invoices,
-  brokerAccounts,
-  portfolioTemplates,
-  notificationPreferences,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -45,32 +39,49 @@ export async function upsertUser(user: InsertUser): Promise<void> {
   }
 
   try {
-    console.log("[Database] upsertUser version: 2026-04-15-raw-sql-v4");
-    const lastSignedIn = user.lastSignedIn || new Date();
-    const role = user.role || (user.openId === ENV.ownerOpenId ? 'admin' : 'user');
+    const values: InsertUser = {
+      openId: user.openId,
+    };
+    const updateSet: Record<string, unknown> = {};
 
-    console.log("[Database] Upserting user:", { openId: user.openId, name: user.name, email: user.email });
-    
-    // Use Drizzle's sql method to execute raw SQL
-    // This bypasses automatic column inclusion
-    const result = await db.execute(
-      sql`
-        INSERT INTO users (openId, name, email, loginMethod, role, lastSignedIn)
-        VALUES (${user.openId}, ${user.name ?? null}, ${user.email ?? null}, ${user.loginMethod ?? null}, ${role}, ${lastSignedIn})
-        ON DUPLICATE KEY UPDATE
-          name = VALUES(name),
-          email = VALUES(email),
-          loginMethod = VALUES(loginMethod),
-          role = VALUES(role),
-          lastSignedIn = VALUES(lastSignedIn)
-      `
-    );
-    console.log("[Database] User upserted successfully via raw SQL");
-  } catch (error) {
-    console.error("[Database] Failed to upsert user:", error instanceof Error ? error.message : String(error));
-    if (error instanceof Error && error.stack) {
-      console.error("[Database] Error stack:", error.stack);
+    const textFields = ["name", "email", "loginMethod"] as const;
+    type TextField = (typeof textFields)[number];
+
+    const assignNullable = (field: TextField) => {
+      const value = user[field];
+      if (value === undefined) return;
+      const normalized = value ?? null;
+      values[field] = normalized;
+      updateSet[field] = normalized;
+    };
+
+    textFields.forEach(assignNullable);
+
+    if (user.lastSignedIn !== undefined) {
+      values.lastSignedIn = user.lastSignedIn;
+      updateSet.lastSignedIn = user.lastSignedIn;
     }
+    if (user.role !== undefined) {
+      values.role = user.role;
+      updateSet.role = user.role;
+    } else if (user.openId === ENV.ownerOpenId) {
+      values.role = 'admin';
+      updateSet.role = 'admin';
+    }
+
+    if (!values.lastSignedIn) {
+      values.lastSignedIn = new Date();
+    }
+
+    if (Object.keys(updateSet).length === 0) {
+      updateSet.lastSignedIn = new Date();
+    }
+
+    await db.insert(users).values(values).onDuplicateKeyUpdate({
+      set: updateSet,
+    });
+  } catch (error) {
+    console.error("[Database] Failed to upsert user:", error);
     throw error;
   }
 }
@@ -404,292 +415,4 @@ export async function markNotificationAsRead(notificationId: number) {
     .update(notifications)
     .set({ isRead: 1, readAt: new Date() })
     .where(eq(notifications.id, notificationId));
-}
-
-
-/**
- * Get payment history for a user
- */
-export async function getPaymentHistory(userId: number, limit: number = 20, offset: number = 0) {
-  const db = await getDb();
-  if (!db) return [];
-
-  return db
-    .select()
-    .from(payments)
-    .where(eq(payments.userId, userId))
-    .orderBy(payments.createdAt)
-    .limit(limit)
-    .offset(offset);
-}
-
-/**
- * Get invoices for a user
- */
-export async function getInvoicesForUser(userId: number, limit: number = 20, offset: number = 0) {
-  const db = await getDb();
-  if (!db) return [];
-
-  return db
-    .select()
-    .from(invoices)
-    .where(eq(invoices.userId, userId))
-    .orderBy(invoices.createdAt)
-    .limit(limit)
-    .offset(offset);
-}
-
-/**
- * Get linked broker accounts for a user
- */
-export async function getBrokerAccounts(userId: number) {
-  const db = await getDb();
-  if (!db) return [];
-
-  return db
-    .select()
-    .from(brokerAccounts)
-    .where(eq(brokerAccounts.userId, userId));
-}
-
-/**
- * Get portfolio templates (public or user's own)
- */
-export async function getPortfolioTemplates(userId?: number) {
-  const db = await getDb();
-  if (!db) return [];
-
-  if (userId) {
-    return db
-      .select()
-      .from(portfolioTemplates)
-      .where(
-        sql`${portfolioTemplates.isPublic} = 1 OR ${portfolioTemplates.userId} = ${userId}`
-      );
-  }
-
-  return db
-    .select()
-    .from(portfolioTemplates)
-    .where(eq(portfolioTemplates.isPublic, 1));
-}
-
-/**
- * Get notification preferences for a user
- */
-export async function getNotificationPreferences(userId: number) {
-  const db = await getDb();
-  if (!db) return [];
-
-  return db
-    .select()
-    .from(notificationPreferences)
-    .where(eq(notificationPreferences.userId, userId));
-}
-
-/**
- * Get notification preferences for a specific stock
- */
-export async function getNotificationPreference(userId: number, symbol: string) {
-  const db = await getDb();
-  if (!db) return undefined;
-
-  const result = await db
-    .select()
-    .from(notificationPreferences)
-    .where(
-      and(
-        eq(notificationPreferences.userId, userId),
-        eq(notificationPreferences.symbol, symbol)
-      )
-    )
-    .limit(1);
-
-  return result[0];
-}
-
-/**
- * Create or update a payment record
- */
-export async function createPayment(
-  userId: number,
-  amount: number,
-  tier: 'STARTER' | 'PRO' | 'ELITE',
-  stripePaymentIntentId?: string,
-  description?: string
-) {
-  const db = await getDb();
-  if (!db) throw new Error('Database not available');
-
-  return db.insert(payments).values({
-    userId,
-    amount,
-    tier,
-    currency: 'GBP',
-    status: 'pending',
-    stripePaymentIntentId,
-    description,
-  });
-}
-
-/**
- * Update payment status
- */
-export async function updatePaymentStatus(
-  paymentId: number,
-  status: 'pending' | 'succeeded' | 'failed' | 'refunded'
-) {
-  const db = await getDb();
-  if (!db) throw new Error('Database not available');
-
-  await db
-    .update(payments)
-    .set({ status, paidAt: status === 'succeeded' ? new Date() : undefined })
-    .where(eq(payments.id, paymentId));
-}
-
-/**
- * Create an invoice
- */
-export async function createInvoice(
-  userId: number,
-  invoiceNumber: string,
-  amount: number,
-  issueDate: Date,
-  dueDate: Date,
-  paymentId?: number
-) {
-  const db = await getDb();
-  if (!db) throw new Error('Database not available');
-
-  return db.insert(invoices).values({
-    userId,
-    invoiceNumber,
-    amount,
-    issueDate,
-    dueDate,
-    paymentId,
-    status: 'sent',
-  });
-}
-
-/**
- * Create a broker account
- */
-export async function createBrokerAccount(
-  userId: number,
-  brokerType: 'TRADING_212' | 'ALPACA' | 'INTERACTIVE_BROKERS',
-  accountName: string,
-  encryptedCredentials: string
-) {
-  const db = await getDb();
-  if (!db) throw new Error('Database not available');
-
-  return db.insert(brokerAccounts).values({
-    userId,
-    brokerType,
-    accountName,
-    encryptedCredentials,
-  });
-}
-
-/**
- * Create a portfolio template
- */
-export async function createPortfolioTemplate(
-  userId: number,
-  name: string,
-  holdings: string, // JSON string
-  category: 'TECH_GROWTH' | 'DIVIDEND_INCOME' | 'BALANCED' | 'CUSTOM' = 'CUSTOM',
-  description?: string,
-  isPublic: boolean = false
-) {
-  const db = await getDb();
-  if (!db) throw new Error('Database not available');
-
-  return db.insert(portfolioTemplates).values({
-    userId,
-    name,
-    holdings,
-    category,
-    description,
-    isPublic: isPublic ? 1 : 0,
-  });
-}
-
-/**
- * Create or update notification preferences
- */
-export async function setNotificationPreference(
-  userId: number,
-  symbol: string,
-  channels: string[], // JSON array
-  triggers: string[], // JSON array
-  minConfidence: number = 60,
-  priceAlertThreshold?: number
-) {
-  const db = await getDb();
-  if (!db) throw new Error('Database not available');
-
-  const existing = await getNotificationPreference(userId, symbol);
-
-  if (existing) {
-    await db
-      .update(notificationPreferences)
-      .set({
-        channels: JSON.stringify(channels),
-        triggers: JSON.stringify(triggers),
-        minConfidence,
-        priceAlertThreshold,
-      })
-      .where(eq(notificationPreferences.id, existing.id));
-  } else {
-    await db.insert(notificationPreferences).values({
-      userId,
-      symbol,
-      channels: JSON.stringify(channels),
-      triggers: JSON.stringify(triggers),
-      minConfidence,
-      priceAlertThreshold,
-    });
-  }
-}
-
-
-/**
- * Update user verification token and expiration
- */
-export async function updateUserVerificationToken(userId: number, token: string, expiresAt: Date) {
-  const db = await getDb();
-  if (!db) throw new Error('Database not available');
-  const { eq } = await import('drizzle-orm');
-  return db.update(users).set({
-    emailVerificationToken: token,
-    emailVerificationTokenExpiresAt: expiresAt,
-  }).where(eq(users.id, userId));
-}
-
-/**
- * Mark email as verified
- */
-export async function markEmailAsVerified(userId: number) {
-  const db = await getDb();
-  if (!db) throw new Error('Database not available');
-  const { eq } = await import('drizzle-orm');
-  return db.update(users).set({
-    emailVerified: 1,
-    emailVerificationToken: null,
-    emailVerificationTokenExpiresAt: null,
-  }).where(eq(users.id, userId));
-}
-
-/**
- * Get user by ID
- */
-export async function getUserById(userId: number) {
-  const db = await getDb();
-  if (!db) throw new Error('Database not available');
-  const { eq } = await import('drizzle-orm');
-  const result = await db.select().from(users).where(eq(users.id, userId)).limit(1);
-  return result[0] || null;
 }

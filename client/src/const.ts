@@ -6,15 +6,12 @@ export const getLoginUrl = () => {
   const appId = import.meta.env.VITE_APP_ID;
   const redirectUri = `${window.location.origin}/api/oauth/callback`;
   const state = btoa(redirectUri);
-  console.log('[Login] Generating login URL with:', { origin: window.location.origin, redirectUri, appId, oauthPortalUrl });
 
   const url = new URL(`${oauthPortalUrl}/app-auth`);
   url.searchParams.set("appId", appId);
   url.searchParams.set("redirectUri", redirectUri);
   url.searchParams.set("state", state);
   url.searchParams.set("type", "signIn");
-  
-  const finalUrl = url.toString();
-  console.log('[Login] Final OAuth URL:', finalUrl);
-  return finalUrl;
+
+  return url.toString();
 };

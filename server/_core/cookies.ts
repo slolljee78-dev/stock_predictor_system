@@ -9,25 +9,16 @@ function isIpAddress(host: string) {
 }
 
 function isSecureRequest(req: Request) {
-  // Always check x-forwarded-proto first (for reverse proxies)
-  const forwardedProto = req.headers["x-forwarded-proto"];
-  if (forwardedProto) {
-    const protoList = Array.isArray(forwardedProto)
-      ? forwardedProto
-      : forwardedProto.split(",");
-    const isHttps = protoList.some(proto => proto.trim().toLowerCase() === "https");
-    if (isHttps) return true;
-  }
-  
-  // Check direct protocol
   if (req.protocol === "https") return true;
 
-  // In production (non-localhost), always use secure cookies
-  const hostname = req.hostname;
-  const isProduction = hostname && !LOCAL_HOSTS.has(hostname) && !isIpAddress(hostname);
-  if (isProduction) return true;
+  const forwardedProto = req.headers["x-forwarded-proto"];
+  if (!forwardedProto) return false;
 
-  return false;
+  const protoList = Array.isArray(forwardedProto)
+    ? forwardedProto
+    : forwardedProto.split(",");
+
+  return protoList.some(proto => proto.trim().toLowerCase() === "https");
 }
 
 export function getSessionCookieOptions(
@@ -51,7 +42,7 @@ export function getSessionCookieOptions(
   return {
     httpOnly: true,
     path: "/",
-    sameSite: "lax",
+    sameSite: "none",
     secure: isSecureRequest(req),
   };
 }

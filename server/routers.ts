@@ -1,21 +1,10 @@
+import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
-import { COOKIE_NAME } from "../shared/const";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { validationRouter } from "./routers/validation";
 import { liveMarketRouter } from "./routers/liveMarket";
-// Removed: automationRouter (signals-only pivot)
-import { paymentsRouter } from "./routers/payments";
-import { brokersRouter } from "./routers/brokers";
-import { templatesRouter } from "./routers/templates";
-import { analyticsRouter } from "./routers/analytics";
-import { notificationsRouter } from "./routers/notifications";
-import { adminRouter } from "./routers/admin";
-import { signalsRouter } from "./routers/signals";
-import { accuracyRouter } from "./routers/accuracy";
-import { portfolioRouter } from "./routers/portfolio";
-import { riskStrategyRouter } from "./routers/riskStrategy";
-import { watchlistsRouter } from "./routers/watchlists";
+import { automationRouter } from "./routers/automation";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -29,51 +18,8 @@ export const appRouter = router({
         success: true,
       } as const;
     }),
-    sendVerificationEmail: protectedProcedure.mutation(async ({ ctx }) => {
-      try {
-        const crypto = await import('crypto');
-        const token = crypto.randomBytes(32).toString('hex');
-        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
-        await import('./db').then(db => db.updateUserVerificationToken(ctx.user.id, token, expiresAt));
-        return { success: true, token, expiresAt };
-      } catch (error) {
-        console.error('Email verification not available:', error);
-        return { success: false };
-      }
-    }),
-    verifyEmail: protectedProcedure.input((val: unknown) => {
-      if (typeof val === 'object' && val !== null && 'token' in val) {
-        return val as { token: string };
-      }
-      throw new Error('Invalid input');
-    }).mutation(async ({ ctx, input }) => {
-      try {
-        const user = await import('./db').then(db => db.getUserById(ctx.user.id));
-        if (!user || user.emailVerificationToken !== input.token) {
-          throw new Error('Invalid verification token');
-        }
-        if (user.emailVerificationTokenExpiresAt && user.emailVerificationTokenExpiresAt < new Date()) {
-          throw new Error('Verification token expired');
-        }
-        await import('./db').then(db => db.markEmailAsVerified(ctx.user.id));
-        return { success: true };
-      } catch (error) {
-        console.error('Email verification failed:', error);
-        return { success: false };
-      }
-    }),
   }),
-  // Removed: automation router (signals-only pivot)
-  payments: paymentsRouter,
-  brokers: brokersRouter,
-  templates: templatesRouter,
-  analytics: analyticsRouter,
-  notifications: notificationsRouter,
-  admin: adminRouter,
-  accuracy: accuracyRouter,
-  portfolio: portfolioRouter,
-  riskStrategy: riskStrategyRouter,
-  watchlists: watchlistsRouter,
+  automation: automationRouter,
 
   stocks: router({
     search: publicProcedure
@@ -139,10 +85,7 @@ export const appRouter = router({
 
   validation: validationRouter,
 
-  signals: signalsRouter,
-
-  // Legacy signals endpoint (kept for backward compatibility)
-  legacySignals: router({
+  signals: router({
     getForStock: publicProcedure
       .input((val: unknown) => {
         if (typeof val === 'number') return val;
