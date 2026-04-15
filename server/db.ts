@@ -45,11 +45,13 @@ export async function upsertUser(user: InsertUser): Promise<void> {
   }
 
   try {
-    const values: InsertUser = {
+    // Only use core fields that are guaranteed to exist
+    const values: any = {
       openId: user.openId,
     };
     const updateSet: Record<string, unknown> = {};
 
+    // Core fields that should always exist
     const textFields = ["name", "email", "loginMethod"] as const;
     type TextField = (typeof textFields)[number];
 
@@ -67,6 +69,8 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       values.lastSignedIn = user.lastSignedIn;
       updateSet.lastSignedIn = user.lastSignedIn;
     }
+    
+    // Only set role if explicitly provided or if this is the owner
     if (user.role !== undefined) {
       values.role = user.role;
       updateSet.role = user.role;
@@ -83,32 +87,25 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       updateSet.lastSignedIn = new Date();
     }
 
-    try {
-      await db.insert(users).values(values).onDuplicateKeyUpdate({
-        set: updateSet,
-      });
-    } catch (insertError: any) {
-      if (insertError?.message?.includes('Unknown column')) {
-        console.warn('[Database] New columns not available, retrying with core fields');
-        const coreValues: any = { ...values };
-        delete coreValues.emailVerified;
-        delete coreValues.emailVerificationToken;
-        delete coreValues.emailVerificationTokenExpiresAt;
-        
-        const coreUpdateSet = { ...updateSet };
-        delete coreUpdateSet.emailVerified;
-        delete coreUpdateSet.emailVerificationToken;
-        delete coreUpdateSet.emailVerificationTokenExpiresAt;
-        
-        await db.insert(users).values(coreValues).onDuplicateKeyUpdate({
-          set: coreUpdateSet,
-        });
-      } else {
-        throw insertError;
+    // Remove any undefined or problematic fields
+    Object.keys(values).forEach(key => {
+      if (values[key] === undefined) {
+        delete values[key];
       }
-    }
+    });
+
+    console.log("[Database] Upserting user with values:", { openId: values.openId, keys: Object.keys(values) });
+    
+    await db.insert(users).values(values).onDuplicateKeyUpdate({
+      set: updateSet,
+    });
+    
+    console.log("[Database] User upserted successfully");
   } catch (error) {
-    console.error("[Database] Failed to upsert user:", error);
+    console.error("[Database] Failed to upsert user:", error instanceof Error ? error.message : String(error));
+    if (error instanceof Error && error.stack) {
+      console.error("[Database] Error stack:", error.stack);
+    }
     throw error;
   }
 }
