@@ -45,42 +45,27 @@ export async function upsertUser(user: InsertUser): Promise<void> {
   }
 
   try {
-    console.log("[Database] upsertUser version: 2026-04-15-raw-sql-v3");
+    console.log("[Database] upsertUser version: 2026-04-15-raw-sql-v4");
     const lastSignedIn = user.lastSignedIn || new Date();
     const role = user.role || (user.openId === ENV.ownerOpenId ? 'admin' : 'user');
 
     console.log("[Database] Upserting user:", { openId: user.openId, name: user.name, email: user.email });
     
-    // Use raw SQL to insert ONLY core columns that exist in production
-    // This bypasses Drizzle's automatic column inclusion
-    const query = `
-      INSERT INTO users (openId, name, email, loginMethod, role, lastSignedIn)
-      VALUES (?, ?, ?, ?, ?, ?)
-      ON DUPLICATE KEY UPDATE
-        name = VALUES(name),
-        email = VALUES(email),
-        loginMethod = VALUES(loginMethod),
-        role = VALUES(role),
-        lastSignedIn = VALUES(lastSignedIn)
-    `;
-
-    // Get the underlying MySQL pool from Drizzle
-    const pool = (db as any).$client;
-    const connection = await pool.getConnection();
-    
-    try {
-      const result = await connection.execute(query, [
-        user.openId,
-        user.name ?? null,
-        user.email ?? null,
-        user.loginMethod ?? null,
-        role,
-        lastSignedIn,
-      ]);
-      console.log("[Database] User upserted successfully via raw SQL");
-    } finally {
-      await connection.release();
-    }
+    // Use Drizzle's sql method to execute raw SQL
+    // This bypasses automatic column inclusion
+    const result = await db.execute(
+      sql`
+        INSERT INTO users (openId, name, email, loginMethod, role, lastSignedIn)
+        VALUES (${user.openId}, ${user.name ?? null}, ${user.email ?? null}, ${user.loginMethod ?? null}, ${role}, ${lastSignedIn})
+        ON DUPLICATE KEY UPDATE
+          name = VALUES(name),
+          email = VALUES(email),
+          loginMethod = VALUES(loginMethod),
+          role = VALUES(role),
+          lastSignedIn = VALUES(lastSignedIn)
+      `
+    );
+    console.log("[Database] User upserted successfully via raw SQL");
   } catch (error) {
     console.error("[Database] Failed to upsert user:", error instanceof Error ? error.message : String(error));
     if (error instanceof Error && error.stack) {
