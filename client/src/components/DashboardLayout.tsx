@@ -245,9 +245,9 @@ function DashboardLayoutContent({
 
       <SidebarInset>
         {!isMobile && (
-          <div className="flex border-b h-14 items-center justify-between bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:backdrop-blur sticky top-0 z-40">
+          <div className="flex border-b border-slate-700/50 h-16 items-center justify-between bg-slate-900/80 backdrop-blur px-8 sticky top-0 z-40">
             <div className="flex items-center gap-3">
-              <span className="tracking-tight text-foreground font-semibold">
+              <span className="tracking-tight text-white font-bold text-xl">
                 {activeMenuItem?.label ?? "Dashboard"}
               </span>
             </div>
@@ -255,12 +255,12 @@ function DashboardLayoutContent({
           </div>
         )}
         {isMobile && (
-          <div className="flex border-b h-14 items-center justify-between bg-background/95 px-2 backdrop-blur supports-[backdrop-filter]:backdrop-blur sticky top-0 z-40">
+          <div className="flex border-b border-slate-700/50 h-16 items-center justify-between bg-slate-900/80 px-4 backdrop-blur sticky top-0 z-40">
             <div className="flex items-center gap-2">
-              <SidebarTrigger className="h-9 w-9 rounded-lg bg-background" />
+              <SidebarTrigger className="h-9 w-9 rounded-lg bg-slate-800" />
               <div className="flex items-center gap-3">
                 <div className="flex flex-col gap-1">
-                  <span className="tracking-tight text-foreground">
+                  <span className="tracking-tight text-white font-bold">
                     {activeMenuItem?.label ?? "Menu"}
                   </span>
                 </div>
@@ -269,7 +269,7 @@ function DashboardLayoutContent({
             <NotificationCenter />
           </div>
         )}
-        <main className="flex-1 p-6 md:p-8 bg-gradient-to-br from-background via-background to-background/50">{children}</main>
+        <main className="flex-1 p-8 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">{children}</main>
       </SidebarInset>
     </>
   );
