@@ -42,7 +42,13 @@ export async function setupVite(app: Express, server: Server) {
       // Strip out Vite client injection to prevent WebSocket errors
       page = page.replace(/<script[^>]*src="\/@vite\/client"[^>]*><\/script>/g, "");
       page = page.replace(/<script[^>]*type="module"[^>]*src="\/@vite\/client"[^>]*><\/script>/g, "");
-      res.status(200).set({ "Content-Type": "text/html" }).end(page);
+      // Force browser to reload HTML and not use cache
+      res.status(200).set({
+        "Content-Type": "text/html",
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0",
+      }).end(page);
     } catch (e) {
       vite.ssrFixStacktrace(e as Error);
       next(e);
