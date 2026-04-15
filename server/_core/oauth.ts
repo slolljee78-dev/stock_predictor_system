@@ -15,16 +15,21 @@ export function registerOAuthRoutes(app: Express) {
     const state = getQueryParam(req, "state");
 
     if (!code || !state) {
-      res.status(400).json({ error: "code and state are required" });
+      const errorMsg = "code and state are required";
+      console.error("[OAuth] Missing params:", { code: !!code, state: !!state });
+      res.status(400).json({ error: errorMsg });
       return;
     }
 
     try {
       console.log("[OAuth] Callback received with code and state");
+      console.log("[OAuth] Exchanging code for token...");
       const tokenResponse = await sdk.exchangeCodeForToken(code, state);
-      console.log("[OAuth] Token exchange successful");
+      console.log("[OAuth] Token exchange successful", { tokenType: tokenResponse.tokenType, expiresIn: tokenResponse.expiresIn });
+      
+      console.log("[OAuth] Getting user info...");
       const userInfo = await sdk.getUserInfo(tokenResponse.accessToken);
-      console.log("[OAuth] User info retrieved:", { openId: userInfo.openId, name: userInfo.name });
+      console.log("[OAuth] User info retrieved:", { openId: userInfo.openId, name: userInfo.name, email: userInfo.email });
 
       if (!userInfo.openId) {
         console.error("[OAuth] Missing openId in user info");
@@ -47,19 +52,23 @@ export function registerOAuthRoutes(app: Express) {
         name: userInfo.name || "",
         expiresInMs: ONE_YEAR_MS,
       });
-      console.log("[OAuth] Session token created");
+      console.log("[OAuth] Session token created successfully");
 
       const cookieOptions = getSessionCookieOptions(req);
+      console.log("[OAuth] Setting cookie with options:", { secure: cookieOptions.secure, sameSite: cookieOptions.sameSite });
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
       console.log("[OAuth] Cookie set, redirecting to /");
 
       res.redirect(302, "/");
     } catch (error) {
-      console.error("[OAuth] Callback failed", error instanceof Error ? error.message : String(error));
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error("[OAuth] Callback failed:", errorMessage);
       if (error instanceof Error) {
         console.error("[OAuth] Error stack:", error.stack);
+        console.error("[OAuth] Error name:", error.name);
       }
-      res.status(500).json({ error: "OAuth callback failed" });
+      console.error("[OAuth] Full error object:", error);
+      res.status(500).json({ error: "OAuth callback failed", details: errorMessage });
     }
   });
 }
