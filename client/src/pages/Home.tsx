@@ -1,4 +1,3 @@
-import React from "react";
 import { Button } from "@/components/ui/button";
 import { TrendingUp, BarChart3, Bell, Zap, Shield, LineChart, ArrowRight } from "lucide-react";
 import { getLoginUrl } from "@/const";
@@ -10,11 +9,9 @@ export default function Home() {
   const { user, isAuthenticated, loading } = useAuth();
   const [, setLocation] = useLocation();
 
-  // Removed automatic redirect to dashboard - show homepage first
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-background dark:bg-gradient-to-br dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-foreground">Loading...</p>
@@ -24,112 +21,127 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-background dark:bg-gradient-to-br dark:from-slate-950 dark:via-blue-950/20 dark:to-slate-950 relative overflow-hidden">
-      {/* Premium Navigation */}
-      <nav className="border-b border-border/30 bg-gradient-to-r from-card/80 via-card/60 to-card/40 backdrop-blur-xl sticky top-0 z-50">
+    <div className="min-h-screen bg-background">
+      {/* Navigation */}
+      <nav className="border-b border-border/30 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-gradient-to-br from-primary to-accent rounded-lg">
               <TrendingUp className="h-5 w-5 text-white" />
             </div>
-            <span className="text-xl font-bold gradient-text">Stock Predictor</span>
+            <span className="text-xl font-bold">Stock Predictor</span>
           </div>
           {isAuthenticated ? (
-            <Button asChild className="btn-premium">
-              <a href="/dashboard">
-                Dashboard
-              </a>
+            <Button onClick={() => setLocation("/dashboard")} className="gap-2">
+              Dashboard
+              <ArrowRight className="h-4 w-4" />
             </Button>
           ) : (
-            <Button asChild className="btn-premium">
+            <Button asChild className="gap-2">
               <a href={getLoginUrl()}>
                 Sign In
+                <ArrowRight className="h-4 w-4" />
               </a>
             </Button>
           )}
         </div>
       </nav>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Hero Section */}
-        <div className="text-center mb-32 animate-fade-in-up">
-          <div className="inline-block mb-6 px-4 py-2 bg-accent/10 rounded-full border border-accent/20">
-            <p className="text-sm font-semibold text-accent">🚀 Powered by AI & Machine Learning</p>
-          </div>
-          <h1 className="text-5xl md:text-7xl font-black mb-8 gradient-text leading-tight tracking-tighter" style={{letterSpacing: '-0.04em'}}>
-            AI-Powered Stock Trading Signals<br />for Trading 212
-          </h1>
-          <p className="text-lg md:text-xl text-muted-foreground mb-16 max-w-3xl mx-auto leading-relaxed">
-            Get intelligent buy/sell signals for Trading 212 stocks with advanced technical analysis, machine learning insights, and real-time market analysis. Automated trading alerts powered by AI.
-          </p>
-          {!isAuthenticated && (
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button asChild className="btn-premium gap-2 h-12 px-8 text-base">
-                <a href={getLoginUrl()}>
-                  Get Started Free
-                  <ArrowRight className="h-4 w-4" />
-                </a>
-              </Button>
-              <Button asChild className="btn-premium-secondary gap-2 h-12 px-8 text-base">
-                <a href="#features">
-                  Learn More
-                </a>
-              </Button>
+        <section className="py-20 md:py-32">
+          <div className="text-center space-y-8">
+            <div className="inline-block px-4 py-2 bg-accent/10 rounded-full border border-accent/20">
+              <p className="text-sm font-semibold text-accent">🚀 Powered by AI & Machine Learning</p>
             </div>
-          )}
-        </div>
-
-        {/* Features Grid */}
-        <div id="features" className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-32">
-          <div className="card-premium group hover:border-primary/50 transition-all">
-            <div className="p-3 bg-primary/10 rounded-lg w-fit mb-4 group-hover:bg-primary/20 transition-colors">
-              <BarChart3 className="h-6 w-6 text-primary" />
-            </div>
-            <h3 className="font-semibold mb-2">Technical Analysis</h3>
-            <p className="text-sm text-muted-foreground">
-              RSI, MACD, Bollinger Bands, Moving Averages and more
+            
+            <h1 className="text-5xl md:text-7xl font-black leading-tight">
+              AI-Powered Stock Trading Signals
+              <br />
+              <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+                for Trading 212
+              </span>
+            </h1>
+            
+            <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+              Get intelligent buy/sell signals for Trading 212 stocks with advanced technical analysis, machine learning insights, and real-time market analysis.
             </p>
+            
+            {!isAuthenticated && (
+              <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+                <Button asChild size="lg" className="gap-2">
+                  <a href={getLoginUrl()}>
+                    Get Started Free
+                    <ArrowRight className="h-5 w-5" />
+                  </a>
+                </Button>
+                <Button asChild size="lg" variant="outline" className="gap-2">
+                  <a href="#features">
+                    Learn More
+                  </a>
+                </Button>
+              </div>
+            )}
           </div>
+        </section>
 
-          <div className="card-premium group hover:border-accent/50 transition-all">
-            <div className="p-3 bg-accent/10 rounded-lg w-fit mb-4 group-hover:bg-accent/20 transition-colors">
-              <Zap className="h-6 w-6 text-accent" />
-            </div>
-            <h3 className="font-semibold mb-2">ML Signals</h3>
-            <p className="text-sm text-muted-foreground">
-              AI-generated buy/sell signals with confidence scores
-            </p>
-          </div>
-
-          <div className="card-premium group hover:border-primary/50 transition-all">
-            <div className="p-3 bg-primary/10 rounded-lg w-fit mb-4 group-hover:bg-primary/20 transition-colors">
-              <Bell className="h-6 w-6 text-primary" />
-            </div>
-            <h3 className="font-semibold mb-2">Smart Alerts</h3>
-            <p className="text-sm text-muted-foreground">
-              Real-time notifications via email and in-app
-            </p>
-          </div>
-
-          <div className="card-premium group hover:border-accent/50 transition-all">
-            <div className="p-3 bg-accent/10 rounded-lg w-fit mb-4 group-hover:bg-accent/20 transition-colors">
-              <Shield className="h-6 w-6 text-accent" />
-            </div>
-            <h3 className="font-semibold mb-2">Secure & Private</h3>
-            <p className="text-sm text-muted-foreground">
-              Your data is encrypted and never shared
-            </p>
-          </div>
-        </div>
-
-        {/* Demo Video Section - Professional walkthrough */}
-        <div className="space-y-8 mb-32 w-full">
+        {/* Features Section */}
+        <section id="features" className="py-20 md:py-32">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 gradient-text">See It In Action</h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">Watch a complete walkthrough of all features and capabilities</p>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">Powerful Features</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">Everything you need to make informed trading decisions</p>
           </div>
-          <div className="card-premium p-0 overflow-hidden w-full shadow-2xl">
-            <div className="w-full bg-black" style={{aspectRatio: '16/9'}}>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              {
+                icon: BarChart3,
+                title: "Technical Analysis",
+                description: "RSI, MACD, Bollinger Bands, Moving Averages and more",
+                color: "primary"
+              },
+              {
+                icon: Zap,
+                title: "ML Signals",
+                description: "AI-generated buy/sell signals with confidence scores",
+                color: "accent"
+              },
+              {
+                icon: Bell,
+                title: "Smart Alerts",
+                description: "Real-time notifications via email and in-app",
+                color: "primary"
+              },
+              {
+                icon: Shield,
+                title: "Secure & Private",
+                description: "Your data is encrypted and never shared",
+                color: "accent"
+              }
+            ].map((feature, idx) => {
+              const Icon = feature.icon;
+              return (
+                <div key={idx} className="p-6 rounded-lg border border-border/50 hover:border-border hover:bg-card/50 transition-all">
+                  <div className={`p-3 bg-${feature.color}/10 rounded-lg w-fit mb-4`}>
+                    <Icon className={`h-6 w-6 text-${feature.color}`} />
+                  </div>
+                  <h3 className="font-semibold mb-2 text-lg">{feature.title}</h3>
+                  <p className="text-sm text-muted-foreground">{feature.description}</p>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* Demo Video Section */}
+        <section className="py-20 md:py-32">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">See It In Action</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">Watch a complete walkthrough of all features</p>
+          </div>
+          
+          <div className="rounded-lg border border-border/50 overflow-hidden shadow-xl bg-black">
+            <div style={{aspectRatio: '16/9'}} className="w-full">
               <video 
                 width="100%" 
                 height="100%" 
@@ -138,32 +150,40 @@ export default function Home() {
                 poster="https://d2xsxph8kpxj0f.cloudfront.net/310519663483836922/knJ3QkdJFvivzkyeUv8kpq/stock_predictor_video_poster-o7v85aHek2B7TV7csZwpMr.webp"
                 className="w-full h-full object-contain"
                 controlsList="nodownload"
-                style={{display: 'block', width: '100%', height: '100%'}}
               >
                 <source src="https://d2xsxph8kpxj0f.cloudfront.net/310519663483836922/knJ3QkdJFvivzkyeUv8kpq/stock_predictor_demo_final_3a4107dd.mp4" type="video/mp4" />
-                <p className="text-white p-4">Your browser does not support the video tag. Please try a different browser.</p>
+                <p className="text-white p-4">Your browser does not support the video tag.</p>
               </video>
             </div>
           </div>
-        </div>
+        </section>
 
         {/* CTA Section */}
-        <div className="card-premium text-center mb-20">
-          <div className="flex items-center justify-center gap-2 mb-6">
-            <LineChart className="h-6 w-6 text-accent" />
-            <p className="text-lg font-semibold">Monitor 212 Trading 212 Stocks</p>
+        <section className="py-20 md:py-32">
+          <div className="bg-gradient-to-r from-primary/10 to-accent/10 border border-border/50 rounded-lg p-12 text-center">
+            <div className="flex items-center justify-center gap-2 mb-6">
+              <LineChart className="h-6 w-6 text-accent" />
+              <p className="text-lg font-semibold">Monitor 212 Trading 212 Stocks</p>
+            </div>
+            <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">Get started with AI-powered stock analysis and make informed trading decisions</p>
+            {!isAuthenticated && (
+              <Button asChild size="lg" className="gap-2">
+                <a href={getLoginUrl()}>
+                  Start Analyzing Now
+                  <ArrowRight className="h-5 w-5" />
+                </a>
+              </Button>
+            )}
           </div>
-          <p className="text-lg text-muted-foreground mb-12 max-w-2xl mx-auto">Get started with AI-powered stock analysis and make informed trading decisions</p>
-          {!isAuthenticated && (
-            <Button asChild className="btn-premium gap-2">
-              <a href={getLoginUrl()}>
-                Start Analyzing Now
-                <ArrowRight className="h-4 w-4" />
-              </a>
-            </Button>
-          )}
-        </div>
-      </div>
+        </section>
+
+        {/* Footer */}
+        <footer className="border-t border-border/30 py-8 mt-20">
+          <div className="text-center text-sm text-muted-foreground">
+            <p>© 2026 Stock Predictor. All rights reserved.</p>
+          </div>
+        </footer>
+      </main>
     </div>
   );
 }
