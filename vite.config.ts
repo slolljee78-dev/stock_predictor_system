@@ -150,7 +150,25 @@ function vitePluginManusDebugCollector(): Plugin {
   };
 }
 
-const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector()];
+/**
+ * Plugin to disable Vite client injection when HMR is disabled
+ * This prevents the browser from trying to connect to a non-existent HMR WebSocket
+ */
+function vitePluginDisableHmrClient(): Plugin {
+  return {
+    name: "disable-hmr-client",
+    transformIndexHtml: {
+      order: "post",
+      handler(html) {
+        // Remove the Vite client script injection if HMR is disabled
+        // This prevents the browser from attempting WebSocket connections
+        return html.replace(/<script[^>]*type="module"[^>]*>[\s\S]*?import\s+["']\/@vite\/client["'][\s\S]*?<\/script>/g, "");
+      },
+    },
+  };
+}
+
+const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector(), vitePluginDisableHmrClient()];
 
 export default defineConfig({
   plugins,
