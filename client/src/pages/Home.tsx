@@ -52,10 +52,10 @@ export default function Home() {
               <p className="text-sm font-bold text-primary uppercase tracking-wider">🤖 AI-Powered Trading Intelligence</p>
             </div>
             
-            <h1 className="text-7xl md:text-8xl lg:text-9xl font-black leading-tight tracking-tighter">
-              Trading Signals
+            <h1 className="text-8xl md:text-9xl lg:text-10xl font-black leading-tight tracking-tighter">
+              <span className="text-primary">Stock Predictor</span>
               <br />
-              <span className="text-primary">Powered by AI</span>
+              Trading Signals Powered by AI
             </h1>
             
             <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed font-medium">
@@ -143,7 +143,7 @@ export default function Home() {
                 className="w-full h-full object-contain"
                 controlsList="nodownload"
               >
-                <source src="https://d2xsxph8kpxj0f.cloudfront.net/310519663483836922/knJ3QkdJFvivzkyeUv8kpq/stock_predictor_demo_final_3a4107dd.mp4" type="video/mp4" />
+                <source src="https://d2xsxph8kpxj0f.cloudfront.net/310519663483836922/knJ3QkdJFvivzkyeUv8kpq/stock_predictor_demo_30sec_final.mp4" type="video/mp4" />
                 <p className="text-white p-4">Your browser does not support the video tag.</p>
               </video>
             </div>

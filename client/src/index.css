@@ -42,18 +42,18 @@
 }
 
 :root {
-  /* Neon Green FinTrackPro Style */
-  --primary: oklch(0.8 0.3 142); /* Bright Neon Green */
-  --primary-foreground: oklch(0.05 0.01 0);
-  --sidebar-primary: oklch(0.75 0.28 142);
-  --sidebar-primary-foreground: oklch(0.05 0.01 0);
+  /* Bright Blue FinTrackPro Style */
+  --primary: oklch(0.65 0.25 250); /* Bright Blue */
+  --primary-foreground: oklch(0.98 0.01 0);
+  --sidebar-primary: oklch(0.6 0.22 250);
+  --sidebar-primary-foreground: oklch(0.98 0.01 0);
   
-  /* Chart Colors - Neon Green for gains, Yellow for highlights */
-  --chart-1: oklch(0.8 0.3 142); /* Neon Green */
-  --chart-2: oklch(0.85 0.32 142); /* Bright Green */
-  --chart-3: oklch(0.8 0.3 60);  /* Neon Yellow */
-  --chart-4: oklch(0.75 0.28 142); /* Dark Green */
-  --chart-5: oklch(0.7 0.25 142);  /* Medium Green */
+  /* Chart Colors - Blue for primary, cyan for highlights */
+  --chart-1: oklch(0.65 0.25 250); /* Bright Blue */
+  --chart-2: oklch(0.7 0.28 250); /* Light Blue */
+  --chart-3: oklch(0.75 0.3 260);  /* Cyan Blue */
+  --chart-4: oklch(0.6 0.22 250); /* Dark Blue */
+  --chart-5: oklch(0.55 0.2 250);  /* Medium Blue */
   
   --radius: 0.75rem;
   
@@ -75,24 +75,24 @@
   --destructive: oklch(0.6 0.22 22); /* Red */
   --destructive-foreground: oklch(0.98 0.01 262);
   
-  --border: oklch(0.92 0.02 262);
+  --border: oklch(0.65 0.25 250);
   --input: oklch(0.95 0.01 262);
-  --ring: oklch(0.55 0.2 262);
+  --ring: oklch(0.65 0.25 250);
   
   --sidebar: oklch(0.98 0.01 262);
   --sidebar-foreground: oklch(0.15 0.02 262);
   --sidebar-accent: oklch(0.92 0.02 262);
-  --sidebar-accent-foreground: oklch(0.55 0.2 262);
-  --sidebar-border: oklch(0.92 0.02 262);
-  --sidebar-ring: oklch(0.55 0.2 262);
+  --sidebar-accent-foreground: oklch(0.65 0.25 250);
+  --sidebar-border: oklch(0.65 0.25 250);
+  --sidebar-ring: oklch(0.65 0.25 250);
 }
 
 .dark {
-  /* Dark Mode - Neon Green FinTrackPro Style */
-  --primary: oklch(0.8 0.3 142); /* Bright Neon Green */
-  --primary-foreground: oklch(0.05 0.01 0);
-  --sidebar-primary: oklch(0.75 0.28 142);
-  --sidebar-primary-foreground: oklch(0.05 0.01 0);
+  /* Dark Mode - Bright Blue FinTrackPro Style */
+  --primary: oklch(0.65 0.25 250); /* Bright Blue */
+  --primary-foreground: oklch(0.98 0.01 0);
+  --sidebar-primary: oklch(0.6 0.22 250);
+  --sidebar-primary-foreground: oklch(0.98 0.01 0);
   
   --background: oklch(0.08 0.01 0); /* Very dark near black */
   --foreground: oklch(0.98 0.01 0);
@@ -105,22 +105,22 @@
   --secondary-foreground: oklch(0.8 0.02 0);
   --muted: oklch(0.2 0.02 0);
   --muted-foreground: oklch(0.7 0.02 0);
-  --accent: oklch(0.8 0.3 142); /* Bright Neon Green */
-  --accent-foreground: oklch(0.05 0.01 0);
+  --accent: oklch(0.65 0.25 250); /* Bright Blue */
+  --accent-foreground: oklch(0.98 0.01 0);
   
   --destructive: oklch(0.65 0.25 22); /* Bright Red */
   --destructive-foreground: oklch(0.98 0.01 0);
   
-  --border: oklch(0.8 0.3 142); /* Neon Green borders */
+  --border: oklch(0.65 0.25 250); /* Bright Blue borders */
   --input: oklch(0.15 0.02 0);
-  --ring: oklch(0.8 0.3 142);
+  --ring: oklch(0.65 0.25 250);
   
   --sidebar: oklch(0.1 0.01 0);
   --sidebar-foreground: oklch(0.92 0.02 0);
   --sidebar-accent: oklch(0.15 0.02 0);
-  --sidebar-accent-foreground: oklch(0.8 0.3 142);
-  --sidebar-border: oklch(0.8 0.3 142);
-  --sidebar-ring: oklch(0.8 0.3 142);
+  --sidebar-accent-foreground: oklch(0.65 0.25 250);
+  --sidebar-border: oklch(0.65 0.25 250);
+  --sidebar-ring: oklch(0.65 0.25 250);
 }
 
 @layer base {
