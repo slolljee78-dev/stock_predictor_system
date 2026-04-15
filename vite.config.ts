@@ -183,5 +183,10 @@ export default defineConfig({
       strict: true,
       deny: ["**/.*"],
     },
+    hmr: process.env.NODE_ENV === "production" ? false : {
+      protocol: "wss",
+      host: "3000-i1ehvxwnylyv5xc55m2rl-e5ba59b5.us2.manus.computer",
+      port: 443,
+    },
   },
 });
