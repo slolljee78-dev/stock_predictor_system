@@ -1140,3 +1140,12 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Build trade simulation feature with virtual money - TradeSimulator.tsx created
 - [x] Add paper trading to dashboard - Trading Simulator page accessible via sidebar
 - [x] Test all features end-to-end - All components integrated and ready
+
+
+## OAuth Login Issue - Debugging (Current)
+- [ ] Verify OAuth callback is being hit on production
+- [ ] Check if OAuth API is rejecting the authorization code (401 error)
+- [ ] Verify redirectUri matches between frontend and backend
+- [ ] Check if session cookie is being set correctly
+- [ ] Verify cookie is being sent in subsequent requests
+- [ ] Test OAuth flow with actual authorization code
