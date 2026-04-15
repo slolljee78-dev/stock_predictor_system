@@ -88,8 +88,31 @@ const createOAuthHttpClient = (): AxiosInstance => {
     timeout: AXIOS_TIMEOUT_MS,
   });
   
+  client.interceptors.request.use(
+    config => {
+      console.log('[OAuth] Request:', {
+        method: config.method,
+        url: config.url,
+        baseURL: config.baseURL,
+        dataKeys: config.data ? Object.keys(config.data) : null,
+      });
+      return config;
+    },
+    error => {
+      console.error('[OAuth] Request Error:', error.message);
+      throw error;
+    }
+  );
+  
   client.interceptors.response.use(
-    response => response,
+    response => {
+      console.log('[OAuth] Response:', {
+        status: response.status,
+        statusText: response.statusText,
+        dataKeys: response.data ? Object.keys(response.data) : null,
+      });
+      return response;
+    },
     error => {
       console.error('[OAuth] API Error:', {
         status: error.response?.status,
