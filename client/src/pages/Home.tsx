@@ -10,11 +10,7 @@ export default function Home() {
   const { user, isAuthenticated, loading } = useAuth();
   const [, setLocation] = useLocation();
 
-  useEffect(() => {
-    if (isAuthenticated && !loading) {
-      setLocation("/dashboard");
-    }
-  }, [isAuthenticated, loading, setLocation]);
+  // Removed automatic redirect to dashboard - show homepage first
 
   if (loading) {
     return (
@@ -38,7 +34,13 @@ export default function Home() {
             </div>
             <span className="text-xl font-bold gradient-text">Stock Predictor</span>
           </div>
-          {!isAuthenticated && (
+          {isAuthenticated ? (
+            <Button asChild className="btn-premium">
+              <a href="/dashboard">
+                Dashboard
+              </a>
+            </Button>
+          ) : (
             <Button asChild className="btn-premium">
               <a href={getLoginUrl()}>
                 Sign In
