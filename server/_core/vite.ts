@@ -38,7 +38,9 @@ export async function setupVite(app: Express, server: Server) {
         `src="/src/main.tsx"`,
         `src="/src/main.tsx?v=${nanoid()}"`
       );
-      const page = await vite.transformIndexHtml(url, template);
+      let page = await vite.transformIndexHtml(url, template);
+      // Strip out Vite client injection to prevent WebSocket errors
+      page = page.replace(/<script[^>]*type="module"[^>]*>[\s\S]*?import\s+["']\/@vite\/client["'][\s\S]*?<\/script>/g, "");
       res.status(200).set({ "Content-Type": "text/html" }).end(page);
     } catch (e) {
       vite.ssrFixStacktrace(e as Error);
