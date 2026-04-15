@@ -62,7 +62,28 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Cache-first strategy for other requests
+  // Network-first strategy for HTML pages (always fetch fresh to get latest code)
+  const isHtmlRequest = event.request.url.endsWith('/') || 
+                        event.request.url.endsWith('.html') ||
+                        !event.request.url.includes('.');
+  
+  if (isHtmlRequest) {
+    event.respondWith(
+      fetch(event.request).then(response => {
+        // Don't cache non-successful responses
+        if (!response || response.status !== 200 || response.type === 'error') {
+          return response;
+        }
+        return response;
+      }).catch(() => {
+        // Return offline page if available
+        return caches.match('/');
+      })
+    );
+    return;
+  }
+
+  // Cache-first strategy for other requests (assets, etc)
   event.respondWith(
     caches.match(event.request).then(response => {
       if (response) {
