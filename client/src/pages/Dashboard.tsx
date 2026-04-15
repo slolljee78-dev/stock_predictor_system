@@ -33,11 +33,14 @@ export default function Dashboard() {
   });
 
   // Add stock to watchlist
+  const utils = trpc.useUtils();
   const addToWatchlistMutation = trpc.watchlist.add.useMutation({
     onSuccess: () => {
-      watchlistQuery.refetch();
+      utils.watchlist.list.invalidate();
       setSearchQuery("");
-      setIsAddStockOpen(false);
+    },
+    onError: (error) => {
+      console.error("Error adding stock:", error);
     },
   });
 
@@ -45,8 +48,19 @@ export default function Dashboard() {
   const signals = signalsQuery.data || [];
 
   const handleAddStockToWatchlist = useCallback((stockId: number) => {
+    console.log("Adding stock with ID:", stockId);
     addToWatchlistMutation.mutate({ stockId });
   }, [addToWatchlistMutation]);
+
+  const handleOpenModal = useCallback(() => {
+    setSearchQuery("");
+    setIsAddStockOpen(true);
+  }, []);
+
+  const handleCloseModal = useCallback((open: boolean) => {
+    setIsAddStockOpen(open);
+    if (!open) setSearchQuery("");
+  }, []);
 
   return (
     <DashboardLayout>
@@ -121,7 +135,7 @@ export default function Dashboard() {
               </div>
               <Button
                 size="lg"
-                onClick={() => setIsAddStockOpen(true)}
+                onClick={handleOpenModal}
                 className="gap-2 bg-primary hover:bg-primary/90"
               >
                 <Plus className="h-5 w-5" />
@@ -135,7 +149,7 @@ export default function Dashboard() {
                 <p className="text-lg text-muted-foreground mb-8">No stocks in your watchlist yet</p>
                 <Button
                   size="lg"
-                  onClick={() => setIsAddStockOpen(true)}
+                  onClick={handleOpenModal}
                   className="gap-2 bg-accent hover:bg-accent/90"
                 >
                   <Plus className="h-5 w-5" />
@@ -178,7 +192,7 @@ export default function Dashboard() {
       </div>
 
       {/* Add Stock Modal */}
-      <Dialog open={isAddStockOpen} onOpenChange={setIsAddStockOpen}>
+      <Dialog open={isAddStockOpen} onOpenChange={handleCloseModal}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle className="text-2xl">Add Stock to Watchlist</DialogTitle>
@@ -229,7 +243,7 @@ export default function Dashboard() {
                         variant={isAlreadyAdded ? "outline" : "default"}
                         size="sm"
                       >
-                        {isAlreadyAdded ? "Added" : "Add"}
+                        {isAlreadyAdded ? "Added" : addToWatchlistMutation.isPending ? "Adding..." : "Add"}
                       </Button>
                     </div>
                   );
