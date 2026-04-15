@@ -45,10 +45,12 @@ export async function upsertUser(user: InsertUser): Promise<void> {
   }
 
   try {
+    console.log("[Database] upsertUser version: 2026-04-15-core-only-v2");
     const lastSignedIn = user.lastSignedIn || new Date();
     const role = user.role || (user.openId === ENV.ownerOpenId ? 'admin' : 'user');
 
     console.log("[Database] Upserting user:", { openId: user.openId, name: user.name, email: user.email });
+    console.log("[Database] User object keys:", Object.keys(user).sort());
     
     // Insert with only core columns to avoid schema mismatch
     const result = await db.insert(users).values({
