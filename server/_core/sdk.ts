@@ -82,11 +82,27 @@ class OAuthService {
   }
 }
 
-const createOAuthHttpClient = (): AxiosInstance =>
-  axios.create({
+const createOAuthHttpClient = (): AxiosInstance => {
+  const client = axios.create({
     baseURL: ENV.oAuthServerUrl,
     timeout: AXIOS_TIMEOUT_MS,
   });
+  
+  client.interceptors.response.use(
+    response => response,
+    error => {
+      console.error('[OAuth] API Error:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        message: error.message,
+      });
+      throw error;
+    }
+  );
+  
+  return client;
+};
 
 class SDKServer {
   private readonly client: AxiosInstance;
