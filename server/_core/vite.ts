@@ -40,7 +40,8 @@ export async function setupVite(app: Express, server: Server) {
       );
       let page = await vite.transformIndexHtml(url, template);
       // Strip out Vite client injection to prevent WebSocket errors
-      page = page.replace(/<script[^>]*type="module"[^>]*>[\s\S]*?import\s+["']\/@vite\/client["'][\s\S]*?<\/script>/g, "");
+      page = page.replace(/<script[^>]*src="\/@vite\/client"[^>]*><\/script>/g, "");
+      page = page.replace(/<script[^>]*type="module"[^>]*src="\/@vite\/client"[^>]*><\/script>/g, "");
       res.status(200).set({ "Content-Type": "text/html" }).end(page);
     } catch (e) {
       vite.ssrFixStacktrace(e as Error);
