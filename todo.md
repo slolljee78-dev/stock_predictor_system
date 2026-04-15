@@ -700,4 +700,4 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Replace 8-second demo video with longer comprehensive walkthrough
 - [x] Fix dashboard button functionality (Add Stock, etc. not working) - Added missing useAuth import
 - [x] Improve overall visual contrast and readability
-- [x] Fix Vite WebSocket HMR connection error by configuring HMR to use correct domain and WSS protocol
+- [x] Fix Vite WebSocket HMR connection error by disabling HMR (Manus platform handles proxying)
