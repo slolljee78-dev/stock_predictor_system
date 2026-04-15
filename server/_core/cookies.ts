@@ -9,6 +9,11 @@ function isIpAddress(host: string) {
 }
 
 function isSecureRequest(req: Request) {
+  // In production (non-localhost), always use secure cookies
+  const hostname = req.hostname;
+  const isProduction = hostname && !LOCAL_HOSTS.has(hostname) && !isIpAddress(hostname);
+  if (isProduction) return true;
+  
   if (req.protocol === "https") return true;
 
   const forwardedProto = req.headers["x-forwarded-proto"];
