@@ -36,9 +36,9 @@ export default function Dashboard() {
   return (
     <DashboardLayout>
       <div className="space-y-8">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold tracking-tight">Stock Analysis Dashboard</h1>
-          <p className="text-muted-foreground">
+        <div className="flex flex-col gap-4">
+          <h1 className="text-4xl font-bold tracking-tight">Stock Analysis Dashboard</h1>
+          <p className="text-lg text-muted-foreground">
             Monitor Trading 212 stocks with AI-powered signals and technical analysis
           </p>
         </div>
@@ -137,7 +137,13 @@ export default function Dashboard() {
               </div>
               <Button
                 size="sm"
-                onClick={() => setSearchQuery('')}
+                onClick={() => {
+                  const element = document.querySelector('input[placeholder*="Search stocks"]') as HTMLInputElement;
+                  if (element) {
+                    element.focus();
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }
+                }}
                 className="gap-2"
               >
                 <Plus className="h-4 w-4" />
@@ -147,12 +153,21 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             {watchlist.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground mb-4">No stocks in your watchlist yet</p>
+              <div className="text-center py-12">
+                <p className="text-muted-foreground mb-6">No stocks in your watchlist yet</p>
                 <Button
-                  variant="outline"
-                  onClick={() => setSearchQuery('AAPL')}
+                  onClick={() => {
+                    const element = document.querySelector('input[placeholder*="Search stocks"]') as HTMLInputElement;
+                    if (element) {
+                      element.focus();
+                      element.value = 'AAPL';
+                      element.dispatchEvent(new Event('input', { bubbles: true }));
+                      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                  }}
+                  className="gap-2"
                 >
+                  <Plus className="h-4 w-4" />
                   Add Your First Stock
                 </Button>
               </div>

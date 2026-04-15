@@ -269,7 +269,7 @@ function DashboardLayoutContent({
             <NotificationCenter />
           </div>
         )}
-        <main className="flex-1 p-4">{children}</main>
+        <main className="flex-1 p-6 md:p-8 bg-gradient-to-br from-background via-background to-background/50">{children}</main>
       </SidebarInset>
     </>
   );

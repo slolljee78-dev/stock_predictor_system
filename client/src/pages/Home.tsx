@@ -50,16 +50,16 @@ export default function Home() {
         </div>
       </nav>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
         {/* Hero Section */}
-        <div className="text-center mb-20 animate-fade-in-up">
+        <div className="text-center mb-32 animate-fade-in-up">
           <div className="inline-block mb-6 px-4 py-2 bg-accent/10 rounded-full border border-accent/20">
             <p className="text-sm font-semibold text-accent">🚀 Powered by AI & Machine Learning</p>
           </div>
-          <h1 className="text-6xl md:text-8xl font-black mb-6 gradient-text leading-tight tracking-tighter" style={{letterSpacing: '-0.04em'}}>
+          <h1 className="text-5xl md:text-7xl font-black mb-8 gradient-text leading-tight tracking-tighter" style={{letterSpacing: '-0.04em'}}>
             Trade Smarter,<br />Not Harder
           </h1>
-          <p className="text-xl text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-lg md:text-xl text-muted-foreground mb-16 max-w-3xl mx-auto leading-relaxed">
             Get intelligent buy/sell signals for Trading 212 stocks with advanced technical indicators, machine learning insights, and real-time market analysis.
           </p>
           {!isAuthenticated && (
@@ -80,7 +80,7 @@ export default function Home() {
         </div>
 
         {/* Features Grid */}
-        <div id="features" className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-20">
+        <div id="features" className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-32">
           <div className="card-premium group hover:border-primary/50 transition-all">
             <div className="p-3 bg-primary/10 rounded-lg w-fit mb-4 group-hover:bg-primary/20 transition-colors">
               <BarChart3 className="h-6 w-6 text-primary" />
@@ -122,11 +122,11 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Demo Video Section - Professional 90-second walkthrough */}
-        <div className="space-y-6 mb-24 w-full">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 gradient-text">See It In Action</h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">Watch a complete walkthrough of all features</p>
+        {/* Demo Video Section - Professional walkthrough */}
+        <div className="space-y-8 mb-32 w-full">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 gradient-text">See It In Action</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">Watch a complete walkthrough of all features and capabilities</p>
           </div>
           <div className="card-premium p-0 overflow-hidden w-full shadow-2xl">
             <div className="w-full bg-black" style={{aspectRatio: '16/9'}}>
@@ -148,12 +148,12 @@ export default function Home() {
         </div>
 
         {/* CTA Section */}
-        <div className="card-premium text-center mb-12">
+        <div className="card-premium text-center mb-20">
           <div className="flex items-center justify-center gap-2 mb-6">
             <LineChart className="h-6 w-6 text-accent" />
             <p className="text-lg font-semibold">Monitor 212 Trading 212 Stocks</p>
           </div>
-          <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">Get started with AI-powered stock analysis and make informed trading decisions</p>
+          <p className="text-lg text-muted-foreground mb-12 max-w-2xl mx-auto">Get started with AI-powered stock analysis and make informed trading decisions</p>
           {!isAuthenticated && (
             <Button asChild className="btn-premium gap-2">
               <a href={getLoginUrl()}>
