@@ -10,7 +10,9 @@ function getQueryParam(req: Request, key: string): string | undefined {
 }
 
 export function registerOAuthRoutes(app: Express) {
+  console.log("[OAuth] Registering OAuth callback route at /api/oauth/callback");
   app.get("/api/oauth/callback", async (req: Request, res: Response) => {
+    console.log("[OAuth] Callback route hit with query params:", req.query);
     const code = getQueryParam(req, "code");
     const state = getQueryParam(req, "state");
 
