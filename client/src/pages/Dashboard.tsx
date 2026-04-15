@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, Search, Plus } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -14,6 +14,7 @@ export default function Dashboard() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Fetch watchlist
   const watchlistQuery = trpc.watchlist.list.useQuery(undefined, {
@@ -35,19 +36,20 @@ export default function Dashboard() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-8">
-        <div className="flex flex-col gap-4">
-          <h1 className="text-4xl font-bold tracking-tight">Stock Analysis Dashboard</h1>
-          <p className="text-lg text-muted-foreground">
+      <div className="space-y-10">
+        <div className="flex flex-col gap-3">
+          <h1 className="text-5xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-base text-muted-foreground">
             Monitor Trading 212 stocks with AI-powered signals and technical analysis
           </p>
         </div>
 
-        <Card className="border-border/50 bg-gradient-to-br from-background to-background/50">
+        <Card className="border-border/30 bg-gradient-to-br from-card via-card/80 to-card/60 shadow-lg">
           <CardContent className="pt-6">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
+                ref={inputRef}
                 placeholder="Search stocks by ticker or name (e.g., AAPL, Microsoft)..."
                 className="pl-10 h-11 text-base"
                 value={searchQuery}
@@ -80,10 +82,10 @@ export default function Dashboard() {
         </Card>
 
         {signals.length > 0 && (
-          <Card className="border-border/50">
+          <Card className="border-border/30 shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-green-500" />
+                <TrendingUp className="h-5 w-5 text-accent" />
                 Active Trading Signals
               </CardTitle>
               <CardDescription>Latest AI-generated buy/sell recommendations</CardDescription>
@@ -128,20 +130,19 @@ export default function Dashboard() {
           </Card>
         )}
 
-        <Card className="border-border/50">
+        <Card className="border-border/30 shadow-lg">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Your Watchlist</CardTitle>
+                <CardTitle className="text-2xl">Your Watchlist</CardTitle>
                 <CardDescription>Tracked stocks and ETFs</CardDescription>
               </div>
               <Button
                 size="sm"
                 onClick={() => {
-                  const element = document.querySelector('input[placeholder*="Search stocks"]') as HTMLInputElement;
-                  if (element) {
-                    element.focus();
-                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  if (inputRef.current) {
+                    inputRef.current.focus();
+                    inputRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
                   }
                 }}
                 className="gap-2"
@@ -157,12 +158,10 @@ export default function Dashboard() {
                 <p className="text-muted-foreground mb-6">No stocks in your watchlist yet</p>
                 <Button
                   onClick={() => {
-                    const element = document.querySelector('input[placeholder*="Search stocks"]') as HTMLInputElement;
-                    if (element) {
-                      element.focus();
-                      element.value = 'AAPL';
-                      element.dispatchEvent(new Event('input', { bubbles: true }));
-                      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    setSearchQuery('AAPL');
+                    if (inputRef.current) {
+                      inputRef.current.focus();
+                      inputRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
                   }}
                   className="gap-2"
