@@ -32,3 +32,13 @@ export function isStockAlreadyInWatchlist(
     (item) => item.stockId === stock.id || item.ticker === stock.ticker
   );
 }
+
+export function getQuickAddStockSelection(ticker: string): {
+  isAddStockOpen: true;
+  searchQuery: string;
+} {
+  return {
+    isAddStockOpen: true,
+    searchQuery: ticker,
+  };
+}

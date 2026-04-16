@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   calculateSignalCoverage,
+  getQuickAddStockSelection,
   isStockAlreadyInWatchlist,
 } from "./dashboard.helpers";
 
@@ -105,6 +106,20 @@ describe("dashboard.helpers", () => {
       ];
       const stock = { id: 2, ticker: "GOOGL" };
       expect(isStockAlreadyInWatchlist(watchlist, stock)).toBe(true);
+    });
+  });
+
+  describe("getQuickAddStockSelection", () => {
+    it("opens the add-stock panel for a preselected ticker", () => {
+      expect(getQuickAddStockSelection("GOOGL")).toEqual({
+        isAddStockOpen: true,
+        searchQuery: "GOOGL",
+      });
+    });
+
+    it("preserves the chosen ticker so quick selection stays deterministic", () => {
+      expect(getQuickAddStockSelection("NVDA").searchQuery).toBe("NVDA");
+      expect(getQuickAddStockSelection("AAPL").isAddStockOpen).toBe(true);
     });
   });
 });

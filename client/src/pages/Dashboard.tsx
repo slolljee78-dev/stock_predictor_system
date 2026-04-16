@@ -8,14 +8,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { getQuickAddStockSelection } from "@/pages/dashboard.helpers";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import {
@@ -202,12 +196,10 @@ export default function Dashboard() {
                       {quickSearches.slice(0, 4).map((ticker) => (
                         <button
                           key={ticker}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setIsAddStockOpen(true);
-                            // Delay search query to avoid batching issues
-                            setTimeout(() => setSearchQuery(ticker), 0);
+                          onClick={() => {
+                            const nextSelection = getQuickAddStockSelection(ticker);
+                            setIsAddStockOpen(nextSelection.isAddStockOpen);
+                            setSearchQuery(nextSelection.searchQuery);
                           }}
                           className="feature-card text-left"
                         >
@@ -358,16 +350,23 @@ export default function Dashboard() {
           </div>
         </section>
 
-        <Dialog open={isAddStockOpen} onOpenChange={(open) => setIsAddStockOpen(open)}>
-          <DialogContent className="premium-card max-w-3xl border border-border/70 bg-background/95 p-0 backdrop-blur-2xl">
-            <DialogHeader className="border-b border-border/70 px-6 py-6 md:px-8">
-              <DialogTitle className="text-3xl font-semibold tracking-tight">Add a stock to your watchlist</DialogTitle>
-              <DialogDescription className="max-w-2xl text-base text-muted-foreground">
-                Search by ticker or company name, then click <strong>Add to watchlist</strong>. Once added, the stock will appear in your workspace and begin feeding into your review flow.
-              </DialogDescription>
-            </DialogHeader>
+        {isAddStockOpen ? (
+          <Card className="premium-card border border-border/70 bg-background/95 p-0 backdrop-blur-2xl">
+            <CardHeader className="border-b border-border/70 px-6 py-6 md:px-8">
+              <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                <div className="space-y-2">
+                  <CardTitle className="text-3xl font-semibold tracking-tight">Add a stock to your watchlist</CardTitle>
+                  <CardDescription className="max-w-2xl text-base text-muted-foreground">
+                    Search by ticker or company name, then click <strong>Add to watchlist</strong>. Once added, the stock will appear in your workspace and begin feeding into your review flow.
+                  </CardDescription>
+                </div>
+                <Button type="button" variant="outline" className="rounded-full" onClick={() => setIsAddStockOpen(false)}>
+                  Close panel
+                </Button>
+              </div>
+            </CardHeader>
 
-            <div className="grid gap-0 lg:grid-cols-[0.8fr_1.2fr]">
+            <CardContent className="grid gap-0 p-0 lg:grid-cols-[0.8fr_1.2fr]">
               <div className="border-b border-border/70 px-6 py-6 lg:border-b-0 lg:border-r lg:px-8">
                 <p className="text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">How to use this</p>
                 <div className="mt-5 space-y-4 text-sm text-muted-foreground">
@@ -394,11 +393,7 @@ export default function Dashboard() {
                         type="button"
                         variant="outline"
                         className="rounded-full"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setSearchQuery(ticker);
-                        }}
+                        onClick={() => setSearchQuery(ticker)}
                       >
                         {ticker}
                       </Button>
@@ -411,7 +406,6 @@ export default function Dashboard() {
                 <div className="relative">
                   <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                   <Input
-                    autoFocus
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search by ticker or company name"
@@ -491,9 +485,9 @@ export default function Dashboard() {
                   )}
                 </div>
               </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+            </CardContent>
+          </Card>
+        ) : null}
       </div>
     </DashboardLayout>
   );
