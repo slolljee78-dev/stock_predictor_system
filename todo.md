@@ -716,4 +716,5 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Create comprehensive user guide (USER_GUIDE.md)
 - [x] Create comprehensive developer guide (DEVELOPER_GUIDE.md)
 - [x] Create comprehensive project documentation (README_COMPREHENSIVE.md)
+- [x] Fix watchlist add freezing issue (duplicate check + error handling)
 - [ ] Test the redesigned site thoroughly and fix key functional issues before delivery

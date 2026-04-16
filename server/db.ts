@@ -188,13 +188,29 @@ export async function addToWatchlist(
   const db = await getDb();
   if (!db) throw new Error('Database not available');
 
-  await db.insert(watchlists).values({
-    userId,
-    stockId,
-    label: options?.label,
-    alertOnBuy: options?.alertOnBuy !== false ? 1 : 0,
-    alertOnSell: options?.alertOnSell !== false ? 1 : 0,
-  });
+  // Check if stock is already in watchlist
+  const existing = await db
+    .select()
+    .from(watchlists)
+    .where(and(eq(watchlists.userId, userId), eq(watchlists.stockId, stockId)))
+    .limit(1);
+
+  if (existing.length > 0) {
+    throw new Error('Stock is already in your watchlist');
+  }
+
+  try {
+    await db.insert(watchlists).values({
+      userId,
+      stockId,
+      label: options?.label,
+      alertOnBuy: options?.alertOnBuy !== false ? 1 : 0,
+      alertOnSell: options?.alertOnSell !== false ? 1 : 0,
+    });
+  } catch (error) {
+    console.error('[Database] Failed to add to watchlist:', error);
+    throw new Error('Failed to add stock to watchlist. Please try again.');
+  }
 }
 
 /**

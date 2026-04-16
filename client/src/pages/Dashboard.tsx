@@ -67,7 +67,8 @@ export default function Dashboard() {
       setSearchQuery("");
       setIsAddStockOpen(false);
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Failed to add stock:', error);
       setAddingStockId(null);
     },
   });

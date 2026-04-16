@@ -62,10 +62,15 @@ export const appRouter = router({
         throw new Error('Invalid input');
       })
       .mutation(async ({ ctx, input }) => {
-        await import('./db').then(db =>
-          db.addToWatchlist(ctx.user.id, input.stockId, { label: input.label })
-        );
-        return { success: true };
+        try {
+          await import('./db').then(db =>
+            db.addToWatchlist(ctx.user.id, input.stockId, { label: input.label })
+          );
+          return { success: true };
+        } catch (error) {
+          const message = error instanceof Error ? error.message : 'Failed to add stock to watchlist';
+          throw new Error(message);
+        }
       }),
 
     remove: protectedProcedure
