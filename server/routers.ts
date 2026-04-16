@@ -152,6 +152,54 @@ export const appRouter = router({
   }),
 
   liveMarket: liveMarketRouter,
+
+  simulator: router({
+    executeLiveTradeWithMarketPrice: protectedProcedure
+      .input((val: unknown) => {
+        if (typeof val === 'object' && val !== null) {
+          return val as any;
+        }
+        throw new Error('Invalid input');
+      })
+      .mutation(async ({ input }) => {
+        try {
+          const { executeLiveTradeWithMarketPrice } = await import('./liveSimulator');
+          const result = await executeLiveTradeWithMarketPrice(
+            (input as any).ticker,
+            (input as any).type,
+            (input as any).quantity,
+            (input as any).requestedPrice,
+            (input as any).slippagePercent,
+            (input as any).commissionPercent
+          );
+          return result;
+        } catch (error) {
+          const message = error instanceof Error ? error.message : 'Trade execution failed';
+          throw new Error(message);
+        }
+      }),
+
+    calculateLivePortfolioValue: protectedProcedure
+      .input((val: unknown) => {
+        if (typeof val === 'object' && val !== null) {
+          return val as any;
+        }
+        throw new Error('Invalid input');
+      })
+      .query(async ({ input }) => {
+        try {
+          const { calculateLivePortfolioValue } = await import('./liveSimulator');
+          const result = await calculateLivePortfolioValue(
+            (input as any).positions,
+            (input as any).cashBalance
+          );
+          return result;
+        } catch (error) {
+          const message = error instanceof Error ? error.message : 'Portfolio calculation failed';
+          throw new Error(message);
+        }
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

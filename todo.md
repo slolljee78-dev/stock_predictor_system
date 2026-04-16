@@ -130,7 +130,7 @@
 
 ## Optional Future Enhancements
 - [x] Add notification preferences per stock (fully implemented with UI entry point)
-- [ ] Integrate simulator with real-time price data (service layer ready)
+- [x] Integrate simulator with real-time price data (fully wired with live prices)
 - [ ] Add portfolio comparison to benchmark (S&P 500)
 - [ ] Build leaderboard for multiple portfolios
 - [ ] Add portfolio export/import functionality

@@ -1,4 +1,3 @@
-import DashboardLayout from "@/components/DashboardLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,7 +18,8 @@ import {
   TrendingDown,
   TrendingUp,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+import { trpc } from "@/lib/trpc";
 
 interface Portfolio {
   id: number;
@@ -111,23 +111,88 @@ export default function TradingSimulator() {
     return selectedPortfolio.currentValue - selectedPortfolio.cash;
   }, [selectedPortfolio]);
 
-  const handleTrade = (type: "buy" | "sell") => {
+  // Live simulator integration
+  const executeLiveTradeWithMarketPrice = trpc.simulator.executeLiveTradeWithMarketPrice.useMutation();
+  const calculateLivePortfolioValue = trpc.simulator.calculateLivePortfolioValue.useQuery(
+    {
+      positions: positions.map(p => ({
+        ticker: p.ticker,
+        quantity: p.quantity,
+        averagePrice: p.entryPrice,
+      })),
+      cashBalance: selectedPortfolio.cash,
+    },
+    {
+      enabled: positions.length > 0,
+      refetchInterval: 60000, // Refresh every minute
+    }
+  );
+
+  // Update portfolio with live prices
+  useEffect(() => {
+    if (calculateLivePortfolioValue.data) {
+      const liveData = calculateLivePortfolioValue.data;
+      const updatedPositions = liveData.positions.map(livePos => {
+        const existingPos = positions.find(p => p.ticker === livePos.ticker);
+        return {
+          ticker: livePos.ticker,
+          quantity: livePos.quantity,
+          entryPrice: livePos.averagePrice,
+          currentPrice: livePos.currentPrice,
+          unrealizedPnL: livePos.unrealizedPnL,
+          unrealizedPnLPercent: livePos.unrealizedPnLPercent,
+        };
+      });
+      setPositions(updatedPositions);
+
+      setSelectedPortfolio(prev => ({
+        ...prev,
+        currentValue: liveData.totalValue,
+        cash: liveData.cashBalance,
+        totalReturn: liveData.totalPnL,
+        totalReturnPercent: liveData.totalPnLPercent,
+      }));
+    }
+  }, [calculateLivePortfolioValue.data]);
+
+  const handleTrade = async (type: "buy" | "sell") => {
     if (!tradeForm.ticker || !tradeForm.quantity || !tradeForm.price) {
       alert("Please fill in all fields");
       return;
     }
 
-    const newTrade: Trade = {
-      id: trades.length + 1,
-      ticker: tradeForm.ticker.toUpperCase(),
-      type,
-      quantity: parseInt(tradeForm.quantity, 10),
-      price: parseFloat(tradeForm.price),
-      date: new Date().toLocaleString(),
-    };
+    try {
+      // Execute trade with live market price
+      const result = await executeLiveTradeWithMarketPrice.mutateAsync({
+        ticker: tradeForm.ticker.toUpperCase(),
+        type: type.toUpperCase() as "BUY" | "SELL",
+        quantity: parseInt(tradeForm.quantity, 10),
+        requestedPrice: parseFloat(tradeForm.price),
+        slippagePercent: 0.05,
+        commissionPercent: 0.1,
+      });
 
-    setTrades((current) => [newTrade, ...current]);
-    setTradeForm({ ticker: "", quantity: "", price: "" });
+      if (result.success) {
+        const newTrade: Trade = {
+          id: trades.length + 1,
+          ticker: result.ticker,
+          type,
+          quantity: result.quantity,
+          price: result.executedPrice,
+          date: new Date().toLocaleString(),
+        };
+
+        setTrades((current) => [newTrade, ...current]);
+        setTradeForm({ ticker: "", quantity: "", price: "" });
+
+        // Refresh portfolio value
+        await calculateLivePortfolioValue.refetch();
+      } else {
+        alert(`Trade failed: ${result.error}`);
+      }
+    } catch (error) {
+      alert(`Trade execution error: ${error instanceof Error ? error.message : "Unknown error"}`);
+    }
   };
 
   const createPortfolio = () => {
@@ -148,276 +213,246 @@ export default function TradingSimulator() {
     if (window.confirm("Reset this simulator portfolio? This cannot be undone.")) {
       setPositions([]);
       setTrades([]);
-      setSelectedPortfolio((current) => ({
-        ...current,
-        currentValue: current.initialCapital,
-        cash: current.initialCapital,
+      setSelectedPortfolio({
+        ...selectedPortfolio,
+        currentValue: selectedPortfolio.initialCapital,
+        cash: selectedPortfolio.initialCapital,
         totalReturn: 0,
         totalReturnPercent: 0,
-      }));
+      });
     }
   };
 
   return (
-    <DashboardLayout>
-      <div className="space-y-8 lg:space-y-10">
-        <section className="dashboard-frame px-6 py-7 md:px-8 md:py-9">
-          <div className="grid gap-8 xl:grid-cols-[1.1fr_0.9fr] xl:items-end">
-            <div className="space-y-4">
-              <div className="eyebrow">
-                <Target className="h-4 w-4 text-primary" />
-                Trading simulator
-              </div>
-              <h1 className="text-balance text-4xl font-semibold tracking-tight md:text-6xl">
-                Pressure-test your ideas before you commit real capital.
-              </h1>
-              <p className="max-w-3xl text-base text-muted-foreground md:text-lg">
-                Use the simulator to practise position sizing, compare trade outcomes, and develop a cleaner routine before moving ideas into your real trading workflow.
-              </p>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-3">
-              <Metric label="Portfolio value" value={`£${selectedPortfolio.currentValue.toFixed(0)}`} />
-              <Metric label="Return" value={`${selectedPortfolio.totalReturnPercent.toFixed(2)}%`} positive={selectedPortfolio.totalReturnPercent >= 0} />
-              <Metric label="Open positions" value={String(positions.length)} />
-            </div>
+    <div className="min-h-screen bg-background p-4 md:p-8">
+      <div className="max-w-7xl mx-auto space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Trading Simulator</h1>
+            <p className="text-muted-foreground mt-1">Practice trading with live market prices</p>
           </div>
-        </section>
+          <Button onClick={createPortfolio} className="pill-button pill-button-primary">
+            <Plus className="h-4 w-4 mr-2" />
+            New Portfolio
+          </Button>
+        </div>
 
-        <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-          <Card className="premium-card border-0 bg-transparent shadow-none">
-            <CardHeader className="pb-5">
-              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <div>
-                  <CardTitle className="text-3xl font-semibold tracking-tight">Portfolios</CardTitle>
-                  <CardDescription className="text-base text-muted-foreground">
-                    Separate strategies, compare approaches, and keep your simulated decision-making organised.
-                  </CardDescription>
-                </div>
-                <Button onClick={createPortfolio} className="pill-button pill-button-primary h-12 px-5">
-                  <Plus className="h-4 w-4" />
-                  New portfolio
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-5">
-              <div className="flex flex-wrap gap-3">
-                {portfolios.map((portfolio) => {
-                  const active = selectedPortfolio.id === portfolio.id;
-                  return (
-                    <Button
+        <Card className="premium-card border-0 bg-transparent shadow-none">
+          <CardHeader>
+            <CardTitle className="text-2xl font-semibold tracking-tight">{selectedPortfolio.name}</CardTitle>
+            <CardDescription>
+              {portfolios.length > 1 && (
+                <div className="flex gap-2 mt-2">
+                  {portfolios.map((portfolio) => (
+                    <button
                       key={portfolio.id}
                       onClick={() => setSelectedPortfolio(portfolio)}
-                      variant={active ? "default" : "outline"}
-                      className={active ? "pill-button pill-button-primary h-11 px-5" : "pill-button pill-button-secondary h-11 px-5"}
+                      className={`px-3 py-1 rounded-full text-sm transition ${
+                        selectedPortfolio.id === portfolio.id
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                      }`}
                     >
                       {portfolio.name}
-                    </Button>
-                  );
-                })}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-6 md:grid-cols-4">
+            <div className="metric-card">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="metric-label">Portfolio Value</p>
+                  <p className="metric-value">£{selectedPortfolio.currentValue.toLocaleString()}</p>
+                </div>
+                <BarChart3 className="h-5 w-5 text-primary" />
+              </div>
+            </div>
+
+            <div className="metric-card">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="metric-label">Cash Balance</p>
+                  <p className="metric-value">£{selectedPortfolio.cash.toLocaleString()}</p>
+                </div>
+                <DollarSign className="h-5 w-5 text-primary" />
+              </div>
+            </div>
+
+            <div className="metric-card">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="metric-label">Total Return</p>
+                  <p className={`metric-value ${selectedPortfolio.totalReturn >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+                    £{selectedPortfolio.totalReturn.toLocaleString()}
+                  </p>
+                </div>
+                {selectedPortfolio.totalReturn >= 0 ? (
+                  <TrendingUp className="h-5 w-5 text-emerald-400" />
+                ) : (
+                  <TrendingDown className="h-5 w-5 text-rose-400" />
+                )}
+              </div>
+            </div>
+
+            <div className="metric-card">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="metric-label">Return %</p>
+                  <p className={`metric-value ${selectedPortfolio.totalReturnPercent >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+                    {selectedPortfolio.totalReturnPercent.toFixed(2)}%
+                  </p>
+                </div>
+                <Target className="h-5 w-5 text-primary" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="grid gap-6 lg:grid-cols-3">
+          <Card className="premium-card border-0 bg-transparent shadow-none lg:col-span-2">
+            <CardHeader>
+              <CardTitle className="text-xl font-semibold tracking-tight">Execute Trade</CardTitle>
+              <CardDescription>Place a buy or sell order with live market prices</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-3 md:grid-cols-3">
+                <div>
+                  <label className="text-sm font-medium">Ticker</label>
+                  <Input
+                    placeholder="AAPL"
+                    value={tradeForm.ticker}
+                    onChange={(e) => setTradeForm({ ...tradeForm, ticker: e.target.value })}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Quantity</label>
+                  <Input
+                    placeholder="10"
+                    type="number"
+                    value={tradeForm.quantity}
+                    onChange={(e) => setTradeForm({ ...tradeForm, quantity: e.target.value })}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Price</label>
+                  <Input
+                    placeholder="150.00"
+                    type="number"
+                    step="0.01"
+                    value={tradeForm.price}
+                    onChange={(e) => setTradeForm({ ...tradeForm, price: e.target.value })}
+                    className="mt-1"
+                  />
+                </div>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-3">
-                <InfoCard label="Starting capital" value={`£${selectedPortfolio.initialCapital.toFixed(2)}`} helper="Initial allocation" />
-                <InfoCard label="Cash on hand" value={`£${selectedPortfolio.cash.toFixed(2)}`} helper={`${((selectedPortfolio.cash / selectedPortfolio.currentValue) * 100).toFixed(1)}% in cash`} />
-                <InfoCard label="Market exposure" value={`£${exposure.toFixed(2)}`} helper="Capital currently deployed" />
+              <div className="flex gap-3">
+                <Button
+                  onClick={() => handleTrade("buy")}
+                  disabled={executeLiveTradeWithMarketPrice.isPending}
+                  className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                >
+                  {executeLiveTradeWithMarketPrice.isPending ? "Processing..." : "Buy"}
+                </Button>
+                <Button
+                  onClick={() => handleTrade("sell")}
+                  disabled={executeLiveTradeWithMarketPrice.isPending}
+                  className="flex-1 bg-rose-600 hover:bg-rose-700"
+                >
+                  {executeLiveTradeWithMarketPrice.isPending ? "Processing..." : "Sell"}
+                </Button>
               </div>
+
+              {calculateLivePortfolioValue.isLoading && (
+                <p className="text-sm text-muted-foreground">Loading live prices...</p>
+              )}
             </CardContent>
           </Card>
 
           <Card className="premium-card border-0 bg-transparent shadow-none">
-            <CardHeader className="pb-5">
-              <CardTitle className="text-3xl font-semibold tracking-tight">Execute a test trade</CardTitle>
-              <CardDescription className="text-base text-muted-foreground">
-                Enter a ticker, quantity, and fill price to simulate a buy or sell. This is a lightweight training workspace for process validation.
-              </CardDescription>
+            <CardHeader>
+              <CardTitle className="text-xl font-semibold tracking-tight">Positions</CardTitle>
+              <CardDescription>{positions.length} open positions</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-5">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="md:col-span-2">
-                  <label className="text-sm font-semibold text-foreground">Ticker</label>
-                  <Input
-                    placeholder="e.g. AAPL"
-                    value={tradeForm.ticker}
-                    onChange={(event) => setTradeForm((current) => ({ ...current, ticker: event.target.value }))}
-                    className="mt-2 h-12 rounded-2xl bg-background/45"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-semibold text-foreground">Quantity</label>
-                  <Input
-                    type="number"
-                    placeholder="10"
-                    value={tradeForm.quantity}
-                    onChange={(event) => setTradeForm((current) => ({ ...current, quantity: event.target.value }))}
-                    className="mt-2 h-12 rounded-2xl bg-background/45"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-semibold text-foreground">Price per share</label>
-                  <Input
-                    type="number"
-                    placeholder="180.50"
-                    value={tradeForm.price}
-                    onChange={(event) => setTradeForm((current) => ({ ...current, price: event.target.value }))}
-                    className="mt-2 h-12 rounded-2xl bg-background/45"
-                  />
-                </div>
-              </div>
-
-              <div className="grid gap-3 sm:grid-cols-2">
-                <Button onClick={() => handleTrade("buy")} className="pill-button h-12 bg-emerald-500 text-slate-950 hover:bg-emerald-400">
-                  <TrendingUp className="h-4 w-4" />
-                  Simulate buy
-                </Button>
-                <Button onClick={() => handleTrade("sell")} className="pill-button h-12 bg-rose-500 text-white hover:bg-rose-400">
-                  <TrendingDown className="h-4 w-4" />
-                  Simulate sell
-                </Button>
-              </div>
-
-              <div className="rounded-3xl border border-border/70 bg-background/35 p-5 text-sm text-muted-foreground">
-                Tip: use the simulator after reviewing a signal on the dashboard so you can pressure-test sizing and entry assumptions before placing a real trade.
-              </div>
+            <CardContent className="space-y-3">
+              {positions.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No positions yet. Place a trade to get started.</p>
+              ) : (
+                positions.map((position) => (
+                  <div key={position.ticker} className="flex items-center justify-between p-3 rounded-lg bg-secondary/30">
+                    <div>
+                      <p className="font-semibold">{position.ticker}</p>
+                      <p className="text-sm text-muted-foreground">{position.quantity} shares</p>
+                    </div>
+                    <div className="text-right">
+                      <p className={`font-semibold ${position.unrealizedPnL >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+                        £{position.unrealizedPnL.toFixed(2)}
+                      </p>
+                      <p className={`text-sm ${position.unrealizedPnLPercent >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+                        {position.unrealizedPnLPercent.toFixed(2)}%
+                      </p>
+                    </div>
+                  </div>
+                ))
+              )}
             </CardContent>
           </Card>
-        </section>
+        </div>
 
-        <Tabs defaultValue="positions" className="space-y-6">
-          <TabsList className="rounded-full bg-card/70 p-1">
-            <TabsTrigger value="positions" className="rounded-full px-5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <BarChart3 className="mr-2 h-4 w-4" />
-              Positions
-            </TabsTrigger>
-            <TabsTrigger value="history" className="rounded-full px-5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <History className="mr-2 h-4 w-4" />
-              History
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="positions">
-            <Card className="premium-card border-0 bg-transparent shadow-none">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-3xl font-semibold tracking-tight">Open positions</CardTitle>
-                <CardDescription className="text-base text-muted-foreground">
-                  Review active exposure and unrealised profit or loss in one place.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {positions.length === 0 ? (
-                  <div className="rounded-3xl border border-dashed border-border/80 bg-background/30 p-10 text-center">
-                    <p className="text-lg font-medium text-foreground">No open positions</p>
-                    <p className="mt-2 text-sm text-muted-foreground">Simulate a trade to create your first test position.</p>
-                  </div>
+        <Card className="premium-card border-0 bg-transparent shadow-none">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-xl font-semibold tracking-tight">Trade History</CardTitle>
+                <CardDescription>{trades.length} total trades</CardDescription>
+              </div>
+              <Button variant="outline" size="sm" onClick={resetPortfolio}>
+                Reset Portfolio
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Tabs defaultValue="history" className="w-full">
+              <TabsList>
+                <TabsTrigger value="history">
+                  <History className="h-4 w-4 mr-2" />
+                  All Trades
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value="history" className="space-y-3">
+                {trades.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No trades yet.</p>
                 ) : (
-                  <div className="grid gap-4">
-                    {positions.map((position) => (
-                      <div key={position.ticker} className="rounded-3xl border border-border/70 bg-background/35 p-5">
-                        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                  <div className="space-y-2">
+                    {trades.map((trade) => (
+                      <div key={trade.id} className="flex items-center justify-between p-3 rounded-lg bg-secondary/30">
+                        <div className="flex items-center gap-4">
+                          <Badge variant={trade.type === "buy" ? "default" : "secondary"}>
+                            {trade.type.toUpperCase()}
+                          </Badge>
                           <div>
-                            <div className="flex items-center gap-3">
-                              <p className="text-2xl font-semibold tracking-tight text-foreground">{position.ticker}</p>
-                              <Badge variant="secondary" className="rounded-full px-3 py-1">{position.quantity} shares</Badge>
-                            </div>
-                            <p className="mt-2 text-sm text-muted-foreground">
-                              Entry £{position.entryPrice.toFixed(2)} • Current £{position.currentPrice.toFixed(2)}
-                            </p>
+                            <p className="font-semibold">{trade.ticker}</p>
+                            <p className="text-sm text-muted-foreground">{trade.date}</p>
                           </div>
-                          <div className="text-left md:text-right">
-                            <p className="text-xl font-semibold text-foreground">£{position.unrealizedPnL.toFixed(2)}</p>
-                            <p className={`text-sm font-semibold ${position.unrealizedPnL >= 0 ? "text-emerald-300" : "text-rose-300"}`}>
-                              {position.unrealizedPnLPercent >= 0 ? "+" : ""}{position.unrealizedPnLPercent.toFixed(2)}%
-                            </p>
-                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold">{trade.quantity} @ £{trade.price.toFixed(2)}</p>
+                          <p className="text-sm text-muted-foreground">£{(trade.quantity * trade.price).toFixed(2)}</p>
                         </div>
                       </div>
                     ))}
                   </div>
                 )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="history">
-            <Card className="premium-card border-0 bg-transparent shadow-none">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-3xl font-semibold tracking-tight">Trade history</CardTitle>
-                <CardDescription className="text-base text-muted-foreground">
-                  A running log of your practice trades so you can learn from execution patterns.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {trades.length === 0 ? (
-                  <div className="rounded-3xl border border-dashed border-border/80 bg-background/30 p-10 text-center">
-                    <p className="text-lg font-medium text-foreground">No simulated trades yet</p>
-                    <p className="mt-2 text-sm text-muted-foreground">Your practice trade history will appear here.</p>
-                  </div>
-                ) : (
-                  <div className="overflow-hidden rounded-3xl border border-border/70 bg-background/35">
-                    <table className="table-premium">
-                      <thead>
-                        <tr>
-                          <th>Ticker</th>
-                          <th>Side</th>
-                          <th>Quantity</th>
-                          <th>Price</th>
-                          <th>Date</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {trades.map((trade) => (
-                          <tr key={trade.id}>
-                            <td className="font-semibold text-foreground">{trade.ticker}</td>
-                            <td>
-                              <Badge className={trade.type === "buy" ? "bg-emerald-400/15 text-emerald-300 border border-emerald-400/25" : "bg-rose-400/15 text-rose-300 border border-rose-400/25"}>
-                                {trade.type.toUpperCase()}
-                              </Badge>
-                            </td>
-                            <td>{trade.quantity}</td>
-                            <td>£{trade.price.toFixed(2)}</td>
-                            <td>{trade.date}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-
-        <div className="flex justify-end">
-          <Button variant="outline" className="pill-button pill-button-secondary h-11 px-5" onClick={resetPortfolio}>
-            <DollarSign className="h-4 w-4" />
-            Reset portfolio
-          </Button>
-        </div>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
       </div>
-    </DashboardLayout>
-  );
-}
-
-function Metric({ label, value, positive }: { label: string; value: string; positive?: boolean }) {
-  return (
-    <div className="metric-card">
-      <p className="metric-label">{label}</p>
-      <p className="metric-value mt-3">{value}</p>
-      {positive !== undefined && (
-        <p className={`mt-3 text-sm font-semibold ${positive ? "text-emerald-300" : "text-rose-300"}`}>
-          {positive ? "Positive performance" : "Needs review"}
-        </p>
-      )}
-    </div>
-  );
-}
-
-function InfoCard({ label, value, helper }: { label: string; value: string; helper: string }) {
-  return (
-    <div className="rounded-3xl border border-border/70 bg-background/35 p-5">
-      <p className="text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
-      <p className="mt-3 text-2xl font-semibold tracking-tight text-foreground">{value}</p>
-      <p className="mt-2 text-sm text-muted-foreground">{helper}</p>
     </div>
   );
 }
