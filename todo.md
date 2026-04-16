@@ -135,6 +135,7 @@
 - [x] Build leaderboard for multiple portfolios (infrastructure ready)
 - [x] Add portfolio export/import functionality (full JSON/CSV support)
 - [x] Create comprehensive API documentation (markdown with examples)
+- [x] Implement advanced signal filtering with presets (19 tests)
 - [ ] Phase 2: Sentiment analysis + advanced patterns
 - [ ] Phase 3: LSTM/XGBoost ML models
 - [ ] Phase 4: Ensemble methods + advanced risk management
