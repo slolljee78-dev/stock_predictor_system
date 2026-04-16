@@ -718,12 +718,12 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Create comprehensive project documentation (README_COMPREHENSIVE.md)
 - [x] Fix watchlist add freezing issue (duplicate check + error handling)
 - [x] Fix quick search button freezing issue (event handling + state batching)
-- [ ] Test the redesigned site thoroughly and fix key functional issues before delivery
+- [x] Test the redesigned site thoroughly and fix key functional issues before delivery
 - [x] Investigate persistent dashboard freeze after selecting a stock in the add-to-watchlist flow
 - [x] Fix dashboard UI becoming unresponsive after stock selection while modal remains interactive
 - [x] Add regression coverage for the add-to-watchlist interaction path
-- [ ] Fix public root domain routing so unauthenticated visitors land on the homepage instead of the sign-in gate
-- [ ] Diagnose remaining stock-selection freeze after choosing a ticker from the add-to-watchlist flow
+- [x] Fix public root domain routing so unauthenticated visitors land on the homepage instead of the sign-in gate
+- [x] Diagnose remaining stock-selection freeze after choosing a ticker from the add-to-watchlist flow
 - [x] Add regression coverage for public homepage routing and add-stock interaction responsiveness
 - [x] Fix add-to-watchlist button doing nothing after a stock is selected in the add-stock panel
 - [x] Fix quick stock suggestions so selecting a suggested ticker can actually add the stock to the watchlist instead of only opening the search panel
