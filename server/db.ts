@@ -328,6 +328,50 @@ export async function removeFromWatchlist(watchlistId: number, userId: number) {
 }
 
 /**
+ * Update watchlist item preferences (notifications, confidence threshold, etc.)
+ */
+export async function updateWatchlistPreferences(
+  watchlistId: number,
+  userId: number,
+  preferences: {
+    alertOnBuy?: boolean;
+    alertOnSell?: boolean;
+    minConfidenceThreshold?: number;
+    emailNotifications?: boolean;
+    inAppNotifications?: boolean;
+  }
+) {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+
+  const updateSet: any = {};
+  if (preferences.alertOnBuy !== undefined) {
+    updateSet.alertOnBuy = preferences.alertOnBuy ? 1 : 0;
+  }
+  if (preferences.alertOnSell !== undefined) {
+    updateSet.alertOnSell = preferences.alertOnSell ? 1 : 0;
+  }
+  if (preferences.minConfidenceThreshold !== undefined) {
+    updateSet.minConfidenceThreshold = preferences.minConfidenceThreshold;
+  }
+  if (preferences.emailNotifications !== undefined) {
+    updateSet.emailNotifications = preferences.emailNotifications ? 1 : 0;
+  }
+  if (preferences.inAppNotifications !== undefined) {
+    updateSet.inAppNotifications = preferences.inAppNotifications ? 1 : 0;
+  }
+
+  if (Object.keys(updateSet).length === 0) {
+    return; // No preferences to update
+  }
+
+  await db
+    .update(watchlists)
+    .set(updateSet)
+    .where(and(eq(watchlists.id, watchlistId), eq(watchlists.userId, userId)));
+}
+
+/**
  * Get recent signals for a stock
  */
 export async function getSignalsForStock(stockId: number, limit: number = 50) {

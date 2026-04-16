@@ -105,6 +105,31 @@ export const appRouter = router({
         );
         return { success: true };
       }),
+
+    updatePreferences: protectedProcedure
+      .input((val: unknown) => {
+        if (typeof val === 'object' && val !== null && 'watchlistId' in val) {
+          return val as any;
+        }
+        throw new Error('Invalid input');
+      })
+      .mutation(async ({ ctx, input }) => {
+        try {
+          await import('./db').then(db =>
+            db.updateWatchlistPreferences((input as any).watchlistId, ctx.user.id, {
+              alertOnBuy: (input as any).alertOnBuy,
+              alertOnSell: (input as any).alertOnSell,
+              minConfidenceThreshold: (input as any).minConfidenceThreshold,
+              emailNotifications: (input as any).emailNotifications,
+              inAppNotifications: (input as any).inAppNotifications,
+            })
+          );
+          return { success: true };
+        } catch (error) {
+          const message = error instanceof Error ? error.message : 'Failed to update preferences';
+          throw new Error(message);
+        }
+      }),
   }),
 
   validation: validationRouter,

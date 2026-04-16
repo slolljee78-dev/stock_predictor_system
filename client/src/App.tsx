@@ -11,6 +11,7 @@ import TradingSimulator from "./pages/TradingSimulator";
 import ValidationSetup from "./pages/ValidationSetup";
 import ValidationDashboard from "./pages/ValidationDashboard";
 import Pricing from "./pages/Pricing";
+import WatchlistSettings from "./pages/WatchlistSettings";
 
 function Router() {
   return (
@@ -22,6 +23,7 @@ function Router() {
       <Route path="/validation/setup" component={ValidationSetup} />
       <Route path="/validation/dashboard" component={ValidationDashboard} />
       <Route path="/pricing" component={Pricing} />
+      <Route path="/watchlist/:watchlistId/settings" component={WatchlistSettings} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

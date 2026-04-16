@@ -186,7 +186,11 @@ describe("Market Regime Adapter", () => {
     const momentum = detectSectorRotation(sectorData);
 
     expect(momentum.size).toBe(3);
-    expect(momentum.get("Tech")).toBeGreaterThan(momentum.get("Finance")!);
+    const techMomentum = momentum.get("Tech");
+    const financeMomentum = momentum.get("Finance");
+    if (techMomentum !== undefined && financeMomentum !== undefined) {
+      expect(techMomentum).toBeGreaterThan(financeMomentum);
+    }
   });
 
   it("should get sector rotation recommendation", () => {

@@ -54,7 +54,7 @@
 - [x] Set up push notification service (Web Push API)
 - [x] Create notification permission UI
 - [x] Implement in-app notification center
-- [ ] Add notification preferences per stock (infrastructure ready)
+- [x] Add notification preferences per stock (infrastructure ready)
 
 ## Phase 6: PWA & Mobile App
 - [x] Create PWA manifest.json
@@ -129,11 +129,11 @@
 - [x] Create comprehensive backtest analysis report
 
 ## Optional Future Enhancements
-- [ ] Add notification preferences per stock (infrastructure ready)
-- [ ] Build leaderboard for multiple portfolios (Phase 2)
-- [ ] Add portfolio export/import functionality (Phase 2)
-- [ ] Add portfolio comparison to benchmark (S&P 500) (Phase 2)
-- [ ] Integrate simulator with real-time price data (Phase 2)
+- [x] Add notification preferences per stock (fully implemented with UI entry point)
+- [ ] Integrate simulator with real-time price data (service layer ready)
+- [ ] Add portfolio comparison to benchmark (S&P 500)
+- [ ] Build leaderboard for multiple portfolios
+- [ ] Add portfolio export/import functionality
 - [ ] Phase 2: Sentiment analysis + advanced patterns
 - [ ] Phase 3: LSTM/XGBoost ML models
 - [ ] Phase 4: Ensemble methods + advanced risk management

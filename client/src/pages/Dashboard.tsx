@@ -24,6 +24,8 @@ import {
   Star,
   TrendingDown,
   TrendingUp,
+  Settings,
+  X,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -242,38 +244,57 @@ export default function Dashboard() {
                   {watchlist.map((item) => {
                     const relatedSignal = signals.find((signal) => signal.ticker === item.ticker);
                     return (
-                      <button
+                      <div
                         key={item.id}
-                        onClick={() => setLocation(`/stock/${item.ticker}`)}
-                        className="premium-card flex flex-col gap-4 p-5 text-left transition hover:-translate-y-0.5 hover:border-primary/35 md:flex-row md:items-center md:justify-between"
+                        className="premium-card flex flex-col gap-4 p-5 text-left md:flex-row md:items-center md:justify-between"
                       >
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-3">
-                            <p className="text-2xl font-semibold tracking-tight text-foreground">{item.ticker}</p>
-                            <Badge variant="secondary" className="rounded-full px-3 py-1">{item.name}</Badge>
+                        <button
+                          onClick={() => setLocation(`/stock/${item.ticker}`)}
+                          className="flex-1 transition hover:-translate-y-0.5 text-left"
+                        >
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-3">
+                              <p className="text-2xl font-semibold tracking-tight text-foreground">{item.ticker}</p>
+                              <Badge variant="secondary" className="rounded-full px-3 py-1">{item.name}</Badge>
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              Click to open the full stock view and inspect the latest trading context.
+                            </p>
                           </div>
-                          <p className="text-sm text-muted-foreground">
-                            Click to open the full stock view and inspect the latest trading context.
-                          </p>
-                        </div>
 
-                        <div className="flex flex-wrap items-center gap-3">
-                          {relatedSignal ? (
-                            <Badge
-                              className={`rounded-full px-3 py-1 ${
-                                relatedSignal.type === "buy"
-                                  ? "border border-emerald-400/30 bg-emerald-400/15 text-emerald-300"
-                                  : "border border-rose-400/30 bg-rose-400/15 text-rose-300"
-                              }`}
-                            >
-                              {relatedSignal.type === "buy" ? "Buy signal active" : "Sell signal active"}
-                            </Badge>
-                          ) : (
-                            <Badge variant="secondary" className="rounded-full px-3 py-1">Awaiting signal refresh</Badge>
-                          )}
-                          <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                          <div className="flex flex-wrap items-center gap-3 mt-3">
+                            {relatedSignal ? (
+                              <Badge
+                                className={`rounded-full px-3 py-1 ${
+                                  relatedSignal.type === "buy"
+                                    ? "border border-emerald-400/30 bg-emerald-400/15 text-emerald-300"
+                                    : "border border-rose-400/30 bg-rose-400/15 text-rose-300"
+                                }`}
+                              >
+                                {relatedSignal.type === "buy" ? "Buy signal active" : "Sell signal active"}
+                              </Badge>
+                            ) : (
+                              <Badge variant="secondary" className="rounded-full px-3 py-1">Awaiting signal refresh</Badge>
+                            )}
+                            <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                          </div>
+                        </button>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setLocation(`/watchlist/${item.id}/settings`);
+                            }}
+                            className="h-9 w-9 p-0"
+                            title="Alert preferences"
+                          >
+                            <Settings className="h-4 w-4" />
+                          </Button>
                         </div>
-                      </button>
+                      </div>
                     );
                   })}
                 </div>
