@@ -56,15 +56,34 @@ export const appRouter = router({
 
     add: protectedProcedure
       .input((val: unknown) => {
-        if (typeof val === 'object' && val !== null && 'stockId' in val) {
-          return val as { stockId: number; label?: string };
+        if (typeof val === 'object' && val !== null) {
+          const candidate = val as {
+            stockId?: number;
+            ticker?: string;
+            name?: string;
+            exchange?: string;
+            type?: 'equity' | 'etf';
+            currency?: string;
+            label?: string;
+          };
+
+          if (typeof candidate.stockId === 'number' || typeof candidate.ticker === 'string') {
+            return candidate;
+          }
         }
         throw new Error('Invalid input');
       })
       .mutation(async ({ ctx, input }) => {
         try {
           await import('./db').then(db =>
-            db.addToWatchlist(ctx.user.id, input.stockId, { label: input.label })
+            db.addToWatchlist(ctx.user.id, {
+              stockId: input.stockId,
+              ticker: input.ticker,
+              name: input.name,
+              exchange: input.exchange,
+              type: input.type,
+              currency: input.currency,
+            }, { label: input.label })
           );
           return { success: true };
         } catch (error) {

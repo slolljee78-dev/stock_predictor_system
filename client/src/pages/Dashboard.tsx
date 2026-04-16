@@ -98,9 +98,23 @@ export default function Dashboard() {
     setIsAddStockOpen(true);
   };
 
-  const handleAddStock = async (stockId: number) => {
-    setAddingStockId(stockId);
-    await addToWatchlistMutation.mutateAsync({ stockId });
+  const handleAddStock = async (stock: {
+    id: number;
+    ticker: string;
+    name: string;
+    exchange: string;
+    type?: 'equity' | 'etf';
+    currency?: string;
+  }) => {
+    setAddingStockId(stock.id);
+    await addToWatchlistMutation.mutateAsync({
+      stockId: stock.id > 0 ? stock.id : undefined,
+      ticker: stock.ticker,
+      name: stock.name,
+      exchange: stock.exchange,
+      type: stock.type,
+      currency: stock.currency,
+    });
   };
 
   return (
@@ -461,7 +475,7 @@ export default function Dashboard() {
                               <Button
                                 type="button"
                                 disabled={alreadyAdded || isAdding}
-                                onClick={() => handleAddStock(stock.id)}
+                                onClick={() => handleAddStock(stock)}
                                 className={alreadyAdded ? "pill-button h-11 rounded-full px-5" : "pill-button pill-button-primary h-11 px-5"}
                                 variant={alreadyAdded ? "secondary" : "default"}
                               >

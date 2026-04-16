@@ -12,7 +12,99 @@ import {
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
+type CuratedStock = {
+  ticker: string;
+  name: string;
+  exchange: string;
+  type: 'equity' | 'etf';
+  currency: string;
+  sector?: string;
+  industry?: string;
+};
+
+const CURATED_STOCKS: CuratedStock[] = [
+  { ticker: 'AAPL', name: 'Apple Inc.', exchange: 'NASDAQ', type: 'equity', currency: 'USD', sector: 'Technology', industry: 'Consumer Electronics' },
+  { ticker: 'MSFT', name: 'Microsoft Corporation', exchange: 'NASDAQ', type: 'equity', currency: 'USD', sector: 'Technology', industry: 'Software' },
+  { ticker: 'NVDA', name: 'NVIDIA Corporation', exchange: 'NASDAQ', type: 'equity', currency: 'USD', sector: 'Technology', industry: 'Semiconductors' },
+  { ticker: 'GOOGL', name: 'Alphabet Inc. Class A', exchange: 'NASDAQ', type: 'equity', currency: 'USD', sector: 'Communication Services', industry: 'Internet Content & Information' },
+  { ticker: 'AMZN', name: 'Amazon.com, Inc.', exchange: 'NASDAQ', type: 'equity', currency: 'USD', sector: 'Consumer Cyclical', industry: 'Internet Retail' },
+  { ticker: 'TSLA', name: 'Tesla, Inc.', exchange: 'NASDAQ', type: 'equity', currency: 'USD', sector: 'Consumer Cyclical', industry: 'Auto Manufacturers' },
+  { ticker: 'META', name: 'Meta Platforms, Inc.', exchange: 'NASDAQ', type: 'equity', currency: 'USD', sector: 'Communication Services', industry: 'Internet Content & Information' },
+  { ticker: 'AMD', name: 'Advanced Micro Devices, Inc.', exchange: 'NASDAQ', type: 'equity', currency: 'USD', sector: 'Technology', industry: 'Semiconductors' },
+  { ticker: 'SPY', name: 'SPDR S&P 500 ETF Trust', exchange: 'NYSEARCA', type: 'etf', currency: 'USD', sector: 'Index Fund', industry: 'ETF' },
+  { ticker: 'QQQ', name: 'Invesco QQQ Trust', exchange: 'NASDAQ', type: 'etf', currency: 'USD', sector: 'Index Fund', industry: 'ETF' },
+];
+
+export function getCuratedStockMatches(searchTerm: string) {
+  const normalizedTerm = searchTerm.trim().toUpperCase();
+  if (!normalizedTerm) return [];
+
+  return CURATED_STOCKS.filter((stock) => {
+    const ticker = stock.ticker.toUpperCase();
+    const name = stock.name.toUpperCase();
+    return ticker.includes(normalizedTerm) || name.includes(normalizedTerm);
+  }).slice(0, 20).map((stock, index) => ({ ...stock, id: -(index + 1) }));
+}
+
+async function ensureStockRecord(input: {
+  stockId?: number;
+  ticker?: string;
+  name?: string;
+  exchange?: string;
+  type?: 'equity' | 'etf';
+  currency?: string;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+
+  if (input.stockId && input.stockId > 0) {
+    const existingById = await db.select().from(stocks).where(eq(stocks.id, input.stockId)).limit(1);
+    if (existingById.length > 0) {
+      return existingById[0];
+    }
+  }
+
+  const ticker = input.ticker?.trim().toUpperCase();
+  if (!ticker) {
+    throw new Error('A valid stock ticker is required');
+  }
+
+  const existingByTicker = await db.select().from(stocks).where(eq(stocks.ticker, ticker)).limit(1);
+  if (existingByTicker.length > 0) {
+    return existingByTicker[0];
+  }
+
+  const curated = CURATED_STOCKS.find((stock) => stock.ticker === ticker);
+  const stockToInsert = curated ?? {
+    ticker,
+    name: input.name?.trim() || ticker,
+    exchange: input.exchange?.trim() || 'NASDAQ',
+    type: input.type ?? 'equity',
+    currency: input.currency ?? 'USD',
+    sector: undefined,
+    industry: undefined,
+  };
+
+  await db.insert(stocks).values({
+    ticker: stockToInsert.ticker,
+    name: stockToInsert.name,
+    exchange: stockToInsert.exchange,
+    type: stockToInsert.type,
+    currency: stockToInsert.currency,
+    sector: stockToInsert.sector,
+    industry: stockToInsert.industry,
+  });
+
+  const inserted = await db.select().from(stocks).where(eq(stocks.ticker, ticker)).limit(1);
+  if (inserted.length === 0) {
+    throw new Error('Failed to create stock record');
+  }
+
+  return inserted[0];
+}
+
 let _db: ReturnType<typeof drizzle> | null = null;
+
 
 // Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
@@ -122,16 +214,23 @@ export async function getAllStocks(filter?: { type?: 'equity' | 'etf'; exchange?
  */
 export async function searchStocks(searchTerm: string) {
   const db = await getDb();
-  if (!db) return [];
+  const fallbackMatches = getCuratedStockMatches(searchTerm);
+  if (!db) return fallbackMatches;
 
   const term = `%${searchTerm.toUpperCase()}%`;
-  return db
+  const databaseMatches = await db
     .select()
     .from(stocks)
     .where(
       sql`UPPER(${stocks.ticker}) LIKE ${term} OR UPPER(${stocks.name}) LIKE ${term}`
     )
     .limit(20);
+
+  if (databaseMatches.length > 0) {
+    return databaseMatches;
+  }
+
+  return fallbackMatches;
 }
 
 /**
@@ -182,17 +281,20 @@ export async function getUserWatchlist(userId: number) {
  */
 export async function addToWatchlist(
   userId: number,
-  stockId: number,
+  stockInput: number | { stockId?: number; ticker?: string; name?: string; exchange?: string; type?: 'equity' | 'etf'; currency?: string },
   options?: { label?: string; alertOnBuy?: boolean; alertOnSell?: boolean }
 ) {
   const db = await getDb();
   if (!db) throw new Error('Database not available');
 
-  // Check if stock is already in watchlist
+  const stock = typeof stockInput === 'number'
+    ? await ensureStockRecord({ stockId: stockInput })
+    : await ensureStockRecord(stockInput);
+
   const existing = await db
     .select()
     .from(watchlists)
-    .where(and(eq(watchlists.userId, userId), eq(watchlists.stockId, stockId)))
+    .where(and(eq(watchlists.userId, userId), eq(watchlists.stockId, stock.id)))
     .limit(1);
 
   if (existing.length > 0) {
@@ -202,7 +304,7 @@ export async function addToWatchlist(
   try {
     await db.insert(watchlists).values({
       userId,
-      stockId,
+      stockId: stock.id,
       label: options?.label,
       alertOnBuy: options?.alertOnBuy !== false ? 1 : 0,
       alertOnSell: options?.alertOnSell !== false ? 1 : 0,
