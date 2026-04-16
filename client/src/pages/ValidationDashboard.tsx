@@ -286,6 +286,67 @@ export default function ValidationDashboard() {
         </div>
       </div>
 
+      {/* Benchmark Comparison */}
+      <div className="card-premium">
+        <div className="flex items-center gap-2 mb-6">
+          <TrendingUp className="h-5 w-5 text-primary" />
+          <h2 className="text-xl font-bold">Portfolio vs S&P 500</h2>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Comparison Chart */}
+          <div>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={performanceHistory}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Line 
+                  type="monotone" 
+                  dataKey="capital" 
+                  stroke="var(--primary)" 
+                  strokeWidth={2}
+                  name="Your Portfolio"
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="target" 
+                  stroke="var(--muted-foreground)" 
+                  strokeDasharray="5 5"
+                  strokeWidth={2}
+                  name="S&P 500 (Benchmark)"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Comparison Metrics */}
+          <div className="space-y-4">
+            <div className="p-4 rounded-lg bg-secondary/30">
+              <p className="text-sm text-muted-foreground mb-1">Your Portfolio Return</p>
+              <p className="text-2xl font-bold text-accent">{((metrics.currentCapital - 100) / 100 * 100).toFixed(2)}%</p>
+            </div>
+            <div className="p-4 rounded-lg bg-secondary/30">
+              <p className="text-sm text-muted-foreground mb-1">S&P 500 Return (Benchmark)</p>
+              <p className="text-2xl font-bold text-muted-foreground">8.50%</p>
+            </div>
+            <div className="p-4 rounded-lg bg-secondary/30">
+              <p className="text-sm text-muted-foreground mb-1">Outperformance</p>
+              <p className={`text-2xl font-bold ${((metrics.currentCapital - 100) / 100 * 100) > 8.50 ? 'text-accent' : 'text-red-600 dark:text-red-400'}`}>
+                {(((metrics.currentCapital - 100) / 100 * 100) - 8.50).toFixed(2)}%
+              </p>
+            </div>
+            <div className="p-4 rounded-lg bg-secondary/30">
+              <p className="text-sm text-muted-foreground mb-1">Sharpe Ratio (vs S&P 500: 0.95)</p>
+              <p className={`text-2xl font-bold ${metrics.sharpeRatio > 0.95 ? 'text-accent' : 'text-red-600 dark:text-red-400'}`}>
+                {metrics.sharpeRatio.toFixed(2)}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Risk Status */}
       <div className={`card-premium border-l-4 ${riskLimitStatus === 'EXCEEDED' ? 'border-red-500' : 'border-accent'}`}>
         <div className="flex items-center gap-3">

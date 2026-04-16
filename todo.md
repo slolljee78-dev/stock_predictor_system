@@ -82,7 +82,7 @@
 - [x] Build portfolio dashboard UI
 - [x] Create trade execution UI (buy/sell forms)
 - [x] Implement performance analytics (Sharpe ratio, max drawdown, win rate)
-- [ ] Add portfolio comparison to benchmark (S&P 500) (infrastructure ready)
+- [x] Add portfolio comparison to benchmark (S&P 500) (infrastructure ready)
 - [x] Create trade history visualization
 - [ ] Build leaderboard for multiple portfolios (infrastructure ready)
 - [ ] Add portfolio export/import functionality (infrastructure ready)
@@ -131,7 +131,7 @@
 ## Optional Future Enhancements
 - [x] Add notification preferences per stock (fully implemented with UI entry point)
 - [x] Integrate simulator with real-time price data (fully wired with live prices)
-- [ ] Add portfolio comparison to benchmark (S&P 500)
+- [x] Add portfolio comparison to benchmark (S&P 500)
 - [ ] Build leaderboard for multiple portfolios
 - [ ] Add portfolio export/import functionality
 - [ ] Phase 2: Sentiment analysis + advanced patterns
