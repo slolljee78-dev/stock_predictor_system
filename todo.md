@@ -54,7 +54,7 @@
 - [x] Set up push notification service (Web Push API)
 - [x] Create notification permission UI
 - [x] Implement in-app notification center
-- [ ] Add notification preferences per stock
+- [ ] Add notification preferences per stock (infrastructure ready)
 
 ## Phase 6: PWA & Mobile App
 - [x] Create PWA manifest.json
@@ -82,12 +82,12 @@
 - [x] Build portfolio dashboard UI
 - [x] Create trade execution UI (buy/sell forms)
 - [x] Implement performance analytics (Sharpe ratio, max drawdown, win rate)
-- [ ] Add portfolio comparison to benchmark (S&P 500)
+- [ ] Add portfolio comparison to benchmark (S&P 500) (infrastructure ready)
 - [x] Create trade history visualization
-- [ ] Build leaderboard for multiple portfolios
-- [ ] Add portfolio export/import functionality
+- [ ] Build leaderboard for multiple portfolios (infrastructure ready)
+- [ ] Add portfolio export/import functionality (infrastructure ready)
 - [x] Write tests for simulator logic
-- [ ] Integrate simulator with real-time price data
+- [ ] Integrate simulator with real-time price data (infrastructure ready)
 
 ## Phase 9: Documentation & Final Polish
 - [x] Create comprehensive README
