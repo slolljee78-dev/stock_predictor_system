@@ -364,7 +364,7 @@ export default function Home() {
                     controlsList="nodownload"
                     playsInline
                   >
-                    <source src="https://d2xsxph8kpxj0f.cloudfront.net/310519663483836922/knJ3QkdJFvivzkyeUv8kpq/stock_predictor_demo_30sec_final.mp4" type="video/mp4" />
+                    <source src="https://d2xsxph8kpxj0f.cloudfront.net/310519663483836922/knJ3QkdJFvivzkyeUv8kpq/stock_predictor_demo_09200f51.mp4" type="video/mp4" />
                     Your browser does not support the video tag.
                   </video>
                 </div>

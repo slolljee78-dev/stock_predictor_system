@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,32 +17,8 @@ interface Notification {
 }
 
 export default function NotificationCenter() {
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: '1',
-      title: '🔵 Buy Signal: AAPL',
-      body: 'Strong buy signal at £180.50 (68% confidence)',
-      type: 'buy_signal',
-      ticker: 'AAPL',
-      price: 180.50,
-      confidence: 68,
-      timestamp: new Date(Date.now() - 5 * 60000),
-      timeAgo: '5m ago',
-    },
-    {
-      id: '2',
-      title: '🔴 Sell Signal: NVDA',
-      body: 'Strong sell signal at £892.50 (72% confidence)',
-      type: 'sell_signal',
-      ticker: 'NVDA',
-      price: 892.50,
-      confidence: 72,
-      timestamp: new Date(Date.now() - 15 * 60000),
-      timeAgo: '15m ago',
-    },
-  ]);
-
-  const [unreadCount, setUnreadCount] = useState(notifications.length);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
 
   const removeNotification = (id: string) => {
@@ -53,10 +29,11 @@ export default function NotificationCenter() {
   const clearAll = () => {
     setNotifications([]);
     setUnreadCount(0);
+    setIsOpen(false);
   };
 
   return (
-    <div className="relative">
+    <div className="relative flex justify-end">
       {/* Notification Bell Button */}
       <Button
         variant="ghost"
@@ -77,21 +54,31 @@ export default function NotificationCenter() {
 
       {/* Notification Dropdown */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-96 bg-background border border-border rounded-lg shadow-lg z-50">
+        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-background border border-border rounded-lg shadow-lg z-50 max-w-[calc(100vw-2rem)]">
           <Card className="border-0 shadow-none">
             <CardHeader className="border-b border-border">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2">
                 <CardTitle className="text-lg">Notifications</CardTitle>
-                {notifications.length > 0 && (
+                <div className="flex items-center gap-1">
+                  {notifications.length > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={clearAll}
+                      className="text-xs"
+                    >
+                      Clear All
+                    </Button>
+                  )}
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={clearAll}
-                    className="text-xs"
+                    onClick={() => setIsOpen(false)}
+                    className="h-6 w-6 p-0"
                   >
-                    Clear All
+                    <X className="h-4 w-4" />
                   </Button>
-                )}
+                </div>
               </div>
               <CardDescription>
                 {unreadCount === 0
@@ -100,15 +87,15 @@ export default function NotificationCenter() {
               </CardDescription>
             </CardHeader>
 
-            <CardContent className="p-0 max-h-96 overflow-y-auto">
+            <CardContent className="p-0 max-h-80 sm:max-h-96 overflow-y-auto">
               {notifications.length === 0 ? (
                 <div className="p-6 text-center text-muted-foreground">
                   <Bell className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                  <p>No notifications yet</p>
+                  <p>No notifications</p>
                 </div>
               ) : (
                 <div className="divide-y divide-border">
-                  {notifications.map(notification => (
+                  {notifications.map((notification) => (
                     <div
                       key={notification.id}
                       className="p-4 hover:bg-accent/50 transition-colors flex items-start gap-3"
@@ -141,7 +128,7 @@ export default function NotificationCenter() {
                         variant="ghost"
                         size="sm"
                         onClick={() => removeNotification(notification.id)}
-                        className="h-6 w-6 p-0"
+                        className="h-6 w-6 p-0 shrink-0"
                       >
                         <X className="h-4 w-4" />
                       </Button>
