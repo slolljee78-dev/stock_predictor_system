@@ -202,9 +202,12 @@ export default function Dashboard() {
                       {quickSearches.slice(0, 4).map((ticker) => (
                         <button
                           key={ticker}
-                          onClick={() => {
-                            setSearchQuery(ticker);
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
                             setIsAddStockOpen(true);
+                            // Delay search query to avoid batching issues
+                            setTimeout(() => setSearchQuery(ticker), 0);
                           }}
                           className="feature-card text-left"
                         >
@@ -391,7 +394,11 @@ export default function Dashboard() {
                         type="button"
                         variant="outline"
                         className="rounded-full"
-                        onClick={() => setSearchQuery(ticker)}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setSearchQuery(ticker);
+                        }}
                       >
                         {ticker}
                       </Button>
