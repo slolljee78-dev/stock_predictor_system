@@ -8,17 +8,19 @@ import App from "./App";
 import { getLoginUrl } from "./const";
 import "./index.css";
 
-// App Version - Updated with new homepage design and video
-const APP_VERSION = '2.0.1-premium-homepage';
+// App Version - Updated after disabling stale PWA caching and dashboard route fixes
+const APP_VERSION = '2.0.2-routing-and-cache-fix';
 console.log('[App] Version:', APP_VERSION);
 
-// Initialize Service Worker for PWA
+// Remove old service workers so mobile devices always load the latest app code.
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker
-      .register('/sw.js', { scope: '/' })
-      .then(() => console.log('[PWA] Service Worker registered'))
-      .catch(err => console.error('[PWA] Service Worker registration failed:', err));
+    navigator.serviceWorker.getRegistrations()
+      .then((registrations) => Promise.all(registrations.map((registration) => registration.unregister())))
+      .then(() => caches.keys())
+      .then((cacheNames) => Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName))))
+      .then(() => console.log('[PWA] Cleared old service workers and caches'))
+      .catch((err) => console.error('[PWA] Failed to clear service workers or caches:', err));
   });
 }
 

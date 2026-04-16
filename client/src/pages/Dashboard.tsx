@@ -25,7 +25,7 @@ import {
   TrendingDown,
   TrendingUp,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "wouter";
 
 const quickSearches = ["AAPL", "MSFT", "NVDA", "GOOGL", "TSLA", "AMZN"];
@@ -38,6 +38,7 @@ export default function Dashboard() {
   const [isAddStockOpen, setIsAddStockOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [addingStockId, setAddingStockId] = useState<number | null>(null);
+  const addStockPanelRef = useRef<HTMLDivElement | null>(null);
 
   const watchlistQuery = trpc.watchlist.list.useQuery(undefined, {
     enabled: !!user,
@@ -79,6 +80,17 @@ export default function Dashboard() {
     const covered = signals.filter((signal) => watchlistTickers.has(signal.ticker)).length;
     return Math.min(100, Math.round((covered / watchlist.length) * 100));
   }, [signals, watchlist]);
+
+  useEffect(() => {
+    if (!isAddStockOpen) return;
+
+    const panel = addStockPanelRef.current;
+    if (!panel) return;
+
+    requestAnimationFrame(() => {
+      panel.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }, [isAddStockOpen, searchQuery]);
 
   const handleOpenAddStock = () => {
     setSearchQuery("");
@@ -351,7 +363,8 @@ export default function Dashboard() {
         </section>
 
         {isAddStockOpen ? (
-          <Card className="premium-card border border-border/70 bg-background/95 p-0 backdrop-blur-2xl">
+          <div ref={addStockPanelRef}>
+            <Card className="premium-card border border-border/70 bg-background/95 p-0 backdrop-blur-2xl">
             <CardHeader className="border-b border-border/70 px-6 py-6 md:px-8">
               <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div className="space-y-2">
@@ -486,7 +499,8 @@ export default function Dashboard() {
                 </div>
               </div>
             </CardContent>
-          </Card>
+            </Card>
+          </div>
         ) : null}
       </div>
     </DashboardLayout>

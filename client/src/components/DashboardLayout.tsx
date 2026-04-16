@@ -34,7 +34,7 @@ import {
   Sparkles,
   TrendingUp,
 } from "lucide-react";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
 import NotificationCenter from "./NotificationCenter";
@@ -73,6 +73,13 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const { loading, user } = useAuth();
+  const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      setLocation("/");
+    }
+  }, [loading, setLocation, user]);
 
   if (loading) {
     return <DashboardLayoutSkeleton />;
@@ -84,21 +91,29 @@ export default function DashboardLayout({
         <div className="premium-card w-full max-w-xl p-8 md:p-10 text-center">
           <div className="eyebrow mb-6 mx-auto w-fit">
             <Sparkles className="h-4 w-4 text-primary" />
-            Secure product access
+            Returning you to the homepage
           </div>
-          <h1 className="text-4xl md:text-5xl font-semibold mb-4">Sign in to open your trading workspace</h1>
+          <h1 className="text-4xl md:text-5xl font-semibold mb-4">Public visitors start on the landing page</h1>
           <p className="text-lg text-muted-foreground max-w-lg mx-auto mb-8">
-            Your watchlists, signals, simulator data, and alerts live inside the secure dashboard experience.
+            The dashboard is private, so unauthenticated visits are redirected to the public homepage where you can explore the product or choose to sign in.
           </p>
           <Button
             size="lg"
             className="pill-button pill-button-primary h-14 px-7 text-base"
+            onClick={() => setLocation("/")}
+          >
+            Go to homepage
+            <ArrowUpRight className="h-4 w-4" />
+          </Button>
+          <Button
+            size="lg"
+            variant="outline"
+            className="mt-3 h-14 rounded-full px-7 text-base"
             onClick={() => {
               window.location.href = getLoginUrl();
             }}
           >
-            Sign in and continue
-            <ArrowUpRight className="h-4 w-4" />
+            Sign in instead
           </Button>
         </div>
       </div>
