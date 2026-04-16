@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Download, X } from 'lucide-react';
@@ -8,31 +9,39 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
+const DISMISS_KEY = 'stock-predictor-install-prompt-dismissed';
+
 export default function AppInstallPrompt() {
+  const [location] = useLocation();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
 
   useEffect(() => {
-    // Check if app is already installed
     if (window.matchMedia('(display-mode: standalone)').matches) {
       setIsInstalled(true);
       return;
     }
 
-    // Listen for install prompt
+    if (sessionStorage.getItem(DISMISS_KEY) === '1') {
+      setShowPrompt(false);
+    }
+
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
-      setShowPrompt(true);
+
+      if (sessionStorage.getItem(DISMISS_KEY) !== '1') {
+        setShowPrompt(true);
+      }
     };
 
-    // Listen for app installed
     const handleAppInstalled = () => {
       console.log('[App] PWA installed successfully');
       setIsInstalled(true);
       setShowPrompt(false);
       setDeferredPrompt(null);
+      sessionStorage.setItem(DISMISS_KEY, '1');
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -53,6 +62,7 @@ export default function AppInstallPrompt() {
 
       if (outcome === 'accepted') {
         console.log('[App] User accepted install prompt');
+        sessionStorage.setItem(DISMISS_KEY, '1');
       } else {
         console.log('[App] User dismissed install prompt');
       }
@@ -65,18 +75,21 @@ export default function AppInstallPrompt() {
   };
 
   const handleDismiss = () => {
+    sessionStorage.setItem(DISMISS_KEY, '1');
     setShowPrompt(false);
   };
 
-  if (!showPrompt || isInstalled || !deferredPrompt) {
+  const shouldRenderOnThisRoute = location === '/';
+
+  if (!showPrompt || isInstalled || !deferredPrompt || !shouldRenderOnThisRoute) {
     return null;
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 max-w-sm">
+    <div className="fixed bottom-4 right-4 z-50 max-w-sm px-4 sm:px-0">
       <Card className="shadow-lg">
         <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-3">
             <CardTitle className="text-base">Install App</CardTitle>
             <Button
               variant="ghost"

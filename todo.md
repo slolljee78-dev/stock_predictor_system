@@ -725,3 +725,4 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [ ] Fix public root domain routing so unauthenticated visitors land on the homepage instead of the sign-in gate
 - [ ] Diagnose remaining stock-selection freeze after choosing a ticker from the add-to-watchlist flow
 - [ ] Add regression coverage for public homepage routing and add-stock interaction responsiveness
+- [ ] Fix add-to-watchlist button doing nothing after a stock is selected in the add-stock panel
