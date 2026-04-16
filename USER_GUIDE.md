@@ -1,8 +1,8 @@
-# Stock Predictor - User Guide
+# Stock Predictor User Guide
 
-## Overview
+## Welcome to Stock Predictor
 
-Stock Predictor is an AI-powered stock analysis and trading signal platform designed for Trading 212 users. It provides real-time technical analysis, ML-generated buy/sell signals, and automated alerts to help you make informed trading decisions.
+Stock Predictor is a premium AI-powered trading intelligence platform designed for Trading 212 investors. It combines advanced technical analysis, machine learning signals, and a clean, intuitive dashboard to help you make smarter trading decisions.
 
 ## Key Features
 
