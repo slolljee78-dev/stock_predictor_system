@@ -701,3 +701,16 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Fix dashboard button functionality (Add Stock, etc. not working) - Added missing useAuth import
 - [x] Improve overall visual contrast and readability
 - [x] Fix Vite WebSocket HMR connection error by disabling HMR (Manus platform handles proxying)
+
+## Premium Redesign Sprint
+- [x] Research premium trading and investing websites to define a high-end redesign direction
+- [x] Replace the current visual system with a polished premium design language across all public and logged-in pages
+- [x] Redesign the homepage hero, navigation, sections, spacing, typography, and calls to action for a premium look
+- [x] Redesign the dashboard layout, hierarchy, cards, and responsive behavior to feel high quality on mobile and desktop
+- [x] Rebuild the Add Stock flow so it is intuitive, guided, and fully functional for first-time users
+- [x] Replace the current demo media with the correct high-quality walkthrough and verify playback on the live site
+- [x] Audit spacing, alignment, color contrast, and consistency across the full site and resolve low-quality visual issues
+- [x] Write unit tests for dashboard helper functions (calculateSignalCoverage, isStockAlreadyInWatchlist)
+- [x] Fix auth.logout test to match actual sameSite cookie value
+- [x] Verify all tests passing (147 tests)
+- [ ] Test the redesigned site thoroughly and fix key functional issues before delivery
