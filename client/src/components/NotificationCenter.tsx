@@ -39,9 +39,9 @@ export default function NotificationCenter() {
         variant="ghost"
         size="icon"
         onClick={() => setIsOpen(!isOpen)}
-        className="relative h-12 w-12 flex items-center justify-center"
+        className="relative h-10 w-10 md:h-11 md:w-11 flex items-center justify-center text-primary hover:bg-primary/10"
       >
-        <Bell className="h-6 w-6" />
+        <Bell className="h-5 w-5 md:h-6 md:w-6" />
         {unreadCount > 0 && (
           <Badge
             variant="destructive"
@@ -54,7 +54,7 @@ export default function NotificationCenter() {
 
       {/* Notification Dropdown */}
       {isOpen && (
-        <div className="absolute -right-2 mt-2 w-80 sm:w-96 bg-background border border-border rounded-lg shadow-lg z-50 max-w-[calc(100vw-2rem)]">
+        <div className="absolute -right-1 md:right-0 mt-1 w-80 sm:w-96 bg-background border border-border rounded-lg shadow-lg z-50 max-w-[calc(100vw-1rem)]">
           <Card className="border-0 shadow-none">
             <CardHeader className="border-b border-border">
               <div className="flex items-center justify-between gap-2">

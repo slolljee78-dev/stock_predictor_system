@@ -234,10 +234,10 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
       </Sidebar>
 
       <SidebarInset className="bg-transparent">
-        <div className="sticky top-0 z-40 px-3 pt-2 md:px-4 md:pt-2">
-          <div className="dashboard-frame flex min-h-16 items-center justify-between gap-2 px-4 py-2 md:px-6">
+        <div className="sticky top-0 z-40 px-3 pt-0 md:px-4 md:pt-0">
+          <div className="dashboard-frame flex min-h-14 items-center justify-between gap-2 px-3 py-1.5 md:px-6 md:py-2">
             <div className="flex items-center gap-3 min-w-0">
-              <SidebarTrigger className="h-12 w-12 rounded-2xl border border-border/70 bg-background/40 hover:bg-secondary/70 flex items-center justify-center" />
+              <SidebarTrigger className="h-10 w-10 rounded-xl border border-border/70 bg-primary/10 hover:bg-primary/20 flex items-center justify-center text-primary" />
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <p className="text-lg md:text-xl font-semibold tracking-tight truncate">{activeMenuItem.label}</p>
@@ -251,7 +251,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 md:gap-2">
               {!isMobile && (
                 <div className="hidden lg:flex items-center gap-2 rounded-full border border-border/70 bg-background/40 px-3 py-2 text-sm text-muted-foreground">
                   <BellRing className="h-4 w-4 text-primary" />
