@@ -736,3 +736,10 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Fix notifications clearing but automatically reappearing
 - [x] Fix notification panel opening off-page to the left (positioning issue)
 - [x] Replace demo video with correct 30-second version
+
+## Mobile Layout Fixes (Current)
+- [x] Reduce top gap above Overview bar (pt-3 → pt-2)
+- [x] Increase menu button size (h-11 w-11 → h-12 w-12)
+- [x] Increase notification bell size (h-5 w-5 → h-6 w-6)
+- [x] Fix notification bell positioning (right-0 → -right-2)
+- [x] Reduce header spacing (gap-4 → gap-2)
