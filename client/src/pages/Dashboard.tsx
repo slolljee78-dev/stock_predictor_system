@@ -120,7 +120,7 @@ export default function Dashboard() {
   return (
     <DashboardLayout>
       <div className="space-y-8 lg:space-y-10">
-        <section className="dashboard-frame relative overflow-hidden px-6 py-7 md:px-8 md:py-9">
+        <section className="dashboard-frame relative overflow-hidden px-4 py-6 sm:px-6 sm:py-7 md:px-8 md:py-9">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(84,151,255,0.20),transparent_30%),radial-gradient(circle_at_bottom_left,rgba(88,212,255,0.10),transparent_22%)]" />
           <div className="relative grid gap-8 xl:grid-cols-[1.1fr_0.9fr] xl:items-end">
             <div className="space-y-5">
@@ -138,7 +138,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="grid gap-3 sm:gap-4 sm:grid-cols-3">
               <MetricCard
                 label="Watchlist"
                 value={String(watchlist.length)}
@@ -200,8 +200,8 @@ export default function Dashboard() {
               </div>
 
               {watchlist.length === 0 ? (
-                <div className="premium-card border border-border/70 bg-background/35 p-8 md:p-10">
-                  <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+                <div className="premium-card border border-border/70 bg-background/35 p-6 sm:p-8 md:p-10">
+                  <div className="grid gap-6 lg:gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
                     <div className="space-y-4">
                       <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/15 text-primary">
                         <BrainCircuit className="h-7 w-7" />
@@ -218,7 +218,7 @@ export default function Dashboard() {
                       </Button>
                     </div>
 
-                    <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="grid gap-2 sm:gap-3 sm:grid-cols-2">
                       {quickSearches.slice(0, 4).map((ticker) => (
                         <button
                           key={ticker}
@@ -379,7 +379,7 @@ export default function Dashboard() {
         {isAddStockOpen ? (
           <div ref={addStockPanelRef}>
             <Card className="premium-card border border-border/70 bg-background/95 p-0 backdrop-blur-2xl">
-            <CardHeader className="border-b border-border/70 px-6 py-6 md:px-8">
+            <CardHeader className="border-b border-border/70 px-4 py-6 sm:px-6 sm:py-6 md:px-8">
               <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div className="space-y-2">
                   <CardTitle className="text-3xl font-semibold tracking-tight">Add a stock to your watchlist</CardTitle>
@@ -394,7 +394,7 @@ export default function Dashboard() {
             </CardHeader>
 
             <CardContent className="grid gap-0 p-0 lg:grid-cols-[0.8fr_1.2fr]">
-              <div className="border-b border-border/70 px-6 py-6 lg:border-b-0 lg:border-r lg:px-8">
+              <div className="border-b border-border/70 px-4 py-6 sm:px-6 sm:py-6 lg:border-b-0 lg:border-r lg:px-8">
                 <p className="text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">How to use this</p>
                 <div className="mt-5 space-y-4 text-sm text-muted-foreground">
                   <div className="flex gap-3">
@@ -429,7 +429,7 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className="px-6 py-6 md:px-8">
+              <div className="px-4 py-6 sm:px-6 sm:py-6 md:px-8">
                 <div className="relative">
                   <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                   <Input

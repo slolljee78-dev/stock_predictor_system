@@ -728,3 +728,4 @@ Users can sign in, add stocks to watchlist, view trading signals, and practice w
 - [x] Fix add-to-watchlist button doing nothing after a stock is selected in the add-stock panel
 - [x] Fix quick stock suggestions so selecting a suggested ticker can actually add the stock to the watchlist instead of only opening the search panel
 - [x] Make the add-stock flow unambiguous on mobile by providing a direct add action after selecting a suggested stock
+- [x] Fix mobile layout horizontal overflow and off-center content on dashboard
