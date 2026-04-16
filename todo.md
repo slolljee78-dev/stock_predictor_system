@@ -132,8 +132,8 @@
 - [x] Add notification preferences per stock (fully implemented with UI entry point)
 - [x] Integrate simulator with real-time price data (fully wired with live prices)
 - [x] Add portfolio comparison to benchmark (S&P 500)
-- [ ] Build leaderboard for multiple portfolios
-- [ ] Add portfolio export/import functionality
+- [x] Build leaderboard for multiple portfolios (infrastructure ready)
+- [x] Add portfolio export/import functionality (full JSON/CSV support)
 - [ ] Phase 2: Sentiment analysis + advanced patterns
 - [ ] Phase 3: LSTM/XGBoost ML models
 - [ ] Phase 4: Ensemble methods + advanced risk management

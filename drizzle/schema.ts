@@ -222,3 +222,29 @@ export const userPreferences = mysqlTable("userPreferences", {
 
 export type UserPreferences = typeof userPreferences.$inferSelect;
 export type InsertUserPreferences = typeof userPreferences.$inferInsert;
+/**
+ * User portfolios - tracks trading portfolios for leaderboard and comparison
+ */
+export const portfolios = mysqlTable("portfolios", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  startingCapital: int("startingCapital").notNull(),
+  currentCapital: int("currentCapital").notNull(),
+  totalReturn: int("totalReturn").notNull().default(0),
+  winRate: int("winRate").notNull().default(0),
+  sharpeRatio: int("sharpeRatio").notNull().default(0),
+  maxDrawdown: int("maxDrawdown").notNull().default(0),
+  totalTrades: int("totalTrades").notNull().default(0),
+  winningTrades: int("winningTrades").notNull().default(0),
+  profitFactor: int("profitFactor").notNull().default(0),
+  status: mysqlEnum("status", ["active", "paused", "completed"]).default("active").notNull(),
+  startDate: timestamp("startDate").notNull(),
+  endDate: timestamp("endDate"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Portfolio = typeof portfolios.$inferSelect;
+export type InsertPortfolio = typeof portfolios.$inferInsert;
