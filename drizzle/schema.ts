@@ -248,3 +248,57 @@ export const portfolios = mysqlTable("portfolios", {
 
 export type Portfolio = typeof portfolios.$inferSelect;
 export type InsertPortfolio = typeof portfolios.$inferInsert;
+
+/**
+ * Backtesting runs - stores historical backtests performed by users
+ */
+export const backtestRuns = mysqlTable("backtestRuns", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 255 }).notNull(),
+  startDate: timestamp("startDate").notNull(),
+  endDate: timestamp("endDate").notNull(),
+  initialCapital: int("initialCapital").notNull(),
+  stockIds: text("stockIds").notNull(),
+  filterSettings: text("filterSettings"),
+  finalCapital: int("finalCapital").notNull(),
+  totalReturn: int("totalReturn").notNull(),
+  winRate: int("winRate").notNull(),
+  sharpeRatio: int("sharpeRatio").notNull(),
+  maxDrawdown: int("maxDrawdown").notNull(),
+  totalTrades: int("totalTrades").notNull().default(0),
+  winningTrades: int("winningTrades").notNull().default(0),
+  avgWin: int("avgWin").notNull().default(0),
+  avgLoss: int("avgLoss").notNull().default(0),
+  profitFactor: int("profitFactor").notNull().default(0),
+  status: mysqlEnum("status", ["running", "completed", "failed"]).default("running").notNull(),
+  errorMessage: text("errorMessage"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  completedAt: timestamp("completedAt"),
+});
+
+export type BacktestRun = typeof backtestRuns.$inferSelect;
+export type InsertBacktestRun = typeof backtestRuns.$inferInsert;
+
+/**
+ * Backtest trades - individual trades executed during a backtest
+ */
+export const backtestTrades = mysqlTable("backtestTrades", {
+  id: int("id").autoincrement().primaryKey(),
+  backtestRunId: int("backtestRunId").notNull().references(() => backtestRuns.id, { onDelete: "cascade" }),
+  stockId: int("stockId").notNull().references(() => stocks.id, { onDelete: "cascade" }),
+  type: mysqlEnum("type", ["buy", "sell"]).notNull(),
+  entryDate: timestamp("entryDate").notNull(),
+  entryPrice: int("entryPrice").notNull(),
+  exitDate: timestamp("exitDate").notNull(),
+  exitPrice: int("exitPrice").notNull(),
+  quantity: int("quantity").notNull(),
+  profitLoss: int("profitLoss").notNull(),
+  returnPercent: int("returnPercent").notNull(),
+  exitReason: varchar("exitReason", { length: 50 }).notNull(),
+  signalConfidence: int("signalConfidence").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type BacktestTrade = typeof backtestTrades.$inferSelect;
+export type InsertBacktestTrade = typeof backtestTrades.$inferInsert;

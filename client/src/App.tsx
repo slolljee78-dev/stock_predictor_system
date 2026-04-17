@@ -13,6 +13,7 @@ import ValidationDashboard from "./pages/ValidationDashboard";
 import Pricing from "./pages/Pricing";
 import WatchlistSettings from "./pages/WatchlistSettings";
 import FAQ from "./pages/FAQ";
+import { Backtesting } from "./pages/Backtesting";
 
 function Router() {
   return (
@@ -25,6 +26,7 @@ function Router() {
       <Route path="/validation/dashboard" component={ValidationDashboard} />
       <Route path="/pricing" component={Pricing} />
       <Route path="/faq" component={FAQ} />
+      <Route path="/backtesting" component={Backtesting} />
       <Route path="/watchlist/:watchlistId/settings" component={WatchlistSettings} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />

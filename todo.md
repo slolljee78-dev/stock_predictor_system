@@ -908,3 +908,13 @@ The system is fully tested, documented, and ready for production deployment. All
 - [x] Uploaded video to CDN (2.7MB)
 - [x] Updated video URL in Home.tsx
 - [x] Verified video plays correctly with no errors
+
+
+## Phase 35: Backtesting Tool Implementation
+- [x] Design backtesting schema (backtest runs, results, trades)
+- [x] Build backtesting engine with historical signal generation
+- [x] Create tRPC procedures for backtesting
+- [x] Build Backtesting UI page with date range picker and filters
+- [x] Create performance analytics dashboard (metrics display)
+- [x] Add comparison and export features (CSV export)
+- [x] Test backtesting input validation (25 tests passing)
