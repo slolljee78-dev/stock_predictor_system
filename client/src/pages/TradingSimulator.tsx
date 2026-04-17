@@ -26,6 +26,7 @@ import { Breadcrumb } from "@/components/Breadcrumb";
 import { RecentPagesMenu } from "@/components/RecentPagesMenu";
 import { MobileMenuDrawer } from "@/components/MobileMenuDrawer";
 import { UserProfileMenu } from "@/components/UserProfileMenu";
+import { CheckCircle2, AlertCircle } from "lucide-react";
 
 const getBackPath = () => {
   if (typeof window !== 'undefined' && document.referrer.includes('/dashboard')) {
@@ -119,6 +120,7 @@ export default function TradingSimulator() {
     quantity: "",
     price: "",
   });
+  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   const exposure = useMemo(() => {
     return selectedPortfolio.currentValue - selectedPortfolio.cash;
