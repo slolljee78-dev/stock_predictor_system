@@ -14,6 +14,7 @@ import Pricing from "./pages/Pricing";
 import WatchlistSettings from "./pages/WatchlistSettings";
 import FAQ from "./pages/FAQ";
 import { Backtesting } from "./pages/Backtesting";
+import SignalsDashboard from "./pages/SignalsDashboard";
 
 function Router() {
   return (
@@ -27,6 +28,7 @@ function Router() {
       <Route path="/pricing" component={Pricing} />
       <Route path="/faq" component={FAQ} />
       <Route path="/backtesting" component={Backtesting} />
+      <Route path="/signals" component={SignalsDashboard} />
       <Route path="/watchlist/:watchlistId/settings" component={WatchlistSettings} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
