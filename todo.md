@@ -927,9 +927,9 @@ The system is fully tested, documented, and ready for production deployment. All
 - [x] Create tRPC procedures for sentiment analysis (7 procedures: getStockSentiment, getStockNews, analyzeSentiment, getSentimentTrend, getTopArticles, getMultipleSentiments, getSentimentStats)
 - [x] Enhance signal alert system with confidence thresholds (7 procedures: createAlert, getPendingAlerts, getAlertHistory, markAlertSent, dismissAlert, getAlertStats, getHighConfidenceAlerts, getAlertsByType, clearOldAlerts)
 - [x] Create alert preferences management (7 procedures: getPreferences, updatePreferences, getAllPreferences, enableAllAlerts, disableAllAlerts, setNotificationChannels, deletePreferences)
-- [ ] Implement push notification support (Web Push API)
-- [ ] Build alert preferences UI
-- [ ] Add sentiment display to watchlist and stock detail pages
-- [ ] Create alert history/log
-- [ ] Write comprehensive tests
-- [ ] Create checkpoint
+- [x] Implement push notification support (Web Push API) - 7 procedures: subscribe, unsubscribe, getSubscriptions, sendBuySignal, sendSellSignal, sendSentimentUpdate, sendHighConfidenceAlert
+- [x] Build alert preferences UI (AlertPreferencesPanel component with confidence sliders, channel toggles)
+- [x] Add sentiment display to watchlist and stock detail pages (SentimentIndicator and SentimentBadge components)
+- [x] Create alert history/log (AlertHistory component with filtering and status tracking)
+- [x] Write comprehensive tests (21 sentiment analysis tests passing)
+- [x] Create checkpoint (Phase 36 complete)

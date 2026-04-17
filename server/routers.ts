@@ -9,6 +9,7 @@ import { backtestRouter } from "./routers/backtest";
 import { sentimentRouter } from "./routers/sentiment";
 import { alertsRouter } from "./routers/alerts";
 import { alertPreferencesRouter } from "./routers/alertPreferences";
+import { pushNotificationsRouter } from "./routers/pushNotifications";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -334,6 +335,7 @@ export const appRouter = router({
   sentiment: sentimentRouter,
   alerts: alertsRouter,
   alertPreferences: alertPreferencesRouter,
+  pushNotifications: pushNotificationsRouter,
 });
 
 export type AppRouter = typeof appRouter;
