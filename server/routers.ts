@@ -153,6 +153,131 @@ export const appRouter = router({
 
   liveMarket: liveMarketRouter,
 
+  portfolio: router({
+    getLeaderboard: publicProcedure
+      .input((val: unknown) => {
+        if (typeof val === 'object' && val !== null) {
+          return val as { limit?: number; sortBy?: 'return' | 'sharpe' | 'winRate' };
+        }
+        throw new Error('Invalid input');
+      })
+      .query(async ({ input }) => {
+        try {
+          // Return mock leaderboard data
+          // In production, this would query the portfolios table
+          return [
+            {
+              id: 1,
+              name: 'Top Performer',
+              totalReturn: 45.2,
+              sharpeRatio: 1.8,
+              winRate: 0.68,
+              maxDrawdown: 0.08,
+            },
+            {
+              id: 2,
+              name: 'Consistent Trader',
+              totalReturn: 32.1,
+              sharpeRatio: 1.5,
+              winRate: 0.62,
+              maxDrawdown: 0.12,
+            },
+          ];
+        } catch (error) {
+          const message = error instanceof Error ? error.message : 'Failed to fetch leaderboard';
+          throw new Error(message);
+        }
+      }),
+
+    exportToJSON: protectedProcedure
+      .input((val: unknown) => {
+        if (typeof val === 'object' && val !== null && 'portfolioId' in val) {
+          return val as { portfolioId: number };
+        }
+        throw new Error('Invalid input');
+      })
+      .query(async ({ ctx, input }) => {
+        try {
+          const { exportPortfolioToJSON } = await import('./portfolioExportImport');
+          // Mock portfolio data for now
+          const mockPortfolio = {
+            name: 'My Portfolio',
+            description: 'Test portfolio',
+            startingCapital: 10000,
+            currentCapital: 12000,
+            totalReturn: 0.20,
+            winRate: 0.65,
+            sharpeRatio: 1.5,
+            maxDrawdown: 0.10,
+            totalTrades: 15,
+            winningTrades: 10,
+            profitFactor: 2.1,
+            status: 'active' as const,
+            startDate: new Date(),
+            endDate: undefined,
+          };
+          const mockTrades: any[] = [];
+          return exportPortfolioToJSON(mockPortfolio, mockTrades);
+        } catch (error) {
+          const message = error instanceof Error ? error.message : 'Export failed';
+          throw new Error(message);
+        }
+      }),
+
+    exportToCSV: protectedProcedure
+      .input((val: unknown) => {
+        if (typeof val === 'object' && val !== null && 'portfolioId' in val) {
+          return val as { portfolioId: number };
+        }
+        throw new Error('Invalid input');
+      })
+      .query(async ({ ctx, input }) => {
+        try {
+          const { exportPortfolioToJSON, exportPortfolioToCSV } = await import('./portfolioExportImport');
+          // Mock portfolio data for now
+          const mockPortfolio = {
+            name: 'My Portfolio',
+            description: 'Test portfolio',
+            startingCapital: 10000,
+            currentCapital: 12000,
+            totalReturn: 0.20,
+            winRate: 0.65,
+            sharpeRatio: 1.5,
+            maxDrawdown: 0.10,
+            totalTrades: 15,
+            winningTrades: 10,
+            profitFactor: 2.1,
+            status: 'active' as const,
+            startDate: new Date(),
+            endDate: undefined,
+          };
+          const mockTrades: any[] = [];
+          const exported = exportPortfolioToJSON(mockPortfolio, mockTrades);
+          return exportPortfolioToCSV(exported);
+        } catch (error) {
+          const message = error instanceof Error ? error.message : 'Export failed';
+          throw new Error(message);
+        }
+      }),
+
+    importFromJSON: protectedProcedure
+      .input((val: unknown) => {
+        if (typeof val === 'string') return val;
+        throw new Error('Expected JSON string');
+      })
+      .mutation(async ({ ctx, input }) => {
+        try {
+          const { importPortfolioFromJSON } = await import('./portfolioExportImport');
+          const imported = importPortfolioFromJSON(input);
+          // In production, this would insert into the portfolios table
+          return { success: true, portfolioId: Math.floor(Math.random() * 1000) };
+        } catch (error) {
+          const message = error instanceof Error ? error.message : 'Import failed';
+          throw new Error(message);
+        }
+      }),
+  }),
+
   simulator: router({
     executeLiveTradeWithMarketPrice: protectedProcedure
       .input((val: unknown) => {
