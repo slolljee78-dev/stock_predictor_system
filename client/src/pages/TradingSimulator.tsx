@@ -23,6 +23,13 @@ import { useLocation } from "wouter";
 import { ArrowLeft } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 
+const getBackPath = () => {
+  if (typeof window !== 'undefined' && document.referrer.includes('/dashboard')) {
+    return '/dashboard';
+  }
+  return '/';
+};
+
 interface Portfolio {
   id: number;
   name: string;
@@ -226,19 +233,27 @@ export default function TradingSimulator() {
   };
 
   const [, setLocation] = useLocation();
+  const [backPath, setBackPath] = useState('/');
+  const [backLabel, setBackLabel] = useState('Back to home');
+
+  useEffect(() => {
+    const path = getBackPath();
+    setBackPath(path);
+    setBackLabel(path === '/dashboard' ? 'Back to dashboard' : 'Back to home');
+  }, []);
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex items-center gap-4 mb-6">
           <Button
-            onClick={() => setLocation("/")}
+            onClick={() => setLocation(backPath)}
             variant="outline"
             size="sm"
             className="gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to home
+            {backLabel}
           </Button>
         </div>
         <div className="flex items-center justify-between">

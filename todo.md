@@ -844,3 +844,12 @@ The system is fully tested, documented, and ready for production deployment. All
 - [x] Fix Plan page (sidebar menu) top content cutoff
 - [x] Test mobile responsiveness on all pages
 - [x] Validate touch targets meet minimum 48px accessibility standard
+
+
+## Phase 28: Context-Aware Back Navigation
+- [x] Implement back navigation that returns to dashboard when accessed from dashboard
+- [x] Implement back navigation that returns to home when accessed directly
+- [x] Update TradingSimulator page back button
+- [x] Update Pricing page back button
+- [x] Update ValidationSetup page back button
+- [x] Test all navigation flows

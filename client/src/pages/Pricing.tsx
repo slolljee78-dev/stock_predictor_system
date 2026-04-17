@@ -5,6 +5,13 @@ import { Check, ChevronLeft, ShieldCheck, Sparkles, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 
+const getBackPath = () => {
+  if (typeof window !== 'undefined' && document.referrer.includes('/dashboard')) {
+    return '/dashboard';
+  }
+  return '/';
+};
+
 const PRICING_TIERS = [
   {
     name: "Starter",
@@ -84,10 +91,18 @@ const faqs = [
 ];
 
 export default function Pricing() {
-  const { isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
+  const { user } = useAuth();
   const [selectedTier, setSelectedTier] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [backPath, setBackPath] = useState('/');
+  const [backLabel, setBackLabel] = useState('Back to home');
+
+  useEffect(() => {
+    const path = getBackPath();
+    setBackPath(path);
+    setBackLabel(path === '/dashboard' ? 'Back to dashboard' : 'Back to home');
+  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -95,6 +110,8 @@ export default function Pricing() {
       console.log("Payment was cancelled");
     }
   }, []);
+
+  const isAuthenticated = !!user;
 
   const handleSubscribe = async (tier: string) => {
     if (!isAuthenticated) {
@@ -137,9 +154,9 @@ export default function Pricing() {
 
       <header className="sticky top-0 z-40 border-b border-border/70 bg-background/75 backdrop-blur-xl">
         <div className="container flex items-center justify-between gap-4 py-4">
-          <Button variant="ghost" className="rounded-full px-4" onClick={() => setLocation("/")}>
+          <Button variant="ghost" className="rounded-full px-4" onClick={() => setLocation(backPath)}>
             <ChevronLeft className="mr-2 h-4 w-4" />
-            Back to home
+            {backLabel}
           </Button>
           <Button className="pill-button pill-button-primary h-11 px-5" onClick={() => setLocation("/dashboard")}>
             Open dashboard

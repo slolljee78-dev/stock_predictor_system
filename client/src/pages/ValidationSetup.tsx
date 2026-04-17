@@ -5,6 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AlertCircle, CheckCircle, Loader, ArrowLeft } from "lucide-react";
 import { trpc } from "@/lib/trpc";
+import { useEffect } from "react";
+
+const getBackPath = () => {
+  if (typeof window !== 'undefined' && document.referrer.includes('/dashboard')) {
+    return '/dashboard';
+  }
+  return '/';
+};
 
 export default function ValidationSetup() {
   const [, setLocation] = useLocation();
@@ -12,6 +20,14 @@ export default function ValidationSetup() {
   const [loading, setLoading] = useState(false);
   const [sessionData, setSessionData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  const [backPath, setBackPath] = useState('/');
+  const [backLabel, setBackLabel] = useState('Back to home');
+
+  useEffect(() => {
+    const path = getBackPath();
+    setBackPath(path);
+    setBackLabel(path === '/dashboard' ? 'Back to dashboard' : 'Back to home');
+  }, []);
 
   const [formData, setFormData] = useState({
     startDate: new Date().toISOString().split("T")[0],
@@ -61,13 +77,13 @@ export default function ValidationSetup() {
       <div className="space-y-6">
         <div className="flex items-center gap-4 mb-6">
           <Button
-            onClick={() => setLocation("/")}
+            onClick={() => setLocation(backPath)}
             variant="outline"
             size="sm"
             className="gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to home
+            {backLabel}
           </Button>
         </div>
         <div className="flex items-center gap-3">
@@ -179,13 +195,13 @@ export default function ValidationSetup() {
     <div className="space-y-6 max-w-2xl">
       <div className="flex items-center gap-4 mb-6">
         <Button
-          onClick={() => setLocation("/")}
+          onClick={() => setLocation(backPath)}
           variant="outline"
           size="sm"
           className="gap-2"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to home
+          {backLabel}
         </Button>
       </div>
       <div>
