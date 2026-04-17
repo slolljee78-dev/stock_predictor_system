@@ -1,0 +1,293 @@
+/**
+ * Signal Monitoring Job
+ * Scheduled background job that monitors stocks and generates real-time signals
+ */
+
+import { fetchMarketDataWithIndicators, fetchMultipleMarketData } from './realtimeMarketData';
+import { generateRealtimeSignal, validateSignalStrength } from './realtimeSignalGenerator';
+import {
+  sendBuySignalNotification,
+  sendSellSignalNotification,
+  updateAndNotifySentiment,
+} from './notificationDelivery';
+import { getDb } from './db';
+
+export interface MonitoringConfig {
+  interval: number; // milliseconds
+  confidenceThreshold: number; // 0-100
+  maxStocksPerRun: number;
+  notifyOnSignal: boolean;
+  updateSentiment: boolean;
+}
+
+const DEFAULT_CONFIG: MonitoringConfig = {
+  interval: 300000, // 5 minutes
+  confidenceThreshold: 60,
+  maxStocksPerRun: 50,
+  notifyOnSignal: true,
+  updateSentiment: true,
+};
+
+let monitoringJob: NodeJS.Timeout | null = null;
+let isRunning = false;
+
+/**
+ * Start the signal monitoring job
+ */
+export function startSignalMonitoring(config: Partial<MonitoringConfig> = {}): void {
+  if (monitoringJob) {
+    console.log('[Signal Monitor] Job already running');
+    return;
+  }
+
+  const finalConfig = { ...DEFAULT_CONFIG, ...config };
+
+  console.log('[Signal Monitor] Starting with config:', finalConfig);
+
+  // Run immediately on start
+  runSignalMonitoring(finalConfig);
+
+  // Then schedule periodic runs
+  monitoringJob = setInterval(() => {
+    runSignalMonitoring(finalConfig);
+  }, finalConfig.interval);
+}
+
+/**
+ * Stop the signal monitoring job
+ */
+export function stopSignalMonitoring(): void {
+  if (monitoringJob) {
+    clearInterval(monitoringJob);
+    monitoringJob = null;
+    console.log('[Signal Monitor] Job stopped');
+  }
+}
+
+/**
+ * Run signal monitoring once
+ */
+export async function runSignalMonitoring(config: MonitoringConfig): Promise<void> {
+  if (isRunning) {
+    console.log('[Signal Monitor] Job already running, skipping this cycle');
+    return;
+  }
+
+  isRunning = true;
+  const startTime = Date.now();
+
+  try {
+    console.log('[Signal Monitor] Starting monitoring cycle');
+
+    // Get all active users with watchlists
+    // Mock user data for now (in production, query from database)
+    const users = [
+      { id: 1, email: 'user@example.com' },
+    ];
+
+    let totalSignalsGenerated = 0;
+    let totalNotificationsSent = 0;
+
+    for (const user of users) {
+      try {
+        // Get user's watchlist (mock data for now)
+        const watchlist = [
+          { ticker: 'AAPL' },
+          { ticker: 'GOOGL' },
+          { ticker: 'MSFT' },
+        ].slice(0, config.maxStocksPerRun);
+
+        if (watchlist.length === 0) continue;
+
+        // Extract tickers
+        const tickers = watchlist.map((item: any) => item.ticker);
+
+        // Fetch market data for all stocks
+        const marketDataMap = await fetchMultipleMarketData(tickers);
+
+        // Generate signals and send notifications
+        for (const [ticker, marketData] of Array.from(marketDataMap.entries())) {
+          try {
+            // Generate signal
+            const signal = generateRealtimeSignal(marketData);
+
+            // Check if signal is strong enough
+            if (!validateSignalStrength(signal, config.confidenceThreshold)) {
+              continue;
+            }
+
+            totalSignalsGenerated++;
+
+            // Send notifications if enabled
+            if (config.notifyOnSignal) {
+              const notificationResult =
+                signal.signalType === 'buy'
+                  ? await sendBuySignalNotification(
+                      {
+                        ticker,
+                        signalType: 'buy',
+                        confidence: signal.confidence,
+                        price: signal.price,
+                        technicalIndicators: signal.technicalData,
+                      },
+                      {
+                        userId: user.id.toString(),
+                        userEmail: user.email || '',
+                        channels: {
+                          email: true,
+                          push: true,
+                          inApp: true,
+                        },
+                      }
+                    )
+                  : await sendSellSignalNotification(
+                      {
+                        ticker,
+                        signalType: 'sell',
+                        confidence: signal.confidence,
+                        price: signal.price,
+                        technicalIndicators: signal.technicalData,
+                      },
+                      {
+                        userId: user.id.toString(),
+                        userEmail: user.email || '',
+                        channels: {
+                          email: true,
+                          push: true,
+                          inApp: true,
+                        },
+                      }
+                    );
+
+              if (notificationResult.success) {
+                totalNotificationsSent++;
+              }
+            }
+
+            // Update sentiment if enabled
+            if (config.updateSentiment) {
+              try {
+                await updateAndNotifySentiment(
+                  ticker,
+                  {
+                    userId: user.id.toString(),
+                    userEmail: user.email || '',
+                    channels: {
+                      email: true,
+                      push: true,
+                      inApp: true,
+                    },
+                  }
+                );
+              } catch (error) {
+                console.error(`[Signal Monitor] Error updating sentiment for ${ticker}:`, error);
+              }
+            }
+          } catch (error) {
+            console.error(`[Signal Monitor] Error processing signal for ${ticker}:`, error);
+          }
+        }
+      } catch (error) {
+        console.error(`[Signal Monitor] Error processing user ${user.id}:`, error);
+      }
+    }
+
+    const duration = Date.now() - startTime;
+    console.log(
+      `[Signal Monitor] Cycle complete: ${totalSignalsGenerated} signals generated, ${totalNotificationsSent} notifications sent (${duration}ms)`
+    );
+  } catch (error) {
+    console.error('[Signal Monitor] Error in monitoring cycle:', error);
+  } finally {
+    isRunning = false;
+  }
+}
+
+/**
+ * Get monitoring status
+ */
+export function getMonitoringStatus(): {
+  isRunning: boolean;
+  isJobActive: boolean;
+} {
+  return {
+    isRunning,
+    isJobActive: monitoringJob !== null,
+  };
+}
+
+/**
+ * Manually trigger signal monitoring for specific stocks
+ */
+export async function monitorSpecificStocks(
+  tickers: string[],
+  userId: string,
+  userEmail: string,
+  config: Partial<MonitoringConfig> = {}
+): Promise<Array<{ ticker: string; signal: string; confidence: number }>> {
+  const finalConfig = { ...DEFAULT_CONFIG, ...config };
+  const results = [];
+
+  try {
+    // Fetch market data
+    const marketDataMap = await fetchMultipleMarketData(tickers);
+
+    // Generate signals
+    for (const [ticker, marketData] of Array.from(marketDataMap.entries())) {
+      const signal = generateRealtimeSignal(marketData);
+
+      if (validateSignalStrength(signal, finalConfig.confidenceThreshold)) {
+        results.push({
+          ticker,
+          signal: signal.signalType,
+          confidence: signal.confidence,
+        });
+
+        // Send notifications
+        if (finalConfig.notifyOnSignal) {
+          signal.signalType === 'buy'
+            ? await sendBuySignalNotification(
+                {
+                  ticker,
+                  signalType: 'buy',
+                  confidence: signal.confidence,
+                  price: signal.price,
+                  technicalIndicators: signal.technicalData,
+                },
+                {
+                  userId,
+                  userEmail,
+                  channels: {
+                    email: true,
+                    push: true,
+                    inApp: true,
+                  },
+                }
+              )
+            : await sendSellSignalNotification(
+                {
+                  ticker,
+                  signalType: 'sell',
+                  confidence: signal.confidence,
+                  price: signal.price,
+                  technicalIndicators: signal.technicalData,
+                },
+                {
+                  userId,
+                  userEmail,
+                  channels: {
+                    email: true,
+                    push: true,
+                    inApp: true,
+                  },
+                }
+              );
+        }
+      }
+    }
+  } catch (error) {
+    console.error('[Signal Monitor] Error monitoring specific stocks:', error);
+  }
+
+  return results;
+}
