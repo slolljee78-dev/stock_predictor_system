@@ -88,10 +88,10 @@ export default function Home() {
         <div className="container flex items-center justify-between gap-2 py-4 px-4 md:px-6 max-w-full">
           <button
             onClick={() => setLocation("/")}
-            className="flex items-center gap-3 text-left flex-1 min-w-0"
+            className="flex items-center gap-3 text-left flex-1 min-w-0 hover:opacity-80 transition-opacity"
           >
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/25 flex-shrink-0">
-              <TrendingUp className="h-5 w-5" />
+            <div className="flex h-11 w-11 items-center justify-center rounded-lg text-primary flex-shrink-0">
+              <LineChart className="h-6 w-6" />
             </div>
             <div className="hidden sm:block min-w-0">
               <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-primary/90">Stock Predictor</p>

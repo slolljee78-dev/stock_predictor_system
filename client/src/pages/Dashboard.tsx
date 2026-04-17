@@ -122,19 +122,19 @@ export default function Dashboard() {
   return (
     <DashboardLayout>
       <div className="space-y-8 lg:space-y-10">
-        <section className="dashboard-frame relative overflow-hidden px-4 py-6 sm:px-6 sm:py-7 md:px-8 md:py-9">
+        <section className="dashboard-frame relative overflow-hidden px-4 py-3 sm:px-6 sm:py-4 md:px-8 md:py-5">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(84,151,255,0.20),transparent_30%),radial-gradient(circle_at_bottom_left,rgba(88,212,255,0.10),transparent_22%)]" />
-          <div className="relative grid gap-8 xl:grid-cols-[1.1fr_0.9fr] xl:items-end">
-            <div className="space-y-5">
+          <div className="relative grid gap-6 xl:grid-cols-[1.1fr_0.9fr] xl:items-end">
+            <div className="space-y-3">
               <div className="eyebrow">
                 <Sparkles className="h-4 w-4 text-primary" />
                 AI trading workspace
               </div>
-              <div className="space-y-4">
-                <h1 className="text-balance text-4xl font-semibold tracking-tight md:text-6xl">
+              <div className="space-y-2">
+                <h1 className="text-balance text-3xl font-semibold tracking-tight md:text-5xl">
                   Your signal desk for <span className="gradient-text">Trading 212 decision-making</span>
                 </h1>
-                <p className="max-w-3xl text-base text-muted-foreground md:text-lg">
+                <p className="max-w-3xl text-sm text-muted-foreground md:text-base">
                   Review your watchlist, prioritise the strongest buy and sell setups, and move from idea to detail without the clutter of a basic dashboard.
                 </p>
               </div>

@@ -376,7 +376,16 @@ export async function updateWatchlistPreferences(
  */
 export async function getSignalsForStock(stockId: number, limit: number = 50) {
   const db = await getDb();
-  if (!db) return [];
+  
+  // Return mock data if database is not available
+  if (!db) {
+    const mockSignals: Record<string, any[]> = {
+      '-1': [{ signalId: 1, stockId: -1, ticker: 'AAPL', type: 'buy', confidenceScore: 0.85, priceAtSignal: 150.25, createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000) }],
+      '-3': [{ signalId: 2, stockId: -3, ticker: 'NVDA', type: 'sell', confidenceScore: 0.78, priceAtSignal: 875.50, createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000) }],
+      '-4': [{ signalId: 3, stockId: -4, ticker: 'GOOGL', type: 'buy', confidenceScore: 0.72, priceAtSignal: 140.75, createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000) }],
+    };
+    return mockSignals[String(stockId)] || [];
+  }
 
   return db
     .select()
@@ -397,7 +406,7 @@ export async function getActiveSignalsForUser(userId: number) {
     return [
       {
         signalId: 1,
-        stockId: 1,
+        stockId: -1,
         ticker: 'AAPL',
         type: 'buy' as const,
         confidenceScore: 0.85,
@@ -406,10 +415,10 @@ export async function getActiveSignalsForUser(userId: number) {
       },
       {
         signalId: 2,
-        stockId: 2,
+        stockId: -3,
         ticker: 'NVDA',
         type: 'sell' as const,
-        confidenceScore: 0.72,
+        confidenceScore: 0.78,
         priceAtSignal: 875.50,
         createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000),
       },
@@ -442,7 +451,7 @@ export async function getActiveSignalsForUser(userId: number) {
     return results.length > 0 ? results : [
       {
         signalId: 1,
-        stockId: 1,
+        stockId: -1,
         ticker: 'AAPL',
         type: 'buy' as const,
         confidenceScore: 0.85,
@@ -451,7 +460,7 @@ export async function getActiveSignalsForUser(userId: number) {
       },
       {
         signalId: 2,
-        stockId: 2,
+        stockId: -3,
         ticker: 'NVDA',
         type: 'sell' as const,
         confidenceScore: 0.72,
@@ -465,7 +474,7 @@ export async function getActiveSignalsForUser(userId: number) {
     return [
       {
         signalId: 1,
-        stockId: 1,
+        stockId: -1,
         ticker: 'AAPL',
         type: 'buy' as const,
         confidenceScore: 0.85,
@@ -474,7 +483,7 @@ export async function getActiveSignalsForUser(userId: number) {
       },
       {
         signalId: 2,
-        stockId: 2,
+        stockId: -3,
         ticker: 'NVDA',
         type: 'sell' as const,
         confidenceScore: 0.72,

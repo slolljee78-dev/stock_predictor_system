@@ -106,8 +106,8 @@ export default function StockDetail() {
   );
 
   const latestSignal = signals[0];
-  const positiveSignals = signals.filter((signal) => signal.type === "buy").length;
-  const negativeSignals = signals.filter((signal) => signal.type === "sell").length;
+  const positiveSignals = signals.filter((signal: any) => signal.type === "buy").length;
+  const negativeSignals = signals.filter((signal: any) => signal.type === "sell").length;
 
   if (stockQuery.isLoading) {
     return (
