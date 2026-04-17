@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { AlertCircle, CheckCircle, Loader, ArrowLeft } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useEffect } from "react";
+import { Breadcrumb } from "@/components/Breadcrumb";
+import { RecentPagesMenu } from "@/components/RecentPagesMenu";
 
 const getBackPath = () => {
   if (typeof window !== 'undefined' && document.referrer.includes('/dashboard')) {
@@ -74,18 +76,22 @@ export default function ValidationSetup() {
 
   if (sessionStarted && sessionData) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-4 mb-6">
-          <Button
-            onClick={() => setLocation(backPath)}
-            variant="outline"
-            size="sm"
-            className="gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            {backLabel}
-          </Button>
+      <div className="space-y-6 page-enter">
+        <div className="flex items-center justify-between gap-4 mb-6">
+          <div className="flex items-center gap-4">
+            <Button
+              onClick={() => setLocation(backPath)}
+              variant="outline"
+              size="sm"
+              className="gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              {backLabel}
+            </Button>
+            <RecentPagesMenu />
+          </div>
         </div>
+        <Breadcrumb items={[{ label: "Validation", href: "/validation" }]} />
         <div className="flex items-center gap-3">
           <CheckCircle className="w-8 h-8 text-green-600" />
           <div>
@@ -192,18 +198,22 @@ export default function ValidationSetup() {
   }
 
   return (
-    <div className="space-y-6 max-w-2xl">
-      <div className="flex items-center gap-4 mb-6">
-        <Button
-          onClick={() => setLocation(backPath)}
-          variant="outline"
-          size="sm"
-          className="gap-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          {backLabel}
-        </Button>
+    <div className="space-y-6 max-w-2xl page-enter">
+      <div className="flex items-center justify-between gap-4 mb-6">
+        <div className="flex items-center gap-4">
+          <Button
+            onClick={() => setLocation(backPath)}
+            variant="outline"
+            size="sm"
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            {backLabel}
+          </Button>
+          <RecentPagesMenu />
+        </div>
       </div>
+      <Breadcrumb items={[{ label: "Validation", href: "/validation" }]} />
       <div>
         <h1 className="text-3xl font-bold">Start 3-Month Validation</h1>
         <p className="text-gray-600 mt-2">Initialize your paper trading validation session</p>

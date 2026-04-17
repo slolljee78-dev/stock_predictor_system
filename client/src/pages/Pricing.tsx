@@ -4,6 +4,8 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Check, ChevronLeft, ShieldCheck, Sparkles, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
+import { Breadcrumb } from "@/components/Breadcrumb";
+import { RecentPagesMenu } from "@/components/RecentPagesMenu";
 
 const getBackPath = () => {
   if (typeof window !== 'undefined' && document.referrer.includes('/dashboard')) {
@@ -148,16 +150,19 @@ export default function Pricing() {
   };
 
   return (
-    <div className="app-shell min-h-screen overflow-x-hidden pb-20">
+    <div className="app-shell min-h-screen overflow-x-hidden pb-20 page-enter">
       <div className="hero-orb left-[-6rem] top-0 h-72 w-72 bg-primary/30" />
       <div className="hero-orb right-[-7rem] top-32 h-72 w-72 bg-accent/20" />
 
       <header className="sticky top-0 z-40 border-b border-border/70 bg-background/75 backdrop-blur-xl">
         <div className="container flex items-center justify-between gap-4 py-4">
-          <Button variant="ghost" className="rounded-full px-4" onClick={() => setLocation(backPath)}>
-            <ChevronLeft className="mr-2 h-4 w-4" />
-            {backLabel}
-          </Button>
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" className="rounded-full px-4" onClick={() => setLocation(backPath)}>
+              <ChevronLeft className="mr-2 h-4 w-4" />
+              {backLabel}
+            </Button>
+            <RecentPagesMenu />
+          </div>
           <Button className="pill-button pill-button-primary h-11 px-5" onClick={() => setLocation("/dashboard")}>
             Open dashboard
           </Button>
@@ -165,6 +170,9 @@ export default function Pricing() {
       </header>
 
       <main>
+        <div className="container mt-8">
+          <Breadcrumb items={[{ label: "Pricing", href: "/pricing" }]} />
+        </div>
         <section className="section-shell pb-12 pt-16 md:pt-24">
           <div className="container grid gap-10 lg:grid-cols-[1fr_0.9fr] lg:items-end">
             <div className="space-y-6">

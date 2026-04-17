@@ -22,6 +22,8 @@ import { useMemo, useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { ArrowLeft } from "lucide-react";
 import { trpc } from "@/lib/trpc";
+import { Breadcrumb } from "@/components/Breadcrumb";
+import { RecentPagesMenu } from "@/components/RecentPagesMenu";
 
 const getBackPath = () => {
   if (typeof window !== 'undefined' && document.referrer.includes('/dashboard')) {
@@ -243,19 +245,23 @@ export default function TradingSimulator() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8">
+    <div className="min-h-screen bg-background p-4 md:p-8 page-enter">
       <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex items-center gap-4 mb-6">
-          <Button
-            onClick={() => setLocation(backPath)}
-            variant="outline"
-            size="sm"
-            className="gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            {backLabel}
-          </Button>
+        <div className="flex items-center justify-between gap-4 mb-6">
+          <div className="flex items-center gap-4">
+            <Button
+              onClick={() => setLocation(backPath)}
+              variant="outline"
+              size="sm"
+              className="gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              {backLabel}
+            </Button>
+            <RecentPagesMenu />
+          </div>
         </div>
+        <Breadcrumb items={[{ label: "Trading Simulator", href: "/simulator" }]} />
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Trading Simulator</h1>
