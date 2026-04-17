@@ -969,3 +969,16 @@ The system is fully tested, documented, and ready for production deployment. All
 - [x] Add responsive design for mobile and tablet (grid-based layout)
 - [x] Add statistics cards (Buy/Sell/Confidence/Total signals)
 - [x] Create checkpoint
+
+
+## Phase 40: Dashboard Enhancements & Signal Notifications
+- [x] Install Recharts for chart visualizations (recharts package added)
+- [x] Create price history chart component (PriceChart.tsx with SMA overlays)
+- [x] Create technical indicator charts (IndicatorChart.tsx with RSI, MACD support)
+- [x] Integrate charts into signal details modal (Charts tab with price and indicators)
+- [x] Add "Signals" link to main navigation menu (DashboardLayout updated)
+- [x] Integrate signals dashboard with mobile menu (MobileMenuDrawer updated)
+- [x] Create signal notification trigger procedures (signalNotifications router with 5 procedures)
+- [x] Implement multi-channel notification delivery (email, push, in-app via notificationDelivery)
+- [x] Add bulk signal notification support (triggerBulkSignals procedure)
+- [x] Create checkpoint

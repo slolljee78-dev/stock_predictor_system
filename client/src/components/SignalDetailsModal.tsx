@@ -5,6 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TrendingUp, TrendingDown, Copy, Check } from 'lucide-react';
 import { useState } from 'react';
+import { PriceChart } from './PriceChart';
+import { IndicatorChart } from './IndicatorChart';
 
 interface SignalDetailsModalProps {
   isOpen: boolean;
@@ -59,9 +61,10 @@ export function SignalDetailsModal({ isOpen, onClose, signal }: SignalDetailsMod
         </DialogHeader>
 
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="indicators">Indicators</TabsTrigger>
+            <TabsTrigger value="charts">Charts</TabsTrigger>
             <TabsTrigger value="analysis">Analysis</TabsTrigger>
           </TabsList>
 
@@ -176,6 +179,52 @@ export function SignalDetailsModal({ isOpen, onClose, signal }: SignalDetailsMod
                 <p className="text-xs text-muted-foreground mt-2">
                   Price position within bands
                 </p>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Charts Tab */}
+          <TabsContent value="charts" className="space-y-6">
+            <div className="border border-border rounded-lg p-4">
+              <PriceChart
+                data={[
+                  { time: '9:30', price: signal.price * 0.98, sma20: signal.price * 0.97, sma50: signal.price * 0.96 },
+                  { time: '10:00', price: signal.price * 0.99, sma20: signal.price * 0.975, sma50: signal.price * 0.965 },
+                  { time: '10:30', price: signal.price, sma20: signal.price * 0.98, sma50: signal.price * 0.97 },
+                  { time: '11:00', price: signal.price * 1.01, sma20: signal.price * 0.985, sma50: signal.price * 0.975 },
+                  { time: '11:30', price: signal.price * 1.02, sma20: signal.price * 0.99, sma50: signal.price * 0.98 },
+                ]}
+                height={300}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="border border-border rounded-lg p-4">
+                <IndicatorChart
+                  type="rsi"
+                  data={[
+                    { time: '9:30', rsi: 35 },
+                    { time: '10:00', rsi: 42 },
+                    { time: '10:30', rsi: 50 },
+                    { time: '11:00', rsi: 58 },
+                    { time: '11:30', rsi: 65 },
+                  ]}
+                  height={250}
+                />
+              </div>
+
+              <div className="border border-border rounded-lg p-4">
+                <IndicatorChart
+                  type="macd"
+                  data={[
+                    { time: '9:30', macd: -0.0012, signal: -0.0010, histogram: -0.0002 },
+                    { time: '10:00', macd: -0.0008, signal: -0.0009, histogram: 0.0001 },
+                    { time: '10:30', macd: -0.0003, signal: -0.0008, histogram: 0.0005 },
+                    { time: '11:00', macd: 0.0002, signal: -0.0006, histogram: 0.0008 },
+                    { time: '11:30', macd: 0.0008, signal: -0.0004, histogram: 0.0012 },
+                  ]}
+                  height={250}
+                />
               </div>
             </div>
           </TabsContent>

@@ -33,6 +33,7 @@ import {
   ShieldCheck,
   Sparkles,
   TrendingUp,
+  Activity,
 } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { useLocation } from "wouter";
@@ -50,6 +51,12 @@ const menuItems = [
   },
   {
     icon: TrendingUp,
+    label: "Signals",
+    path: "/signals",
+    description: "Real-time trading signals and technical analysis",
+  },
+  {
+    icon: BarChart3,
     label: "Simulator",
     path: "/simulator",
     description: "Practice trades and review performance",

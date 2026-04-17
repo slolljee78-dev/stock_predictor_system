@@ -12,10 +12,10 @@ import {
 
 const MENU_ITEMS = [
   { label: "Dashboard", href: "/dashboard" },
+  { label: "Signals", href: "/signals" },
   { label: "Trading Simulator", href: "/simulator" },
   { label: "Validation", href: "/validation" },
   { label: "Pricing", href: "/pricing" },
-  { label: "Risk Metrics", href: "/risk-metrics" },
   { label: "FAQ", href: "/faq" },
   { label: "Home", href: "/" },
 ];
