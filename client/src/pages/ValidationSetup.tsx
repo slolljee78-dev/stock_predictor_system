@@ -90,6 +90,9 @@ export default function ValidationSetup() {
             </Button>
             <RecentPagesMenu />
           </div>
+          <Button onClick={() => setLocation('/dashboard')} className="pill-button pill-button-primary">
+            Open dashboard
+          </Button>
         </div>
         <Breadcrumb items={[{ label: "Validation", href: "/validation" }]} />
         <div className="flex items-center gap-3">
@@ -198,7 +201,7 @@ export default function ValidationSetup() {
   }
 
   return (
-    <div className="space-y-6 max-w-2xl page-enter">
+      <div className="space-y-6 max-w-2xl page-enter">
       <div className="flex items-center justify-between gap-4 mb-6">
         <div className="flex items-center gap-4">
           <Button
@@ -212,6 +215,9 @@ export default function ValidationSetup() {
           </Button>
           <RecentPagesMenu />
         </div>
+        <Button onClick={() => setLocation('/dashboard')} className="pill-button pill-button-primary">
+          Open dashboard
+        </Button>
       </div>
       <Breadcrumb items={[{ label: "Validation", href: "/validation" }]} />
       <div>

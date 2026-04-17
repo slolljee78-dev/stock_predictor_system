@@ -260,6 +260,9 @@ export default function TradingSimulator() {
             </Button>
             <RecentPagesMenu />
           </div>
+          <Button onClick={() => setLocation('/dashboard')} className="pill-button pill-button-primary">
+            Open dashboard
+          </Button>
         </div>
         <Breadcrumb items={[{ label: "Trading Simulator", href: "/simulator" }]} />
         <div className="flex items-center justify-between">
