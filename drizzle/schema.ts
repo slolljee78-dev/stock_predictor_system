@@ -302,3 +302,107 @@ export const backtestTrades = mysqlTable("backtestTrades", {
 
 export type BacktestTrade = typeof backtestTrades.$inferSelect;
 export type InsertBacktestTrade = typeof backtestTrades.$inferInsert;
+
+
+/**
+ * Sentiment analysis data - stores aggregated sentiment scores for stocks
+ * Updated periodically from news sources
+ */
+export const stockSentiment = mysqlTable("stockSentiment", {
+  id: int("id").autoincrement().primaryKey(),
+  stockId: int("stockId").notNull().references(() => stocks.id, { onDelete: "cascade" }),
+  /** Sentiment score from -1 (very negative) to 1 (very positive) */
+  sentimentScore: int("sentimentScore").notNull(), // Stored as integer (-100 to 100)
+  /** Confidence level of sentiment analysis (0-100) */
+  confidence: int("confidence").notNull(),
+  /** Number of articles analyzed */
+  articleCount: int("articleCount").notNull().default(0),
+  /** Classification: very_negative, negative, neutral, positive, very_positive */
+  classification: varchar("classification", { length: 20 }).notNull(),
+  /** Date of sentiment analysis */
+  analysisDate: timestamp("analysisDate").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type StockSentiment = typeof stockSentiment.$inferSelect;
+export type InsertStockSentiment = typeof stockSentiment.$inferInsert;
+
+/**
+ * News articles - stores news articles used for sentiment analysis
+ */
+export const newsArticles = mysqlTable("newsArticles", {
+  id: int("id").autoincrement().primaryKey(),
+  stockId: int("stockId").notNull().references(() => stocks.id, { onDelete: "cascade" }),
+  /** Article title */
+  title: text("title").notNull(),
+  /** Article description/summary */
+  description: text("description"),
+  /** Full article content */
+  content: text("content"),
+  /** Article URL */
+  url: varchar("url", { length: 2048 }).notNull().unique(),
+  /** News source (e.g., Reuters, Bloomberg) */
+  source: varchar("source", { length: 100 }).notNull(),
+  /** Sentiment score for this article (-100 to 100) */
+  sentimentScore: int("sentimentScore").notNull(),
+  /** Publication date */
+  publishedAt: timestamp("publishedAt").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type NewsArticle = typeof newsArticles.$inferSelect;
+export type InsertNewsArticle = typeof newsArticles.$inferInsert;
+
+/**
+ * Signal alerts - tracks buy/sell signals that trigger alerts
+ */
+export const signalAlerts = mysqlTable("signalAlerts", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  stockId: int("stockId").notNull().references(() => stocks.id, { onDelete: "cascade" }),
+  /** Signal type: buy or sell */
+  signalType: mysqlEnum("signalType", ["buy", "sell"]).notNull(),
+  /** Confidence score (0-100) */
+  confidence: int("confidence").notNull(),
+  /** Price at signal generation */
+  price: int("price").notNull(),
+  /** Alert status: pending, sent, dismissed */
+  status: mysqlEnum("status", ["pending", "sent", "dismissed"]).notNull().default("pending"),
+  /** Channels notified: in_app, email, push */
+  notificationChannels: varchar("notificationChannels", { length: 100 }).notNull(), // JSON array
+  /** Timestamp when alert was sent */
+  sentAt: timestamp("sentAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type SignalAlert = typeof signalAlerts.$inferSelect;
+export type InsertSignalAlert = typeof signalAlerts.$inferInsert;
+
+/**
+ * Alert preferences - user preferences for stock alerts
+ */
+export const alertPreferences = mysqlTable("alertPreferences", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  stockId: int("stockId").notNull().references(() => stocks.id, { onDelete: "cascade" }),
+  /** Minimum confidence threshold for buy signals (0-100) */
+  minBuyConfidence: int("minBuyConfidence").notNull().default(60),
+  /** Minimum confidence threshold for sell signals (0-100) */
+  minSellConfidence: int("minSellConfidence").notNull().default(60),
+  /** Enable buy signal alerts */
+  enableBuyAlerts: int("enableBuyAlerts").notNull().default(1), // Boolean as int
+  /** Enable sell signal alerts */
+  enableSellAlerts: int("enableSellAlerts").notNull().default(1),
+  /** Enable sentiment alerts */
+  enableSentimentAlerts: int("enableSentimentAlerts").notNull().default(1),
+  /** Notification channels: in_app, email, push (JSON array) */
+  notificationChannels: varchar("notificationChannels", { length: 100 }).notNull().default('["in_app"]'),
+  /** Enable push notifications */
+  enablePushNotifications: int("enablePushNotifications").notNull().default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type AlertPreferences = typeof alertPreferences.$inferSelect;
+export type InsertAlertPreferences = typeof alertPreferences.$inferInsert;

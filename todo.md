@@ -918,3 +918,18 @@ The system is fully tested, documented, and ready for production deployment. All
 - [x] Create performance analytics dashboard (metrics display)
 - [x] Add comparison and export features (CSV export)
 - [x] Test backtesting input validation (25 tests passing)
+
+
+## Phase 36: Automated Signal Alerts & Sentiment Analysis
+- [x] Set up news API integration (NewsAPI) - Mock implementation ready
+- [x] Create sentiment analysis engine for news articles (21 tests passing)
+- [x] Add sentiment data to database schema (stockSentiment, newsArticles, signalAlerts, alertPreferences tables)
+- [x] Create tRPC procedures for sentiment analysis (7 procedures: getStockSentiment, getStockNews, analyzeSentiment, getSentimentTrend, getTopArticles, getMultipleSentiments, getSentimentStats)
+- [x] Enhance signal alert system with confidence thresholds (7 procedures: createAlert, getPendingAlerts, getAlertHistory, markAlertSent, dismissAlert, getAlertStats, getHighConfidenceAlerts, getAlertsByType, clearOldAlerts)
+- [x] Create alert preferences management (7 procedures: getPreferences, updatePreferences, getAllPreferences, enableAllAlerts, disableAllAlerts, setNotificationChannels, deletePreferences)
+- [ ] Implement push notification support (Web Push API)
+- [ ] Build alert preferences UI
+- [ ] Add sentiment display to watchlist and stock detail pages
+- [ ] Create alert history/log
+- [ ] Write comprehensive tests
+- [ ] Create checkpoint
