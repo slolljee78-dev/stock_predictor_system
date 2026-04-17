@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useMemo } from 'react';
-import { ArrowLeft, Calendar, Settings, Play, Download, Trash2 } from 'lucide-react';
+import { ArrowLeft, Calendar, Settings, Play, Download, Trash2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -52,6 +52,8 @@ export function Backtesting() {
 
   const [selectedStocks, setSelectedStocks] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<'config' | 'results'>('config');
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [successMessage, setSuccessMessage] = useState<string>('');
 
   // Detect back path
   React.useEffect(() => {
@@ -87,15 +89,30 @@ export function Backtesting() {
 
 
   const handleStartBacktest = async () => {
+    const newErrors: Record<string, string> = {};
+    
     if (!config.name.trim()) {
-      alert('Please enter a backtest name');
-      return;
+      newErrors.name = 'Backtest name is required';
     }
 
     if (selectedStocks.length === 0) {
-      alert('Please select at least one stock');
+      newErrors.stocks = 'Please select at least one stock';
+    }
+    
+    if (config.startDate >= config.endDate) {
+      newErrors.dates = 'Start date must be before end date';
+    }
+    
+    if (config.initialCapital < 1000) {
+      newErrors.capital = 'Initial capital must be at least $1,000';
+    }
+    
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
+    
+    setErrors({});
 
     const stockIds = selectedStocks
       .map(ticker => stocks?.find((s: any) => s.ticker === ticker)?.id)
@@ -112,9 +129,12 @@ export function Backtesting() {
       });
 
       refetchBacktests();
-      alert('Backtest started! Results will be available shortly.');
+      setSuccessMessage('✓ Backtest started! Results will be available shortly.');
+      setTimeout(() => setSuccessMessage(''), 5000);
+      setConfig({ ...config, name: 'Backtest Run' });
+      setSelectedStocks([]);
     } catch (error) {
-      alert(`Failed to start backtest: ${(error as Error).message}`);
+      setErrors({ submit: `Failed to start backtest: ${(error as Error).message}` });
     }
   };
 
@@ -239,10 +259,20 @@ export function Backtesting() {
                     <Input
                       id="backtest-name"
                       value={config.name}
-                      onChange={e => setConfig({ ...config, name: e.target.value })}
+                      onChange={e => {
+                        setConfig({ ...config, name: e.target.value });
+                        if (errors.name) setErrors({ ...errors, name: '' });
+                      }}
                       placeholder="e.g., Q1 2024 Strategy Test"
                       className="mt-1"
+                      aria-invalid={!!errors.name}
                     />
+                    {errors.name && (
+                      <div className="flex items-center gap-2 text-sm text-destructive mt-1">
+                        <AlertCircle className="h-4 w-4" />
+                        <span>{errors.name}</span>
+                      </div>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
@@ -252,8 +282,12 @@ export function Backtesting() {
                         id="start-date"
                         type="date"
                         value={config.startDate.toISOString().split('T')[0]}
-                        onChange={e => setConfig({ ...config, startDate: new Date(e.target.value) })}
+                        onChange={e => {
+                          setConfig({ ...config, startDate: new Date(e.target.value) });
+                          if (errors.dates) setErrors({ ...errors, dates: '' });
+                        }}
                         className="mt-1"
+                        aria-invalid={!!errors.dates}
                       />
                     </div>
                     <div>
@@ -262,11 +296,21 @@ export function Backtesting() {
                         id="end-date"
                         type="date"
                         value={config.endDate.toISOString().split('T')[0]}
-                        onChange={e => setConfig({ ...config, endDate: new Date(e.target.value) })}
+                        onChange={e => {
+                          setConfig({ ...config, endDate: new Date(e.target.value) });
+                          if (errors.dates) setErrors({ ...errors, dates: '' });
+                        }}
                         className="mt-1"
+                        aria-invalid={!!errors.dates}
                       />
                     </div>
                   </div>
+                  {errors.dates && (
+                    <div className="flex items-center gap-2 text-sm text-destructive">
+                      <AlertCircle className="h-4 w-4" />
+                      <span>{errors.dates}</span>
+                    </div>
+                  )}
 
                   <div>
                     <Label htmlFor="initial-capital">Initial Capital ($)</Label>
@@ -274,11 +318,21 @@ export function Backtesting() {
                       id="initial-capital"
                       type="number"
                       value={config.initialCapital}
-                      onChange={e => setConfig({ ...config, initialCapital: parseInt(e.target.value) })}
+                      onChange={e => {
+                        setConfig({ ...config, initialCapital: parseInt(e.target.value) });
+                        if (errors.capital) setErrors({ ...errors, capital: '' });
+                      }}
                       min="1000"
                       step="1000"
                       className="mt-1"
+                      aria-invalid={!!errors.capital}
                     />
+                    {errors.capital && (
+                      <div className="flex items-center gap-2 text-sm text-destructive mt-1">
+                        <AlertCircle className="h-4 w-4" />
+                        <span>{errors.capital}</span>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -304,6 +358,7 @@ export function Backtesting() {
                             } else {
                               setSelectedStocks(selectedStocks.filter(t => t !== stock.ticker));
                             }
+                            if (errors.stocks) setErrors({ ...errors, stocks: '' });
                           }}
                           className="rounded border-border"
                         />
@@ -314,8 +369,30 @@ export function Backtesting() {
                   <p className="text-sm text-muted-foreground">
                     {selectedStocks.length} stock(s) selected
                   </p>
+                  {errors.stocks && (
+                    <div className="flex items-center gap-2 text-sm text-destructive">
+                      <AlertCircle className="h-4 w-4" />
+                      <span>{errors.stocks}</span>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
+
+              {/* Success Message */}
+              {successMessage && (
+                <div className="flex items-center gap-2 rounded-lg bg-green-500/10 border border-green-500/30 px-4 py-3 text-sm text-green-600">
+                  <CheckCircle2 className="h-5 w-5 flex-shrink-0" />
+                  <span>{successMessage}</span>
+                </div>
+              )}
+              
+              {/* Error Message */}
+              {errors.submit && (
+                <div className="flex items-center gap-2 rounded-lg bg-destructive/10 border border-destructive/30 px-4 py-3 text-sm text-destructive">
+                  <AlertCircle className="h-5 w-5 flex-shrink-0" />
+                  <span>{errors.submit}</span>
+                </div>
+              )}
 
               {/* Filter Settings */}
               <Card>
