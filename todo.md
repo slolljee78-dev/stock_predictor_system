@@ -880,3 +880,13 @@ The system is fully tested, documented, and ready for production deployment. All
 - [x] Change all "Back to home" labels to "Back to menu"
 - [x] Ensure consistent header layout across all pages
 - [x] Test all header components on mobile and desktop
+
+
+## Phase 32: Integrate Mobile Menu & User Profile into Headers
+- [x] Integrate MobileMenuDrawer into Home page header
+- [x] Integrate UserProfileMenu into DashboardLayout header
+- [x] Add both components to Simulator page header
+- [x] Add both components to Validation page header
+- [x] Add both components to Pricing page header
+- [x] Test mobile responsiveness
+- [x] Test desktop responsiveness

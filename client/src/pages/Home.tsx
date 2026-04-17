@@ -16,6 +16,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { useLocation } from "wouter";
+import { MobileMenuDrawer } from "@/components/MobileMenuDrawer";
 
 const featureCards = [
   {
@@ -106,7 +107,11 @@ export default function Home() {
             <a href="/faq" className="transition hover:text-foreground">FAQ</a>
           </div>
 
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center gap-2 flex-shrink-0 md:hidden">
+            <MobileMenuDrawer />
+          </div>
+
+          <div className="hidden md:flex items-center gap-2 flex-shrink-0">
             {isAuthenticated ? (
               <Button
                 onClick={() => setLocation("/dashboard")}

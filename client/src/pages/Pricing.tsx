@@ -6,6 +6,8 @@ import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { RecentPagesMenu } from "@/components/RecentPagesMenu";
+import { MobileMenuDrawer } from "@/components/MobileMenuDrawer";
+import { UserProfileMenu } from "@/components/UserProfileMenu";
 
 const getBackPath = () => {
   if (typeof window !== 'undefined' && document.referrer.includes('/dashboard')) {
@@ -162,10 +164,16 @@ export default function Pricing() {
               {backLabel}
             </Button>
             <RecentPagesMenu />
+            <div className="hidden md:block">
+              <MobileMenuDrawer />
+            </div>
           </div>
-          <Button className="pill-button pill-button-primary h-11 px-5" onClick={() => setLocation("/dashboard")}>
-            Open dashboard
-          </Button>
+          <div className="flex items-center gap-2">
+            <UserProfileMenu />
+            <Button className="pill-button pill-button-primary h-11 px-5" onClick={() => setLocation("/dashboard")}>
+              Open dashboard
+            </Button>
+          </div>
         </div>
       </header>
 

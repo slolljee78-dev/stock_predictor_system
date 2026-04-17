@@ -24,6 +24,8 @@ import { ArrowLeft } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { RecentPagesMenu } from "@/components/RecentPagesMenu";
+import { MobileMenuDrawer } from "@/components/MobileMenuDrawer";
+import { UserProfileMenu } from "@/components/UserProfileMenu";
 
 const getBackPath = () => {
   if (typeof window !== 'undefined' && document.referrer.includes('/dashboard')) {
@@ -259,10 +261,16 @@ export default function TradingSimulator() {
               {backLabel}
             </Button>
             <RecentPagesMenu />
+            <div className="hidden md:block">
+              <MobileMenuDrawer />
+            </div>
           </div>
-          <Button onClick={() => setLocation('/dashboard')} className="pill-button pill-button-primary">
-            Open dashboard
-          </Button>
+          <div className="flex items-center gap-2">
+            <UserProfileMenu />
+            <Button onClick={() => setLocation('/dashboard')} className="pill-button pill-button-primary">
+              Open dashboard
+            </Button>
+          </div>
         </div>
         <Breadcrumb items={[{ label: "Trading Simulator", href: "/simulator" }]} />
         <div className="flex items-center justify-between">

@@ -38,6 +38,7 @@ import { useEffect, useMemo } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
 import NotificationCenter from "./NotificationCenter";
+import { UserProfileMenu } from "./UserProfileMenu";
 import { useAuth } from "@/_core/hooks/useAuth";
 
 const menuItems = [
@@ -259,6 +260,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                 </div>
               )}
               <NotificationCenter />
+              <UserProfileMenu />
             </div>
           </div>
         </div>

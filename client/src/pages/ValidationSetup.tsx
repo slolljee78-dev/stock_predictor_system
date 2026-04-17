@@ -1,13 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AlertCircle, CheckCircle, Loader, ArrowLeft } from "lucide-react";
 import { trpc } from "@/lib/trpc";
-import { useEffect } from "react";
+
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { RecentPagesMenu } from "@/components/RecentPagesMenu";
+import { MobileMenuDrawer } from "@/components/MobileMenuDrawer";
+import { UserProfileMenu } from "@/components/UserProfileMenu";
 
 const getBackPath = () => {
   if (typeof window !== 'undefined' && document.referrer.includes('/dashboard')) {
@@ -89,10 +91,16 @@ export default function ValidationSetup() {
               {backLabel}
             </Button>
             <RecentPagesMenu />
+            <div className="hidden md:block">
+              <MobileMenuDrawer />
+            </div>
           </div>
-          <Button onClick={() => setLocation('/dashboard')} className="pill-button pill-button-primary">
-            Open dashboard
-          </Button>
+          <div className="flex items-center gap-2">
+            <UserProfileMenu />
+            <Button onClick={() => setLocation('/dashboard')} className="pill-button pill-button-primary">
+              Open dashboard
+            </Button>
+          </div>
         </div>
         <Breadcrumb items={[{ label: "Validation", href: "/validation" }]} />
         <div className="flex items-center gap-3">
@@ -214,10 +222,16 @@ export default function ValidationSetup() {
             {backLabel}
           </Button>
           <RecentPagesMenu />
+          <div className="hidden md:block">
+            <MobileMenuDrawer />
+          </div>
         </div>
-        <Button onClick={() => setLocation('/dashboard')} className="pill-button pill-button-primary">
-          Open dashboard
-        </Button>
+        <div className="flex items-center gap-2">
+          <UserProfileMenu />
+          <Button onClick={() => setLocation('/dashboard')} className="pill-button pill-button-primary">
+            Open dashboard
+          </Button>
+        </div>
       </div>
       <Breadcrumb items={[{ label: "Validation", href: "/validation" }]} />
       <div>
