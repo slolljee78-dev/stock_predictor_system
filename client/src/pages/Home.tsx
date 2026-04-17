@@ -103,6 +103,7 @@ export default function Home() {
             <a href="#workflow" className="transition hover:text-foreground">How it works</a>
             <a href="#demo" className="transition hover:text-foreground">Platform tour</a>
             <a href="#pricing" className="transition hover:text-foreground">Pricing</a>
+            <a href="/faq" className="transition hover:text-foreground">FAQ</a>
           </div>
 
           <div className="flex items-center gap-3">
