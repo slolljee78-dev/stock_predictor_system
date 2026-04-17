@@ -159,9 +159,9 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
               </div>
             </SidebarHeader>
 
-            <SidebarContent className="px-3 py-4">
+            <SidebarContent className="px-3 py-4 overflow-y-auto scroll-smooth">
               <SidebarGroup>
-                <div className="px-3 pb-2 group-data-[collapsible=icon]:hidden">
+                <div className="px-3 pb-2 group-data-[collapsible=icon]:hidden pt-2">
                   <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Workspace</p>
                 </div>
                 <SidebarGroupContent>
@@ -178,11 +178,11 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                             isActive={isActive}
                             tooltip={item.label}
                             onClick={() => setLocation(item.path)}
-                            className="h-auto rounded-2xl px-3 py-3 data-[active=true]:bg-primary data-[active=true]:text-primary-foreground data-[active=true]:shadow-lg data-[active=true]:shadow-primary/20 hover:bg-secondary/80"
+                            className="h-auto rounded-2xl px-3 py-4 md:py-3 data-[active=true]:bg-primary data-[active=true]:text-primary-foreground data-[active=true]:shadow-lg data-[active=true]:shadow-primary/20 hover:bg-secondary/80 min-h-[56px] md:min-h-auto"
                           >
-                            <item.icon className="h-4 w-4 shrink-0" />
+                            <item.icon className="h-5 w-5 md:h-4 md:w-4 shrink-0" />
                             <div className="min-w-0 group-data-[collapsible=icon]:hidden">
-                              <p className="truncate text-sm font-semibold">{item.label}</p>
+                              <p className="truncate text-sm md:text-sm font-semibold">{item.label}</p>
                               <p className="truncate text-xs opacity-75">{item.description}</p>
                             </div>
                           </SidebarMenuButton>

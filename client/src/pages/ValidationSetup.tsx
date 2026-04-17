@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { AlertCircle, CheckCircle, Loader } from "lucide-react";
+import { AlertCircle, CheckCircle, Loader, ArrowLeft } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 
 export default function ValidationSetup() {
@@ -59,6 +59,17 @@ export default function ValidationSetup() {
   if (sessionStarted && sessionData) {
     return (
       <div className="space-y-6">
+        <div className="flex items-center gap-4 mb-6">
+          <Button
+            onClick={() => setLocation("/")}
+            variant="outline"
+            size="sm"
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to home
+          </Button>
+        </div>
         <div className="flex items-center gap-3">
           <CheckCircle className="w-8 h-8 text-green-600" />
           <div>
@@ -166,6 +177,17 @@ export default function ValidationSetup() {
 
   return (
     <div className="space-y-6 max-w-2xl">
+      <div className="flex items-center gap-4 mb-6">
+        <Button
+          onClick={() => setLocation("/")}
+          variant="outline"
+          size="sm"
+          className="gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to home
+        </Button>
+      </div>
       <div>
         <h1 className="text-3xl font-bold">Start 3-Month Validation</h1>
         <p className="text-gray-600 mt-2">Initialize your paper trading validation session</p>

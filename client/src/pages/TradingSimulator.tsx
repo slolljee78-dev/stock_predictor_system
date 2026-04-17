@@ -19,6 +19,8 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { useMemo, useState, useEffect } from "react";
+import { useLocation } from "wouter";
+import { ArrowLeft } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 
 interface Portfolio {
@@ -223,9 +225,22 @@ export default function TradingSimulator() {
     }
   };
 
+  const [, setLocation] = useLocation();
+
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
+        <div className="flex items-center gap-4 mb-6">
+          <Button
+            onClick={() => setLocation("/")}
+            variant="outline"
+            size="sm"
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to home
+          </Button>
+        </div>
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Trading Simulator</h1>

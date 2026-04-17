@@ -834,3 +834,13 @@ The system is fully tested, documented, and ready for production deployment. All
 - client/src/App.tsx - Added /faq route
 - client/src/pages/Home.tsx - Added FAQ link to navigation
 - faq-content.md - FAQ content documentation
+
+
+## Mobile UX Bug Fixes (Phase 27)
+- [x] Fix "Open dashboard" button overflow on right edge
+- [x] Increase Overview banner, menu, and notification button sizes
+- [x] Add back-to-home navigation to Simulator page
+- [x] Add back-to-home navigation to Validation page
+- [x] Fix Plan page (sidebar menu) top content cutoff
+- [x] Test mobile responsiveness on all pages
+- [x] Validate touch targets meet minimum 48px accessibility standard

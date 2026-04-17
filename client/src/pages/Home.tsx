@@ -79,26 +79,26 @@ export default function Home() {
   }
 
   return (
-    <div className="app-shell min-h-screen overflow-x-hidden">
+    <div className="app-shell min-h-screen overflow-x-hidden scroll-smooth">
       <div className="hero-orb left-[-8rem] top-[-4rem] h-72 w-72 bg-primary/35" />
       <div className="hero-orb right-[-7rem] top-24 h-80 w-80 bg-accent/25" />
 
       <header className="sticky top-0 z-50 border-b border-border/70 bg-background/70 backdrop-blur-xl">
-        <div className="container flex items-center justify-between gap-4 py-4">
+        <div className="container flex items-center justify-between gap-2 py-4 px-4 md:px-6 max-w-full">
           <button
             onClick={() => setLocation("/")}
-            className="flex items-center gap-3 text-left"
+            className="flex items-center gap-3 text-left flex-1 min-w-0"
           >
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/25">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/25 flex-shrink-0">
               <TrendingUp className="h-5 w-5" />
             </div>
-            <div>
+            <div className="hidden sm:block min-w-0">
               <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-primary/90">Stock Predictor</p>
-              <p className="text-sm text-muted-foreground">Premium AI signals for Trading 212</p>
+              <p className="text-sm text-muted-foreground truncate">Premium AI signals for Trading 212</p>
             </div>
           </button>
 
-          <div className="hidden items-center gap-8 text-sm text-muted-foreground md:flex">
+          <div className="hidden items-center gap-8 text-sm text-muted-foreground lg:flex">
             <a href="#features" className="transition hover:text-foreground">Features</a>
             <a href="#workflow" className="transition hover:text-foreground">How it works</a>
             <a href="#demo" className="transition hover:text-foreground">Platform tour</a>
@@ -106,17 +106,18 @@ export default function Home() {
             <a href="/faq" className="transition hover:text-foreground">FAQ</a>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 flex-shrink-0">
             {isAuthenticated ? (
               <Button
                 onClick={() => setLocation("/dashboard")}
-                className="pill-button pill-button-primary h-12 px-5 text-sm md:text-base"
+                className="pill-button pill-button-primary h-10 px-4 text-xs sm:h-12 sm:px-5 sm:text-sm md:text-base whitespace-nowrap"
               >
-                Open dashboard
+                <span className="hidden sm:inline">Open dashboard</span>
+                <span className="sm:hidden">Dashboard</span>
                 <ArrowRight className="h-4 w-4" />
               </Button>
             ) : (
-              <Button asChild className="pill-button pill-button-primary h-12 px-5 text-sm md:text-base">
+              <Button asChild className="pill-button pill-button-primary h-10 px-4 text-xs sm:h-12 sm:px-5 sm:text-sm md:text-base whitespace-nowrap">
                 <a href={getLoginUrl()}>
                   Sign in
                   <ArrowRight className="h-4 w-4" />
@@ -127,8 +128,8 @@ export default function Home() {
         </div>
       </header>
 
-      <main>
-        <section className="relative overflow-hidden">
+      <main className="focus:outline-none">
+        <section className="relative overflow-hidden pt-4 md:pt-0">
           <div className="hero-grid absolute inset-0 opacity-60" />
           <div className="container relative py-16 md:py-24 lg:py-28">
             <div className="grid items-center gap-14 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16">
@@ -196,36 +197,36 @@ export default function Home() {
               <div className="dashboard-frame relative overflow-hidden p-4 md:p-5">
                 <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-primary/15 to-transparent" />
                 <div className="relative space-y-4">
-                  <div className="flex items-center justify-between rounded-3xl border border-border/70 bg-background/50 px-4 py-3">
+                  <div className="flex items-center justify-between rounded-3xl border border-border/70 bg-background/50 px-4 py-4 md:py-3">
                     <div>
                       <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary/80">Signal workspace</p>
-                      <p className="text-lg font-semibold">Today’s highest-conviction ideas</p>
+                      <p className="text-lg md:text-lg font-semibold">Today's highest-conviction ideas</p>
                     </div>
-                    <Badge className="rounded-full bg-primary/15 px-3 py-1 text-primary border-primary/30">Live market view</Badge>
+                    <Badge className="rounded-full bg-primary/15 px-4 py-2 text-primary border-primary/30 text-sm md:px-3 md:py-1">Live market view</Badge>
                   </div>
 
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="feature-card min-h-44">
                       <div className="mb-6 flex items-center justify-between">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/15 text-primary">
-                          <LineChart className="h-6 w-6" />
+                        <div className="flex h-14 w-14 md:h-12 md:w-12 items-center justify-center rounded-2xl bg-primary/15 text-primary">
+                          <LineChart className="h-7 w-7 md:h-6 md:w-6" />
                         </div>
-                        <Badge className="rounded-full bg-emerald-500/15 text-emerald-300 border-emerald-400/20">+18.4%</Badge>
+                        <Badge className="rounded-full bg-emerald-500/15 text-emerald-300 border-emerald-400/20 text-sm md:text-xs px-3 py-2 md:px-2 md:py-1">+18.4%</Badge>
                       </div>
-                      <p className="text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">AI signal density</p>
-                      <p className="mt-3 text-3xl font-semibold tracking-tight">14 fresh setups</p>
+                      <p className="text-xs md:text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">AI signal density</p>
+                      <p className="mt-3 text-3xl md:text-3xl font-semibold tracking-tight">14 fresh setups</p>
                       <p className="mt-3 text-sm text-muted-foreground">Morning momentum and reversal candidates ranked by confidence.</p>
                     </div>
 
                     <div className="feature-card min-h-44">
                       <div className="mb-6 flex items-center justify-between">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent/15 text-accent">
-                          <ShieldCheck className="h-6 w-6" />
+                        <div className="flex h-14 w-14 md:h-12 md:w-12 items-center justify-center rounded-2xl bg-accent/15 text-accent">
+                          <ShieldCheck className="h-7 w-7 md:h-6 md:w-6" />
                         </div>
-                        <Badge className="rounded-full bg-primary/15 text-primary border-primary/30">Risk controlled</Badge>
+                        <Badge className="rounded-full bg-primary/15 text-primary border-primary/30 text-sm md:text-xs px-3 py-2 md:px-2 md:py-1">Risk controlled</Badge>
                       </div>
-                      <p className="text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">Portfolio discipline</p>
-                      <p className="mt-3 text-3xl font-semibold tracking-tight">92% coverage</p>
+                      <p className="text-xs md:text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">Portfolio discipline</p>
+                      <p className="mt-3 text-3xl md:text-3xl font-semibold tracking-tight">92% coverage</p>
                       <p className="mt-3 text-sm text-muted-foreground">Watchlist alerts, simulator testing, and stock detail pages connected in one flow.</p>
                     </div>
                   </div>
