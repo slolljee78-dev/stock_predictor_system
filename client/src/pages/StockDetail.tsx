@@ -314,8 +314,8 @@ export default function StockDetail() {
                   </div>
                 ) : (
                   <div className="grid gap-4">
-                    {signals.map((signal) => (
-                      <div key={signal.id} className="rounded-3xl border border-border/70 bg-background/35 p-5">
+                    {signals.map((signal: any) => (
+                      <div key={signal.signalId || signal.id} className="rounded-3xl border border-border/70 bg-background/35 p-5">
                         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                           <div>
                             <div className="flex items-center gap-3">

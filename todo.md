@@ -282,9 +282,9 @@
 
 
 ## Mobile UX Fixes
-- [ ] Make watchlist cards clickable to navigate to stock detail page
-- [ ] Fix signal display consistency between dashboard and stock page
-- [ ] Reduce top spacing gap in dashboard overview section
-- [ ] Change logo styling - remove button-like appearance
-- [ ] Fix Dashboard button navigation on home page
-- [ ] Test all fixes on mobile and desktop
+- [x] Make watchlist cards clickable to navigate to stock detail page
+- [x] Fix signal display consistency between dashboard and stock page
+- [x] Reduce top spacing gap in dashboard overview section
+- [x] Change logo styling - remove button-like appearance
+- [x] Fix Dashboard button navigation on home page
+- [x] Test all fixes on mobile and desktop
