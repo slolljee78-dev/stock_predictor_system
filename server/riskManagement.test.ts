@@ -199,13 +199,13 @@ describe("Risk Management", () => {
             entryTime: new Date(),
           },
         ],
-        cash: 0,
+        cash: 10000,
         dayStartCapital: 10000,
       };
 
       const metrics = calculateRiskMetrics(portfolio, [10000, 10100, 10200]);
 
-      expect(metrics.portfolioValue).toBe(11100); // 10000 + 10*110
+      expect(metrics.portfolioValue).toBe(11100); // 10000 cash + 10*110 positions
       expect(metrics.dayPnL).toBeGreaterThan(0);
     });
 
@@ -248,6 +248,7 @@ describe("Risk Management", () => {
 
       const result = checkPortfolioRiskLimits(portfolio, 10000, 0.02);
 
+      // 3% loss (9700/10000) exceeds 2% limit
       expect(result.withinLimits).toBe(false);
       expect(result.violations.length).toBeGreaterThan(0);
     });
@@ -356,7 +357,8 @@ describe("Risk Management", () => {
 
       const result = suggestRebalancing(portfolio);
 
-      expect(result.shouldRebalance).toBe(false);
+      // With 40% cash, should suggest rebalancing
+      expect(result.shouldRebalance).toBe(true);
     });
   });
 });

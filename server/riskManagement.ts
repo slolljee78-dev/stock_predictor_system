@@ -150,7 +150,8 @@ export function checkTakeProfit(
  * Calculate portfolio risk metrics
  */
 export function calculateRiskMetrics(portfolio: Portfolio, historicalValues: number[]): RiskMetrics {
-  const currentValue = portfolio.totalCapital + portfolio.positions.reduce((sum, p) => sum + p.shares * p.currentPrice, 0);
+  const positionValue = portfolio.positions.reduce((sum, p) => sum + p.shares * p.currentPrice, 0);
+  const currentValue = positionValue + portfolio.cash;
 
   const dayStartValue = portfolio.dayStartCapital;
   const dayPnL = currentValue - dayStartValue;
@@ -176,7 +177,6 @@ export function calculateRiskMetrics(portfolio: Portfolio, historicalValues: num
   const sharpeRatio = stdDev > 0 ? (meanReturn / stdDev) * Math.sqrt(252) : 0;
 
   // Calculate risk exposure (% of portfolio in positions)
-  const positionValue = portfolio.positions.reduce((sum, p) => sum + p.shares * p.currentPrice, 0);
   const riskExposure = positionValue / currentValue;
 
   // Calculate concentration risk (Herfindahl index)
@@ -213,7 +213,8 @@ export function checkPortfolioRiskLimits(
   dayStartValue: number,
   maxDailyLossPercent: number = 0.02 // 2% max daily loss
 ): { withinLimits: boolean; violations: string[] } {
-  const currentValue = portfolio.totalCapital + portfolio.positions.reduce((sum, p) => sum + p.shares * p.currentPrice, 0);
+  const positionValue = portfolio.positions.reduce((sum, p) => sum + p.shares * p.currentPrice, 0);
+  const currentValue = positionValue + portfolio.cash;
 
   const dayPnL = currentValue - dayStartValue;
   const dayPnLPercent = dayPnL / dayStartValue;
@@ -249,7 +250,8 @@ export function checkPortfolioRiskLimits(
  * Suggest portfolio rebalancing
  */
 export function suggestRebalancing(portfolio: Portfolio): { shouldRebalance: boolean; actions: string[] } {
-  const totalValue = portfolio.totalCapital + portfolio.positions.reduce((sum, p) => sum + p.shares * p.currentPrice, 0);
+  const positionValue = portfolio.positions.reduce((sum, p) => sum + p.shares * p.currentPrice, 0);
+  const totalValue = positionValue + portfolio.cash;
 
   const actions: string[] = [];
   let shouldRebalance = false;
