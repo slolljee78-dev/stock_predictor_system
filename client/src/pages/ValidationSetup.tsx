@@ -23,12 +23,12 @@ export default function ValidationSetup() {
   const [sessionData, setSessionData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [backPath, setBackPath] = useState('/');
-  const [backLabel, setBackLabel] = useState('Back to home');
+  const [backLabel, setBackLabel] = useState('Back to menu');
 
   useEffect(() => {
     const path = getBackPath();
     setBackPath(path);
-    setBackLabel(path === '/dashboard' ? 'Back to dashboard' : 'Back to home');
+    setBackLabel(path === '/dashboard' ? 'Back to dashboard' : 'Back to menu');
   }, []);
 
   const [formData, setFormData] = useState({

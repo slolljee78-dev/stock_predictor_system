@@ -236,12 +236,12 @@ export default function TradingSimulator() {
 
   const [, setLocation] = useLocation();
   const [backPath, setBackPath] = useState('/');
-  const [backLabel, setBackLabel] = useState('Back to home');
+  const [backLabel, setBackLabel] = useState('Back to menu');
 
   useEffect(() => {
     const path = getBackPath();
     setBackPath(path);
-    setBackLabel(path === '/dashboard' ? 'Back to dashboard' : 'Back to home');
+    setBackLabel(path === '/dashboard' ? 'Back to dashboard' : 'Back to menu');
   }, []);
 
   return (
