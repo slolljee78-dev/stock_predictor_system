@@ -1,6 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
-import { LogOut, Settings, User, BarChart3 } from "lucide-react";
+import { LogOut, Settings, User, BarChart3, Moon, Sun } from "lucide-react";
+import { useTheme } from "@/contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -15,6 +16,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 export function UserProfileMenu() {
   const { user, logout } = useAuth();
   const [, setLocation] = useLocation();
+  const { theme, toggleTheme } = useTheme();
 
   if (!user) {
     return null;
@@ -62,6 +64,22 @@ export function UserProfileMenu() {
         <DropdownMenuItem disabled className="gap-2">
           <Settings className="h-4 w-4" />
           <span>Settings</span>
+        </DropdownMenuItem>
+
+        <DropdownMenuSeparator />
+
+        <DropdownMenuItem onClick={toggleTheme} className="gap-2">
+          {theme === 'dark' ? (
+            <>
+              <Sun className="h-4 w-4" />
+              <span>Light Mode</span>
+            </>
+          ) : (
+            <>
+              <Moon className="h-4 w-4" />
+              <span>Dark Mode</span>
+            </>
+          )}
         </DropdownMenuItem>
 
         <DropdownMenuSeparator />

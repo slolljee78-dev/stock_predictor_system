@@ -890,3 +890,13 @@ The system is fully tested, documented, and ready for production deployment. All
 - [x] Add both components to Pricing page header
 - [x] Test mobile responsiveness
 - [x] Test desktop responsiveness
+
+
+## Phase 33: Dark/Light Theme Toggle
+- [x] Create theme context and provider (already existed with switchable support)
+- [x] Add theme toggle to UserProfileMenu with Sun/Moon icons
+- [x] CSS variables already set up for light/dark themes
+- [x] Integrated theme provider into App.tsx with switchable={true}
+- [x] Created comprehensive theme tests (8 tests passing)
+- [x] Theme persists to localStorage and applies across all pages
+- [x] All 318+ tests passing, 0 TypeScript errors
