@@ -18,17 +18,11 @@ import {
   TrendingDown,
   TrendingUp,
 } from "lucide-react";
-import { useMemo, useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "wouter";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, CheckCircle2, AlertCircle, House } from "lucide-react";
 import { trpc } from "@/lib/trpc";
-import { Breadcrumb } from "@/components/Breadcrumb";
-import { RecentPagesMenu } from "@/components/RecentPagesMenu";
-import { MobileMenuDrawer } from "@/components/MobileMenuDrawer";
-import { UserProfileMenu } from "@/components/UserProfileMenu";
-import { CheckCircle2, AlertCircle } from "lucide-react";
-
-const getBackPath = () => '/dashboard';
+import { DASHBOARD_HOME_PATH, navigateToDashboardMenu } from "@/lib/navigation";
 
 interface Portfolio {
   id: number;
@@ -300,45 +294,30 @@ export default function TradingSimulator() {
   };
 
   const [, setLocation] = useLocation();
-  const [backPath, setBackPath] = useState('/');
-  const [backLabel, setBackLabel] = useState('Back to menu');
-
-  useEffect(() => {
-    setBackPath(getBackPath());
-    setBackLabel('Back to menu');
-  }, []);
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8 page-enter">
       <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex items-center justify-between gap-4 mb-6">
-          <div className="flex items-center gap-4">
-            <Button
-              onClick={() => setLocation(backPath)}
-              variant="outline"
-              size="sm"
-              className="gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              {backLabel}
-            </Button>
-            <RecentPagesMenu />
-            <div className="hidden md:block">
-              <MobileMenuDrawer />
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <UserProfileMenu />
-            <Button onClick={() => setLocation('/dashboard')} className="pill-button pill-button-primary">
-              Open dashboard
-            </Button>
-          </div>
+        <div className="flex items-center justify-between gap-3 mb-8 pt-3">
+          <button
+            onClick={() => navigateToDashboardMenu(setLocation)}
+            className="flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:text-white transition-colors hover:bg-slate-700 rounded-lg"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to menu
+          </button>
+          <button
+            onClick={() => setLocation(DASHBOARD_HOME_PATH)}
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-600 text-white hover:bg-cyan-700 transition-colors text-sm font-medium"
+          >
+            <House className="h-4 w-4" />
+            Back to dashboard
+          </button>
         </div>
-        <Breadcrumb items={[{ label: "Trading Simulator", href: "/simulator" }]} />
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Trading Simulator</h1>
-            <p className="text-muted-foreground mt-1">Practice trading with live market prices</p>
+        <div className="flex items-center justify-between gap-6">
+          <div className="space-y-3">
+            <h1 className="text-4xl font-bold gradient-text">Trading Simulator</h1>
+            <p className="text-muted-foreground max-w-xl">Practice trading with live market prices</p>
           </div>
           <Button onClick={createPortfolio} className="pill-button pill-button-primary">
             <Plus className="h-4 w-4 mr-2" />

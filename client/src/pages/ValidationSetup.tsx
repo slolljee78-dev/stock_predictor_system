@@ -3,15 +3,9 @@ import { useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { AlertCircle, CheckCircle, Loader, ArrowLeft } from "lucide-react";
+import { AlertCircle, CheckCircle, House, Loader, ArrowLeft } from "lucide-react";
 import { trpc } from "@/lib/trpc";
-
-import { Breadcrumb } from "@/components/Breadcrumb";
-import { RecentPagesMenu } from "@/components/RecentPagesMenu";
-import { MobileMenuDrawer } from "@/components/MobileMenuDrawer";
-import { UserProfileMenu } from "@/components/UserProfileMenu";
-
-const getBackPath = () => '/dashboard';
+import { DASHBOARD_HOME_PATH, navigateToDashboardMenu } from "@/lib/navigation";
 
 export default function ValidationSetup() {
   const [, setLocation] = useLocation();
@@ -19,13 +13,6 @@ export default function ValidationSetup() {
   const [loading, setLoading] = useState(false);
   const [sessionData, setSessionData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
-  const [backPath, setBackPath] = useState('/');
-  const [backLabel, setBackLabel] = useState('Back to menu');
-
-  useEffect(() => {
-    setBackPath(getBackPath());
-    setBackLabel('Back to menu');
-  }, []);
 
   const [formData, setFormData] = useState({
     startDate: new Date().toISOString().split("T")[0],
@@ -73,30 +60,22 @@ export default function ValidationSetup() {
   if (sessionStarted && sessionData) {
     return (
       <div className="space-y-6 page-enter">
-        <div className="flex items-center justify-between gap-4 mb-6">
-          <div className="flex items-center gap-4">
-            <Button
-              onClick={() => setLocation(backPath)}
-              variant="outline"
-              size="sm"
-              className="gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              {backLabel}
-            </Button>
-            <RecentPagesMenu />
-            <div className="hidden md:block">
-              <MobileMenuDrawer />
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <UserProfileMenu />
-            <Button onClick={() => setLocation('/dashboard')} className="pill-button pill-button-primary">
-              Open dashboard
-            </Button>
-          </div>
+        <div className="flex items-center justify-between gap-3 mb-8 pt-3">
+          <button
+            onClick={() => navigateToDashboardMenu(setLocation)}
+            className="flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:text-white transition-colors hover:bg-slate-700 rounded-lg"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to menu
+          </button>
+          <button
+            onClick={() => setLocation(DASHBOARD_HOME_PATH)}
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-600 text-white hover:bg-cyan-700 transition-colors text-sm font-medium"
+          >
+            <House className="h-4 w-4" />
+            Back to dashboard
+          </button>
         </div>
-        <Breadcrumb items={[{ label: "Validation", href: "/validation/dashboard" }]} />
         <div className="flex items-center gap-3">
           <CheckCircle className="w-8 h-8 text-green-600" />
           <div>
@@ -204,30 +183,22 @@ export default function ValidationSetup() {
 
   return (
       <div className="space-y-6 max-w-2xl page-enter">
-      <div className="flex items-center justify-between gap-4 mb-6">
-        <div className="flex items-center gap-4">
-          <Button
-            onClick={() => setLocation(backPath)}
-            variant="outline"
-            size="sm"
-            className="gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            {backLabel}
-          </Button>
-          <RecentPagesMenu />
-          <div className="hidden md:block">
-            <MobileMenuDrawer />
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <UserProfileMenu />
-          <Button onClick={() => setLocation('/dashboard')} className="pill-button pill-button-primary">
-            Open dashboard
-          </Button>
-        </div>
+      <div className="flex items-center justify-between gap-3 mb-8 pt-3">
+        <button
+          onClick={() => navigateToDashboardMenu(setLocation)}
+          className="flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:text-white transition-colors hover:bg-slate-700 rounded-lg"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to menu
+        </button>
+        <button
+          onClick={() => setLocation(DASHBOARD_HOME_PATH)}
+          className="flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-600 text-white hover:bg-cyan-700 transition-colors text-sm font-medium"
+        >
+          <House className="h-4 w-4" />
+          Back to dashboard
+        </button>
       </div>
-      <Breadcrumb items={[{ label: "Validation", href: "/validation/dashboard" }]} />
       <div>
         <h1 className="text-4xl font-bold gradient-text mb-2">Start 3-Month Validation</h1>
         <p className="text-muted-foreground">Initialize your paper trading validation session</p>

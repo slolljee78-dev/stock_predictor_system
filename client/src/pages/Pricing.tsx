@@ -4,6 +4,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Check, ChevronLeft, ShieldCheck, Sparkles, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
+import { DASHBOARD_HOME_PATH, navigateToDashboardMenu } from "@/lib/navigation";
 
 const PRICING_TIERS = [
   {
@@ -141,21 +142,21 @@ export default function Pricing() {
         <div className="space-y-10">
           <div className="flex items-center justify-between gap-3 pt-2">
             <button
-              onClick={() => setLocation("/dashboard")}
+              onClick={() => navigateToDashboardMenu(setLocation)}
               className="flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:text-white transition-colors hover:bg-slate-700 rounded-lg"
             >
               <ChevronLeft className="h-4 w-4" />
               Back to menu
             </button>
             <button
-              onClick={() => setLocation("/dashboard")}
+              onClick={() => setLocation(DASHBOARD_HOME_PATH)}
               className="flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-600 text-white hover:bg-cyan-700 transition-colors text-sm font-medium"
             >
               Back to dashboard
             </button>
           </div>
 
-          <section className="section-shell pb-12 pt-10 md:pt-14">
+          <section className="section-shell pb-12 pt-5 md:pt-8">
             <div className="grid gap-10 lg:grid-cols-[1fr_0.9fr] lg:items-end">
               <div className="space-y-6">
                 <div className="eyebrow">

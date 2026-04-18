@@ -4,6 +4,7 @@ import { TrendingUp, TrendingDown, Target, BarChart3, ArrowLeft, Home } from "lu
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
+import { DASHBOARD_HOME_PATH, navigateToDashboardMenu } from "@/lib/navigation";
 
 export default function SignalAccuracyDashboard() {
   const { user } = useAuth();
@@ -62,14 +63,14 @@ export default function SignalAccuracyDashboard() {
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-3 mb-8 pt-2">
         <button
-          onClick={() => setLocation("/dashboard")}
+          onClick={() => navigateToDashboardMenu(setLocation)}
           className="flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:text-white transition-colors hover:bg-slate-700 rounded-lg"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to menu
         </button>
         <button
-          onClick={() => setLocation("/dashboard")}
+          onClick={() => setLocation(DASHBOARD_HOME_PATH)}
           className="flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-600 text-white hover:bg-cyan-700 transition-colors text-sm font-medium"
         >
           <Home className="h-4 w-4" />

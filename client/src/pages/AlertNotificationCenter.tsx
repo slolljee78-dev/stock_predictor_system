@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { trpc } from '@/lib/trpc';
-import { Bell, Filter, Trash2, Search, Clock, TrendingUp, TrendingDown } from 'lucide-react';
+import { ArrowLeft, Bell, Clock, Filter, House, Search, Trash2, TrendingDown, TrendingUp } from 'lucide-react';
+import { DASHBOARD_HOME_PATH, navigateToDashboardMenu } from '@/lib/navigation';
 
 type FilterType = 'all' | 'buy' | 'sell';
 type StatusFilter = 'all' | 'pending' | 'sent' | 'dismissed';
@@ -76,14 +77,25 @@ export function AlertNotificationCenter() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        {/* Header */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/15 text-primary">
-              <Bell className="h-5 w-5" />
-            </div>
-            <h1 className="text-4xl font-bold gradient-text">Alert Notification Center</h1>
-          </div>
+        <div className="flex items-center justify-between gap-3 mb-8 pt-3">
+          <button
+            onClick={() => navigateToDashboardMenu(setLocation)}
+            className="flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:text-white transition-colors hover:bg-slate-700 rounded-lg"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to menu
+          </button>
+          <button
+            onClick={() => setLocation(DASHBOARD_HOME_PATH)}
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-600 text-white hover:bg-cyan-700 transition-colors text-sm font-medium"
+          >
+            <House className="h-4 w-4" />
+            Back to dashboard
+          </button>
+        </div>
+
+        <div className="space-y-3">
+          <h1 className="text-4xl font-bold gradient-text">Alert Notification Center</h1>
           <p className="text-muted-foreground">
             Review your signal alerts history, track notification delivery, and manage alert preferences.
           </p>

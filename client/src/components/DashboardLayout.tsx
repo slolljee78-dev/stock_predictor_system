@@ -17,6 +17,7 @@ import {
   SidebarMenuItem,
   SidebarProvider,
   SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -44,6 +45,7 @@ import NotificationCenter from "./NotificationCenter";
 import { UserProfileMenu } from "./UserProfileMenu";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
+import { consumeDashboardMenuRequest } from "@/lib/navigation";
 
 const menuItems = [
   {
@@ -160,6 +162,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
   const [location, setLocation] = useLocation();
   const isMobile = useIsMobile();
+  const { setOpenMobile } = useSidebar();
   const { data: alertStats } = trpc.alerts.getAlertStats.useQuery(undefined, {
     enabled: !!user,
     refetchInterval: 30000, // Refetch every 30 seconds
@@ -174,6 +177,23 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
       ) ?? menuItems[0]
     );
   }, [location]);
+
+  useEffect(() => {
+    if (location !== "/dashboard") {
+      return;
+    }
+
+    if (!consumeDashboardMenuRequest()) {
+      return;
+    }
+
+    const openMenu = () => setOpenMobile(true);
+    if (typeof window !== "undefined" && "requestAnimationFrame" in window) {
+      window.requestAnimationFrame(openMenu);
+    } else {
+      openMenu()
+    }
+  }, [location, setOpenMobile]);
 
   return (
     <div className="dashboard-shell min-h-screen">

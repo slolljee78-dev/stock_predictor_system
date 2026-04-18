@@ -417,5 +417,14 @@
 - [x] Fix Alert Preferences header/title styling and Back to menu destination
 - [x] Fix Real-time Signals page Back to menu destination and header spacing
 - [x] Run targeted tests for header navigation helpers and mobile layout behavior
-- [ ] Save checkpoint after verified regression fixes
+- [x] Save checkpoint after verified regression fixes
 
+
+## User Reported Regression Fixes - Follow-up Round
+- [x] Fix all Back to menu actions to open the dashboard drawer/menu view shown in the user reference
+- [x] Remove extra home icon, recent-pages icon, avatar chip, and mismatched top banner elements from Trading Simulator
+- [x] Update Trading Simulator title styling to match the approved gradient title treatment
+- [x] Reduce extra top spacing between Pricing navigation buttons and the Premium Plans banner
+- [x] Add Back to menu and Back to dashboard buttons to Alert Notification Center
+- [x] Run targeted verification for dashboard drawer navigation and affected page headers
+- [ ] Save checkpoint after follow-up regression fixes

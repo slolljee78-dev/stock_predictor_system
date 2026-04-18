@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useMemo } from 'react';
-import { ArrowLeft, Calendar, Settings, Play, Download, Trash2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Calendar, Settings, Play, Download, Trash2, CheckCircle2, AlertCircle, House } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -13,8 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Slider } from '@/components/ui/slider';
 import { trpc } from '@/lib/trpc';
 import { Breadcrumb } from '@/components/Breadcrumb';
-import { RecentPagesMenu } from '@/components/RecentPagesMenu';
 import { useLocation } from 'wouter';
+import { DASHBOARD_HOME_PATH, navigateToDashboardMenu } from '@/lib/navigation';
 
 interface BacktestConfig {
   name: string;
@@ -32,8 +32,6 @@ interface BacktestConfig {
 
 export function Backtesting() {
   const [, navigate] = useLocation();
-  const [backPath, setBackPath] = useState('/');
-  const [backLabel, setBackLabel] = useState('Back to menu');
   const [exportingId, setExportingId] = useState<number | null>(null);
 
   const [config, setConfig] = useState<BacktestConfig>({
@@ -54,12 +52,6 @@ export function Backtesting() {
   const [activeTab, setActiveTab] = useState<'config' | 'results'>('config');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [successMessage, setSuccessMessage] = useState<string>('');
-
-  // Always return Back to menu to the dashboard workspace
-  React.useEffect(() => {
-    setBackPath('/dashboard');
-    setBackLabel('Back to menu');
-  }, []);
 
   // Fetch available stocks
   const { data: stocks } = trpc.stocks.getAll.useQuery();
@@ -173,31 +165,21 @@ export function Backtesting() {
       {/* Header */}
       <div className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between px-4">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate(backPath)}
-              className="gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              {backLabel}
-            </Button>
-          </div>
+          <button
+            onClick={() => navigateToDashboardMenu(navigate)}
+            className="flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:text-white transition-colors hover:bg-slate-700 rounded-lg"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to menu
+          </button>
 
-          <div className="flex items-center gap-4">
-            <RecentPagesMenu />
-            <Button onClick={() => navigate('/dashboard')} className="gap-2">
-              Open dashboard
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Breadcrumb */}
-      <div className="border-b border-border bg-background/50">
-        <div className="container px-4 py-3">
-          {/* Breadcrumb - simplified for now */}
+          <button
+            onClick={() => navigate(DASHBOARD_HOME_PATH)}
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-600 text-white hover:bg-cyan-700 transition-colors text-sm font-medium"
+          >
+            <House className="h-4 w-4" />
+            Back to dashboard
+          </button>
         </div>
       </div>
 
