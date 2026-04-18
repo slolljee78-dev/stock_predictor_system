@@ -14,6 +14,11 @@ import { getLoginUrl } from "@/const";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getPublicPrimaryAction } from "@/lib/publicSite";
 import {
+  buildSignalDashboardPath,
+  buildStockDetailPath,
+  scrollToDashboardSection,
+} from "@/lib/dashboardNavigation";
+import {
   ArrowRight,
   BellRing,
   BrainCircuit,
@@ -231,6 +236,7 @@ export default function Dashboard() {
                 value={String(watchlist.length)}
                 note={watchlist.length ? "Active tracked names" : "Ready to start"}
                 icon={<Star className="h-5 w-5 text-primary" />}
+                onClick={() => scrollToDashboardSection("watchlist")}
               />
               <MetricCard
                 label="Buy ideas"
@@ -239,6 +245,7 @@ export default function Dashboard() {
                 icon={<TrendingUp className="h-5 w-5 text-emerald-400" />}
                 trend={buyTrend}
                 trendPercent={buyTrendPercent}
+                onClick={() => setLocation(buildSignalDashboardPath("buy"))}
               />
               <MetricCard
                 label="Sell signals"
@@ -247,6 +254,7 @@ export default function Dashboard() {
                 icon={<TrendingDown className="h-5 w-5 text-rose-400" />}
                 trend={sellTrend}
                 trendPercent={sellTrendPercent}
+                onClick={() => setLocation(buildSignalDashboardPath("sell"))}
               />
             </div>
           </div>
@@ -417,7 +425,7 @@ export default function Dashboard() {
                   return (
                     <button
                       key={stock.id}
-                      onClick={() => setLocation(`/stocks/${stock.ticker}`)}
+                      onClick={() => setLocation(buildStockDetailPath(stock.ticker))}
                       className="w-full text-left px-4 py-3 rounded-xl border border-border/70 bg-background/40 hover:bg-background/60 hover:border-primary/50 transition-all duration-200 group"
                     >
                       <div className="flex items-center justify-between gap-4">
@@ -490,6 +498,7 @@ function MetricCard({
   icon,
   trend,
   trendPercent,
+  onClick,
 }: {
   label: string;
   value: string;
@@ -497,12 +506,12 @@ function MetricCard({
   icon: React.ReactNode;
   trend?: 'up' | 'down';
   trendPercent?: number;
+  onClick: () => void;
 }) {
-  const handleClick = () => {
-    // Removed auto-scroll - let user scroll naturally
-  };
   return (
     <button
+      type="button"
+      onClick={onClick}
       className="metric-card cursor-pointer hover:shadow-lg hover:shadow-primary/20 transition-all duration-200 text-left"
     >
       <div className="flex items-center justify-between gap-4">

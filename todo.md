@@ -498,4 +498,11 @@
 - [x] Formalize shared public/mobile header and navigation patterns to reduce future regressions
 - [x] Add focused regression tests for the shared CTA and header/navigation behavior
 - [x] Run focused verification for the critical next-fix pass
-- [ ] Save checkpoint after completing the critical next-fix pass
+- [x] Save checkpoint after completing the critical next-fix pass
+
+## Dashboard Interaction Fixes
+- [x] Make the dashboard summary cards for watchlist, buy ideas, and sell signals pressable and scroll or jump to the relevant sections
+- [x] Fix watchlist stock item navigation so tapping a stock no longer routes to a 404 page
+- [x] Add focused regression coverage for the dashboard interaction fixes
+- [x] Run focused verification for the dashboard interaction fixes
+- [ ] Save checkpoint after completing the dashboard interaction fixes

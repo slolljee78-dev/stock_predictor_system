@@ -10,6 +10,7 @@ import { TrendingUp, TrendingDown, AlertCircle, RefreshCw, ArrowLeft, Home } fro
 import { SignalDetailsModal } from '@/components/SignalDetailsModal';
 import { useLocation } from 'wouter';
 import { DASHBOARD_HOME_PATH, navigateToDashboardMenu } from '@/lib/navigation';
+import { getSignalFilterFromSearch } from '@/lib/dashboardNavigation';
 
 interface SignalWithMetrics {
   ticker: string;
@@ -25,7 +26,7 @@ interface SignalWithMetrics {
 
 export default function SignalsDashboard() {
   const [, setLocation] = useLocation();
-  const [selectedSignalType, setSelectedSignalType] = useState<'all' | 'buy' | 'sell'>('all');
+  const [selectedSignalType, setSelectedSignalType] = useState<'all' | 'buy' | 'sell'>(() => getSignalFilterFromSearch(window.location.search));
   const [minConfidence, setMinConfidence] = useState(60);
   const [sortBy, setSortBy] = useState<'confidence' | 'price' | 'time'>('confidence');
   const [autoRefresh, setAutoRefresh] = useState(true);
