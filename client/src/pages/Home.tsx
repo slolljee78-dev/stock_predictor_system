@@ -153,7 +153,7 @@ export default function Home() {
                   </div>
 
                   <p className="lead-copy">
-                    Stock Predictor gives Trading 212 investors a calmer, sharper workflow: build focused watchlists, review AI-ranked opportunities, and validate ideas with a premium dashboard that feels built for real decisions.
+                    Stock Predictor is an AI-powered trading signal platform designed specifically for Trading 212 investors. We analyze technical indicators across your watchlist to identify high-conviction buy and sell opportunities, rank them by confidence, and deliver them through a clean dashboard. Skip the chart analysis—get actionable signals, validate strategies with our simulator, and trade with conviction.
                   </p>
                 </div>
 

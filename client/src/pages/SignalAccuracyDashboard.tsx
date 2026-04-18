@@ -1,11 +1,13 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, Target, BarChart3 } from "lucide-react";
+import { TrendingUp, TrendingDown, Target, BarChart3, ArrowLeft, Home } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { useLocation } from "wouter";
 
 export default function SignalAccuracyDashboard() {
   const { user } = useAuth();
+  const [, setLocation] = useLocation();
   const { data: accuracyData, isLoading } = trpc.dashboard.getTrendData.useQuery(undefined, {
     enabled: !!user,
   });
@@ -58,12 +60,30 @@ export default function SignalAccuracyDashboard() {
 
   return (
     <div className="space-y-6">
+      <div className="flex items-center justify-between gap-4 mb-6">
+        <button
+          onClick={() => setLocation("/dashboard")}
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to menu
+        </button>
+        <button
+          onClick={() => setLocation("/dashboard")}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+        >
+          <Home className="h-4 w-4" />
+          Back to dashboard
+        </button>
+      </div>
+
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Signal Accuracy</h1>
-        <p className="text-muted-foreground mt-2">
+        <h1 className="text-4xl font-bold tracking-tight gradient-text">Signal Accuracy</h1>
+        <p className="text-muted-foreground mt-3">
           Track your signal performance metrics and trading statistics
         </p>
       </div>
+
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {metrics.map((metric) => {

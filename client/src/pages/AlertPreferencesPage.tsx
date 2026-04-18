@@ -3,10 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Bell, Mail, Smartphone, Clock } from "lucide-react";
+import { Bell, Mail, Smartphone, Clock, ArrowLeft, Home } from "lucide-react";
 import { useState } from "react";
+import { useLocation } from "wouter";
 
 export default function AlertPreferencesPage() {
+  const [, setLocation] = useLocation();
   const [buyThreshold, setBuyThreshold] = useState([60]);
   const [sellThreshold, setSellThreshold] = useState([60]);
   const [emailEnabled, setEmailEnabled] = useState(true);
@@ -30,9 +32,26 @@ export default function AlertPreferencesPage() {
 
   return (
     <div className="space-y-6">
+      <div className="flex items-center justify-between gap-4 mb-6">
+        <button
+          onClick={() => setLocation("/dashboard")}
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to menu
+        </button>
+        <button
+          onClick={() => setLocation("/dashboard")}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+        >
+          <Home className="h-4 w-4" />
+          Back to dashboard
+        </button>
+      </div>
+
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Alert Preferences</h1>
-        <p className="text-muted-foreground mt-2">
+        <h1 className="text-4xl font-bold tracking-tight gradient-text">Alert Preferences</h1>
+        <p className="text-muted-foreground mt-3">
           Customize how you receive trading signal alerts
         </p>
       </div>

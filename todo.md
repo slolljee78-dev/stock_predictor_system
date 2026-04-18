@@ -385,3 +385,12 @@
 - [x] Fix dashboard loading down the screen (remove auto-scroll on mount)
 - [x] Update SignalsDashboard to match TradingSimulator navigation pattern
 - [x] Fix Dashboard.tsx scroll behavior to only scroll when user opens add stock panel
+
+
+## User Reported Issues - Navigation & Styling
+- [x] Home page needs clearer description of what the website does
+- [x] Add "Back to menu" and "Back to dashboard" buttons to Alert Preferences page
+- [x] Add "Back to menu" and "Back to dashboard" buttons to Signal Accuracy page
+- [x] Fix "Back to menu" navigation - should go to dashboard menu, not home page
+- [x] Update all page titles to match 3-Month Validation page style (large gradient text)
+- [x] Apply consistent title styling across Alert Preferences, Signal Accuracy, and other pages
