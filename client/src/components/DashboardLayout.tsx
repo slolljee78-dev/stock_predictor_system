@@ -279,7 +279,13 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
         <div className="sticky top-0 z-40 px-3 pt-0 md:px-4 md:pt-0 bg-background/95 backdrop-blur-sm border-b border-border/50">
           <div className="dashboard-frame flex min-h-14 items-center justify-between gap-2 px-3 py-1.5 md:px-6 md:py-2">
             <div className="flex items-center gap-3 min-w-0">
-              <SidebarTrigger title="Open menu" className="h-10 w-10 rounded-xl border-2 border-primary bg-primary/20 hover:bg-primary/30 flex items-center justify-center text-primary shadow-md hover:shadow-lg transition-all" />
+              <div className="flex items-center gap-2 rounded-2xl border border-primary/40 bg-primary/10 px-2 py-1.5 shadow-md shadow-primary/10">
+                <SidebarTrigger title="Open menu" className="h-10 w-10 rounded-xl border-2 border-primary bg-primary/25 hover:bg-primary/35 flex items-center justify-center text-primary shadow-md hover:shadow-lg transition-all" />
+                <div className="hidden sm:block">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary/90">Menu</p>
+                  <p className="text-xs text-muted-foreground">Open workspace</p>
+                </div>
+              </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <p className="text-lg md:text-xl font-semibold tracking-tight truncate">{activeMenuItem.label}</p>
@@ -306,7 +312,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
           </div>
         </div>
 
-        <main className="container py-6 md:py-8 lg:py-10">
+        <main className="container py-3 md:py-6 lg:py-8">
           {children}
         </main>
       </SidebarInset>

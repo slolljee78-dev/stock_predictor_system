@@ -11,12 +11,7 @@ import { RecentPagesMenu } from "@/components/RecentPagesMenu";
 import { MobileMenuDrawer } from "@/components/MobileMenuDrawer";
 import { UserProfileMenu } from "@/components/UserProfileMenu";
 
-const getBackPath = () => {
-  if (typeof window !== 'undefined' && document.referrer.includes('/dashboard')) {
-    return '/dashboard';
-  }
-  return '/';
-};
+const getBackPath = () => '/dashboard';
 
 export default function ValidationSetup() {
   const [, setLocation] = useLocation();
@@ -28,9 +23,8 @@ export default function ValidationSetup() {
   const [backLabel, setBackLabel] = useState('Back to menu');
 
   useEffect(() => {
-    const path = getBackPath();
-    setBackPath(path);
-    setBackLabel(path === '/dashboard' ? 'Back to dashboard' : 'Back to menu');
+    setBackPath(getBackPath());
+    setBackLabel('Back to menu');
   }, []);
 
   const [formData, setFormData] = useState({
@@ -102,7 +96,7 @@ export default function ValidationSetup() {
             </Button>
           </div>
         </div>
-        <Breadcrumb items={[{ label: "Validation", href: "/validation" }]} />
+        <Breadcrumb items={[{ label: "Validation", href: "/validation/dashboard" }]} />
         <div className="flex items-center gap-3">
           <CheckCircle className="w-8 h-8 text-green-600" />
           <div>
@@ -233,7 +227,7 @@ export default function ValidationSetup() {
           </Button>
         </div>
       </div>
-      <Breadcrumb items={[{ label: "Validation", href: "/validation" }]} />
+      <Breadcrumb items={[{ label: "Validation", href: "/validation/dashboard" }]} />
       <div>
         <h1 className="text-4xl font-bold gradient-text mb-2">Start 3-Month Validation</h1>
         <p className="text-muted-foreground">Initialize your paper trading validation session</p>

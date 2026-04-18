@@ -28,12 +28,7 @@ import { MobileMenuDrawer } from "@/components/MobileMenuDrawer";
 import { UserProfileMenu } from "@/components/UserProfileMenu";
 import { CheckCircle2, AlertCircle } from "lucide-react";
 
-const getBackPath = () => {
-  if (typeof window !== 'undefined' && document.referrer.includes('/dashboard')) {
-    return '/dashboard';
-  }
-  return '/';
-};
+const getBackPath = () => '/dashboard';
 
 interface Portfolio {
   id: number;
@@ -309,9 +304,8 @@ export default function TradingSimulator() {
   const [backLabel, setBackLabel] = useState('Back to menu');
 
   useEffect(() => {
-    const path = getBackPath();
-    setBackPath(path);
-    setBackLabel(path === '/dashboard' ? 'Back to dashboard' : 'Back to menu');
+    setBackPath(getBackPath());
+    setBackLabel('Back to menu');
   }, []);
 
   return (

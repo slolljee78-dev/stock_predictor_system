@@ -55,16 +55,10 @@ export function Backtesting() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [successMessage, setSuccessMessage] = useState<string>('');
 
-  // Detect back path
+  // Always return Back to menu to the dashboard workspace
   React.useEffect(() => {
-    const referrer = document.referrer;
-    if (referrer.includes('/dashboard')) {
-      setBackPath('/dashboard');
-      setBackLabel('Back to dashboard');
-    } else {
-      setBackPath('/');
-      setBackLabel('Back to menu');
-    }
+    setBackPath('/dashboard');
+    setBackLabel('Back to menu');
   }, []);
 
   // Fetch available stocks

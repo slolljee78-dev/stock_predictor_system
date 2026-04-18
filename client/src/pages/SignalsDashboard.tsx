@@ -31,14 +31,6 @@ export default function SignalsDashboard() {
   const [signals, setSignals] = useState<SignalWithMetrics[]>([]);
   const [selectedSignal, setSelectedSignal] = useState<SignalWithMetrics | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [backPath, setBackPath] = useState('/dashboard');
-  const [backLabel, setBackLabel] = useState('Back to dashboard');
-
-  useEffect(() => {
-    // Always set up both navigation options
-    setBackPath('/');
-    setBackLabel('Back to menu');
-  }, []);
 
   // Fetch market overview with signals
   const { data: overviewData, isLoading, refetch } = trpc.realtimeSignals.getMarketOverview.useQuery(
@@ -99,30 +91,26 @@ export default function SignalsDashboard() {
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Navigation */}
-        <div className="mb-6 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setLocation('/')}
-              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-md hover:bg-muted/50"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span className="text-sm">Back to menu</span>
-            </button>
-          </div>
+      <div className="max-w-7xl mx-auto space-y-8">
+        <div className="flex items-center justify-between gap-3 pt-2">
           <button
             onClick={() => setLocation('/dashboard')}
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-md hover:bg-muted/50"
+            className="flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:text-white transition-colors hover:bg-slate-700 rounded-lg"
           >
-            <span className="text-sm">Back to dashboard</span>
+            <ArrowLeft className="h-4 w-4" />
+            <span>Back to menu</span>
+          </button>
+          <button
+            onClick={() => setLocation('/dashboard')}
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-600 text-white hover:bg-cyan-700 transition-colors text-sm font-medium"
+          >
             <Home className="h-4 w-4" />
+            <span>Back to dashboard</span>
           </button>
         </div>
 
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Real-time Signals Dashboard</h1>
+        <div className="space-y-3">
+          <h1 className="text-4xl font-bold gradient-text md:text-5xl">Real-time Signals Dashboard</h1>
           <p className="text-muted-foreground">Live trading signals powered by technical analysis</p>
         </div>
 

@@ -1,6 +1,8 @@
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
-import { Route, Switch } from "wouter";
+import { Route, Switch, useLocation } from "wouter";
+import { useEffect } from "react";
+import { scrollRouteToTop } from "@/lib/navigation";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
@@ -20,9 +22,21 @@ import MobileAppShell from "./pages/MobileAppShell";
 import SignalAccuracyDashboard from "./pages/SignalAccuracyDashboard";
 import AlertPreferencesPage from "./pages/AlertPreferencesPage";
 
+function ScrollToTop() {
+  const [location] = useLocation();
+
+  useEffect(() => {
+    scrollRouteToTop();
+  }, [location]);
+
+  return null;
+}
+
 function Router() {
   return (
-    <Switch>
+    <>
+      <ScrollToTop />
+      <Switch>
       <Route path="/" component={Home} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/stock/:ticker" component={StockDetail} />
@@ -40,7 +54,8 @@ function Router() {
       <Route path="/watchlist/:watchlistId/settings" component={WatchlistSettings} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
-    </Switch>
+      </Switch>
+    </>
   );
 }
 

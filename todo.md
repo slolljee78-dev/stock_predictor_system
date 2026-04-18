@@ -406,3 +406,16 @@
 - [x] Add "Back to menu" and "Back to dashboard" buttons to Pricing page
 - [x] Add "Back to menu" and "Back to dashboard" buttons to FAQ page
 - [x] Make menu button icon more prominent (currently not clear it's clickable)
+
+## User Reported Regression Fixes - Mobile Navigation & Layout
+- [x] Fix dashboard page initial scroll position so overview loads at the top on mobile
+- [x] Fix all Back to menu actions to open the dashboard menu view instead of the homepage
+- [x] Remove duplicated header controls on Pricing and any other affected pages
+- [x] Standardize page header banners, button layout, and title gradient styling to match 3-Month Validation
+- [x] Lower top action buttons slightly on affected pages to match reference spacing
+- [x] Fix Signal Accuracy header/title styling to match 3-Month Validation
+- [x] Fix Alert Preferences header/title styling and Back to menu destination
+- [x] Fix Real-time Signals page Back to menu destination and header spacing
+- [x] Run targeted tests for header navigation helpers and mobile layout behavior
+- [ ] Save checkpoint after verified regression fixes
+

@@ -4,17 +4,6 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Check, ChevronLeft, ShieldCheck, Sparkles, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
-import { Breadcrumb } from "@/components/Breadcrumb";
-import { RecentPagesMenu } from "@/components/RecentPagesMenu";
-import { MobileMenuDrawer } from "@/components/MobileMenuDrawer";
-import { UserProfileMenu } from "@/components/UserProfileMenu";
-
-const getBackPath = () => {
-  if (typeof window !== 'undefined' && document.referrer.includes('/dashboard')) {
-    return '/dashboard';
-  }
-  return '/';
-};
 
 const PRICING_TIERS = [
   {
@@ -99,14 +88,6 @@ export default function Pricing() {
   const { user } = useAuth();
   const [selectedTier, setSelectedTier] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [backPath, setBackPath] = useState('/');
-  const [backLabel, setBackLabel] = useState('Back to menu');
-
-  useEffect(() => {
-    const path = getBackPath();
-    setBackPath(path);
-    setBackLabel(path === '/dashboard' ? 'Back to dashboard' : 'Back to menu');
-  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -156,60 +137,38 @@ export default function Pricing() {
       <div className="hero-orb left-[-6rem] top-0 h-72 w-72 bg-primary/30" />
       <div className="hero-orb right-[-7rem] top-32 h-72 w-72 bg-accent/20" />
 
-      <header className="sticky top-0 z-40 border-b border-border/70 bg-background/75 backdrop-blur-xl">
-        <div className="container flex items-center justify-between gap-4 py-4">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" className="rounded-full px-4" onClick={() => setLocation(backPath)}>
-              <ChevronLeft className="mr-2 h-4 w-4" />
-              {backLabel}
-            </Button>
-            <RecentPagesMenu />
-            <div className="hidden md:block">
-              <MobileMenuDrawer />
-            </div>
+      <main className="container pt-6 pb-20 md:pt-8">
+        <div className="space-y-10">
+          <div className="flex items-center justify-between gap-3 pt-2">
+            <button
+              onClick={() => setLocation("/dashboard")}
+              className="flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:text-white transition-colors hover:bg-slate-700 rounded-lg"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Back to menu
+            </button>
+            <button
+              onClick={() => setLocation("/dashboard")}
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-600 text-white hover:bg-cyan-700 transition-colors text-sm font-medium"
+            >
+              Back to dashboard
+            </button>
           </div>
-          <div className="flex items-center gap-2">
-            <UserProfileMenu />
-            <Button className="pill-button pill-button-primary h-11 px-5" onClick={() => setLocation("/dashboard")}>
-              Open dashboard
-            </Button>
-          </div>
-        </div>
-      </header>
 
-      <main>
-        <div className="container mt-8 flex items-center justify-between gap-3 mb-6">
-          <button
-            onClick={() => setLocation("/dashboard")}
-            className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors hover:bg-primary/10 rounded-lg"
-          >
-            <ChevronLeft className="h-4 w-4" />
-            Back to menu
-          </button>
-          <Breadcrumb items={[{ label: "Pricing", href: "/pricing" }]} />
-          <button
-            onClick={() => setLocation("/dashboard")}
-            className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-sm font-medium"
-          >
-            Back to dashboard
-          </button>
-        </div>
-        <section className="section-shell pb-12 pt-16 md:pt-24">
-          <div className="container grid gap-10 lg:grid-cols-[1fr_0.9fr] lg:items-end">
-            <div className="space-y-6">
-              <div className="eyebrow">
-                <Sparkles className="h-4 w-4 text-primary" />
-                Premium plans
+          <section className="section-shell pb-12 pt-10 md:pt-14">
+            <div className="grid gap-10 lg:grid-cols-[1fr_0.9fr] lg:items-end">
+              <div className="space-y-6">
+                <div className="eyebrow">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  Premium plans
+                </div>
+                <div className="space-y-3">
+                  <h1 className="text-4xl font-bold gradient-text md:text-5xl">Pricing designed around serious trading workflows</h1>
+                  <p className="lead-copy max-w-4xl">
+                    Choose the access level that matches how you review opportunities. Every tier is built around the same premium product experience: cleaner watchlists, stronger signals, and a calmer decision flow.
+                  </p>
+                </div>
               </div>
-              <div className="space-y-4">
-                <h1 className="display-title max-w-5xl text-balance">
-                  Pricing designed around <span className="gradient-text">serious trading workflows</span>
-                </h1>
-                <p className="lead-copy">
-                  Choose the access level that matches how you review opportunities. Every tier is built around the same premium product experience: cleaner watchlists, stronger signals, and a calmer decision flow.
-                </p>
-              </div>
-            </div>
 
             <div className="premium-card p-6 md:p-7">
               <p className="text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">Included across the platform</p>
@@ -306,6 +265,7 @@ export default function Pricing() {
             </div>
           </div>
         </section>
+        </div>
       </main>
     </div>
   );

@@ -32,17 +32,17 @@ export default function AlertPreferencesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-3 mb-8">
+      <div className="flex items-center justify-between gap-3 mb-8 pt-2">
         <button
           onClick={() => setLocation("/dashboard")}
-          className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors hover:bg-primary/10 rounded-lg"
+          className="flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:text-white transition-colors hover:bg-slate-700 rounded-lg"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to menu
         </button>
         <button
           onClick={() => setLocation("/dashboard")}
-          className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-sm font-medium"
+          className="flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-600 text-white hover:bg-cyan-700 transition-colors text-sm font-medium"
         >
           <Home className="h-4 w-4" />
           Back to dashboard

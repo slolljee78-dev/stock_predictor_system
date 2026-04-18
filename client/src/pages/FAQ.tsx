@@ -227,7 +227,7 @@ export default function FAQ() {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 pt-20 pb-16">
       <div className="container max-w-4xl mx-auto px-4">
         {/* Navigation Buttons */}
-        <div className="flex items-center justify-between gap-3 mb-8">
+        <div className="flex items-center justify-between gap-3 mb-8 pt-2">
           <button
             onClick={() => setLocation("/dashboard")}
             className="flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:text-white transition-colors hover:bg-slate-700 rounded-lg"
@@ -245,11 +245,11 @@ export default function FAQ() {
         </div>
 
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+        <div className="mb-12 space-y-3 text-left">
+          <h1 className="text-4xl font-bold gradient-text md:text-5xl">
             Frequently Asked Questions
           </h1>
-          <p className="text-xl text-slate-300 mb-8">
+          <p className="text-lg text-slate-300 mb-8">
             Find answers to common questions about Stock Predictor
           </p>
 
