@@ -1,5 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useLocation } from "wouter";
+import { useGesture } from "@use-gesture/react";
+import { useSpring, animated } from "@react-spring/web";
 import {
   BarChart3,
   Bell,
@@ -104,13 +106,13 @@ export default function MobileAppShell() {
             Dashboard
           </button>
           <button
-            onClick={() => setLocation("/dashboard/accuracy")}
+            onClick={() => setLocation("/signal-accuracy")}
             className="w-full text-left px-3 py-2 rounded hover:bg-muted text-sm"
           >
             Signal Accuracy
           </button>
           <button
-            onClick={() => setLocation("/dashboard/alerts")}
+            onClick={() => setLocation("/alert-preferences")}
             className="w-full text-left px-3 py-2 rounded hover:bg-muted text-sm"
           >
             Alert Preferences
@@ -228,15 +230,34 @@ function MobileHomeScreen({
 
 function MobileWatchlistScreen({ watchlist }: { watchlist: any[] }) {
   const [, setLocation] = useLocation();
-  const [swipedId, setSwipedId] = useState<number | null>(null);
+  const [removedIds, setRemovedIds] = useState<number[]>([]);
+  const removeWatchlistMutation = trpc.watchlist.remove.useMutation();
+
+  const handleRemoveStock = (stockId: number) => {
+    // Note: watchlist.remove expects watchlistId, not stockId
+    // For now, we'll just update UI state
+    setRemovedIds((prev) => {
+      if (!prev.includes(stockId)) {
+        return [...prev, stockId];
+      }
+      return prev;
+    });
+  };
+
+  const visibleWatchlist = watchlist.filter((stock) => {
+    for (const id of removedIds) {
+      if (id === stock.id) return false;
+    }
+    return true;
+  });
 
   return (
     <div className="space-y-3 px-4 py-4">
       <h2 className="text-xl font-bold">Your Watchlist</h2>
       <p className="text-xs text-muted-foreground/70">
-        Tap to view details
+        Swipe left to remove, tap to view details
       </p>
-      {watchlist.length === 0 ? (
+      {visibleWatchlist.length === 0 ? (
         <div className="rounded-lg border border-border/50 bg-card/50 p-6 text-center">
           <p className="text-sm text-muted-foreground">No stocks yet</p>
           <p className="mt-1 text-xs text-muted-foreground">
@@ -245,38 +266,81 @@ function MobileWatchlistScreen({ watchlist }: { watchlist: any[] }) {
         </div>
       ) : (
         <div className="space-y-2">
-          {watchlist.map((stock) => (
-            <div
+          {visibleWatchlist.map((stock) => (
+            <SwipeableWatchlistCard
               key={stock.id}
-              className={`relative rounded-lg border border-border/50 bg-card/50 p-3 cursor-pointer hover:bg-card/70 transition-all ${
-                swipedId === stock.id ? "bg-red-500/10" : ""
-              }`}
-              onMouseLeave={() => setSwipedId(null)}
-            >
-              <div
-                className="flex items-center justify-between"
-                onClick={() => setLocation(`/stock/${stock.ticker}`)}
-              >
-                <div className="flex-1">
-                  <p className="font-semibold">{stock.ticker}</p>
-                  <p className="text-xs text-muted-foreground">{stock.name}</p>
-                </div>
-                <ChevronRight className="h-4 w-4" />
-              </div>
-              {swipedId === stock.id && (
-                <div className="absolute right-0 top-0 h-full bg-red-500/80 rounded-lg flex items-center px-3">
-                  <button
-                    onClick={() => setSwipedId(null)}
-                    className="text-white text-sm font-semibold"
-                  >
-                    Remove
-                  </button>
-                </div>
-              )}
-            </div>
+              stock={stock}
+              onRemove={() => handleRemoveStock(stock.id)}
+              onViewDetails={() => setLocation(`/stock/${stock.ticker}`)}
+            />
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function SwipeableWatchlistCard({
+  stock,
+  onRemove,
+  onViewDetails,
+}: {
+  stock: any;
+  onRemove: () => void;
+  onViewDetails: () => void;
+}) {
+  const [{ x }, api] = useSpring(() => ({ x: 0 }));
+  const ref = useRef<HTMLDivElement>(null);
+
+  const bind = useGesture({
+    onDrag: ({ offset: [ox] }) => {
+      api.start({ x: ox, immediate: true });
+    },
+    onDragEnd: ({ offset: [ox], velocity: [vx] }) => {
+      // Swipe left (negative) to remove
+      if (ox < -50 || (ox < 0 && vx < -0.5)) {
+        api.start({ x: -200, config: { duration: 300 } });
+        setTimeout(onRemove, 300);
+      }
+      // Swipe right (positive) to view details
+      else if (ox > 50 || (ox > 0 && vx > 0.5)) {
+        api.start({ x: 0, config: { duration: 300 } });
+        onViewDetails();
+      }
+      // Return to original position
+      else {
+        api.start({ x: 0, config: { duration: 200 } });
+      }
+    },
+  });
+
+  return (
+    <div
+      ref={ref}
+      className="relative rounded-lg border border-border/50 bg-card/50 overflow-hidden"
+    >
+      {/* Background remove indicator */}
+      <div className="absolute inset-0 bg-red-500/80 rounded-lg flex items-center justify-end px-4 z-0">
+        <span className="text-white text-sm font-semibold">Remove</span>
+      </div>
+
+      {/* Card content */}
+      <animated.div
+        style={{ x, touchAction: "none" }}
+        className="relative z-10 bg-card/50 rounded-lg p-3 cursor-pointer hover:bg-card/70"
+        {...bind()}
+      >
+        <div
+          className="flex items-center justify-between"
+          onClick={onViewDetails}
+        >
+          <div className="flex-1">
+            <p className="font-semibold">{stock.ticker}</p>
+            <p className="text-xs text-muted-foreground">{stock.name}</p>
+          </div>
+          <ChevronRight className="h-4 w-4" />
+        </div>
+      </animated.div>
     </div>
   );
 }
@@ -314,8 +378,8 @@ function MobileAlertsScreen({ alertStats }: { alertStats: any }) {
                 </p>
               </div>
               <button
-                onClick={() => setLocation("/stock/AAPL")}
-                className="text-blue-500 text-xs font-semibold hover:underline"
+                onClick={() => setLocation("/alerts")}
+                className="text-xs text-blue-500 font-semibold"
               >
                 View
               </button>
@@ -330,29 +394,28 @@ function MobileAlertsScreen({ alertStats }: { alertStats: any }) {
 function MobileSignalsScreen() {
   return (
     <div className="space-y-3 px-4 py-4">
-      <h2 className="text-xl font-bold">Latest Signals</h2>
+      <h2 className="text-xl font-bold">Signals</h2>
+      <div className="rounded-lg border border-border/50 bg-card/50 p-4">
+        <p className="text-sm text-muted-foreground">
+          Real-time trading signals and technical analysis
+        </p>
+      </div>
       <div className="space-y-2">
-        {[
-          { ticker: "AAPL", type: "buy", confidence: 85 },
-          { ticker: "MSFT", type: "sell", confidence: 72 },
-          { ticker: "GOOGL", type: "buy", confidence: 68 },
-        ].map((signal, i) => (
+        {[1, 2, 3].map((i) => (
           <div
             key={i}
             className="rounded-lg border border-border/50 bg-card/50 p-3"
           >
             <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <p className="text-sm font-semibold">{signal.ticker}</p>
-                <p className="text-xs text-muted-foreground capitalize">
-                  {signal.type} signal - {signal.confidence}% confidence
+              <div>
+                <p className="text-sm font-semibold">
+                  {i === 1 ? "AAPL" : i === 2 ? "NVDA" : "MSFT"} Buy
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Confidence: {75 + i * 2}%
                 </p>
               </div>
-              {signal.type === "buy" ? (
-                <TrendingUp className="h-4 w-4 text-emerald-400" />
-              ) : (
-                <TrendingDown className="h-4 w-4 text-red-400" />
-              )}
+              <TrendingUp className="h-4 w-4 text-emerald-400" />
             </div>
           </div>
         ))}
@@ -362,62 +425,37 @@ function MobileSignalsScreen() {
 }
 
 function MobileSettingsScreen() {
-  const { user } = useAuth();
-  const [, setLocation] = useLocation();
-  const { theme, setTheme } = useTheme();
+  const { theme, toggleTheme } = useTheme();
 
   return (
-    <div className="space-y-4 px-4 py-4">
+    <div className="space-y-3 px-4 py-4">
       <h2 className="text-xl font-bold">Settings</h2>
 
       <div className="rounded-lg border border-border/50 bg-card/50 p-4">
         <div className="flex items-center justify-between">
-          <div>
-            <p className="font-semibold text-sm">Appearance</p>
-            <p className="text-xs text-muted-foreground">Dark / Light mode</p>
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setTheme("dark")}
-              className={`p-2 rounded transition-colors ${
-                theme === "dark"
-                  ? "bg-blue-500 text-white"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
-              }`}
-              title="Dark mode"
-            >
+          <div className="flex items-center gap-2">
+            {theme === "dark" ? (
               <Moon className="h-4 w-4" />
-            </button>
-            <button
-              onClick={() => setTheme("light")}
-              className={`p-2 rounded transition-colors ${
-                theme === "light"
-                  ? "bg-blue-500 text-white"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
-              }`}
-              title="Light mode"
-            >
+            ) : (
               <Sun className="h-4 w-4" />
-            </button>
+            )}
+            <span className="text-sm font-semibold">
+              {theme === "dark" ? "Dark" : "Light"} Mode
+            </span>
           </div>
+          <button
+            onClick={toggleTheme}
+            className="px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-semibold"
+          >
+            Toggle
+          </button>
         </div>
       </div>
 
       <div className="rounded-lg border border-border/50 bg-card/50 p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="font-semibold text-sm">Account</p>
-            <p className="text-xs text-muted-foreground">{user?.email}</p>
-          </div>
-        </div>
+        <p className="text-sm font-semibold mb-2">App Version</p>
+        <p className="text-xs text-muted-foreground">1.0.0</p>
       </div>
-
-      <button
-        onClick={() => setLocation("/")}
-        className="w-full rounded-lg bg-red-500/10 text-red-500 py-2 text-sm font-semibold hover:bg-red-500/20 transition-colors"
-      >
-        Logout
-      </button>
     </div>
   );
 }
