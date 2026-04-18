@@ -43,6 +43,7 @@ import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
 import NotificationCenter from "./NotificationCenter";
 import { UserProfileMenu } from "./UserProfileMenu";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { trpc } from "@/lib/trpc";
 
 const menuItems = [
   {
@@ -159,6 +160,10 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
   const [location, setLocation] = useLocation();
   const isMobile = useIsMobile();
+  const { data: alertStats } = trpc.alerts.getAlertStats.useQuery(undefined, {
+    enabled: !!user,
+    refetchInterval: 30000, // Refetch every 30 seconds
+  });
 
   const activeMenuItem = useMemo(() => {
     return (
@@ -199,21 +204,30 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                         item.path === "/dashboard"
                           ? location === "/dashboard"
                           : location.startsWith(item.path);
+                      
+                      const showBadge = item.path === "/alerts" && alertStats && alertStats.pending > 0;
 
                       return (
                         <SidebarMenuItem key={item.path}>
-                          <SidebarMenuButton
-                            isActive={isActive}
-                            tooltip={item.label}
-                            onClick={() => setLocation(item.path)}
-                            className="h-auto rounded-2xl px-3 py-4 md:py-3 data-[active=true]:bg-primary data-[active=true]:text-primary-foreground data-[active=true]:shadow-lg data-[active=true]:shadow-primary/20 hover:bg-secondary/80 min-h-[56px] md:min-h-auto"
-                          >
-                            <item.icon className="h-5 w-5 md:h-4 md:w-4 shrink-0" />
-                            <div className="min-w-0 group-data-[collapsible=icon]:hidden">
-                              <p className="truncate text-sm md:text-sm font-semibold">{item.label}</p>
-                              <p className="truncate text-xs opacity-75">{item.description}</p>
-                            </div>
-                          </SidebarMenuButton>
+                          <div className="relative">
+                            <SidebarMenuButton
+                              isActive={isActive}
+                              tooltip={item.label}
+                              onClick={() => setLocation(item.path)}
+                              className="h-auto rounded-2xl px-3 py-4 md:py-3 data-[active=true]:bg-primary data-[active=true]:text-primary-foreground data-[active=true]:shadow-lg data-[active=true]:shadow-primary/20 hover:bg-secondary/80 min-h-[56px] md:min-h-auto"
+                            >
+                              <item.icon className="h-5 w-5 md:h-4 md:w-4 shrink-0" />
+                              <div className="min-w-0 group-data-[collapsible=icon]:hidden">
+                                <p className="truncate text-sm md:text-sm font-semibold">{item.label}</p>
+                                <p className="truncate text-xs opacity-75">{item.description}</p>
+                              </div>
+                            </SidebarMenuButton>
+                            {showBadge && (
+                              <Badge className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full px-2 py-0.5 text-xs font-bold">
+                                {alertStats.pending}
+                              </Badge>
+                            )}
+                          </div>
                         </SidebarMenuItem>
                       );
                     })}
