@@ -523,4 +523,12 @@
 - [x] Make the desktop Pricing and FAQ header links match the same visual weight as Features, How it works, and Platform tour
 - [x] Fix the desktop Open dashboard action so it opens the dashboard view directly instead of immediately opening the navigation menu
 - [x] Add focused verification for the desktop navigation polish fixes
-- [ ] Save checkpoint after completing the desktop navigation polish fixes
+- [x] Save checkpoint after completing the desktop navigation polish fixes
+
+## Simulator Persistence And Pricing UX
+- [x] Make it clear in the simulator UI whether a trade used a live market price or a fallback/manual price
+- [x] Auto-populate the current price in the simulator when a stock is selected
+- [x] Fix simulator portfolio persistence so positions and cash are retained after closing and reopening the app
+- [x] Add focused regression coverage for the simulator persistence and pricing UX improvements
+- [x] Run focused verification for the simulator persistence and pricing UX improvements
+- [ ] Save checkpoint after completing the simulator persistence and pricing UX improvements

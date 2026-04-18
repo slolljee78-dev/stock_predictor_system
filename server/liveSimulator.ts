@@ -15,6 +15,7 @@ export interface LiveTradeExecution {
   slippage: number;
   commission: number;
   totalCost: number;
+  priceSource: "live" | "fallback";
   success: boolean;
   error?: string;
 }
@@ -56,6 +57,7 @@ export async function executeLiveTradeWithMarketPrice(
     const priceData = await fetchStockPriceWithCache(ticker);
     const hasRequestedPriceFallback = Number.isFinite(requestedPrice) && requestedPrice > 0;
     const currentPrice = priceData?.price ?? (hasRequestedPriceFallback ? requestedPrice : null);
+    const priceSource: "live" | "fallback" = priceData?.price ? "live" : "fallback";
 
     if (currentPrice === null) {
       return {
@@ -68,6 +70,7 @@ export async function executeLiveTradeWithMarketPrice(
         slippage: 0,
         commission: 0,
         totalCost: 0,
+        priceSource: "fallback",
         success: false,
         error: `Could not fetch current price for ${ticker} and no fallback price was provided`,
       };
@@ -94,6 +97,7 @@ export async function executeLiveTradeWithMarketPrice(
       slippage: slippageAmount,
       commission,
       totalCost,
+      priceSource,
       success: true,
     };
   } catch (error) {
@@ -106,9 +110,11 @@ export async function executeLiveTradeWithMarketPrice(
       executionTime: new Date().toISOString(),
       slippage: 0,
       commission: 0,
-      totalCost: 0,
-      success: false,
-      error: `Trade execution failed: ${error}`,
+        totalCost: 0,
+        priceSource: "fallback",
+        success: false,
+        error: `Trade execution failed: ${error}`,
+
     };
   }
 }

@@ -21,6 +21,7 @@ describe("live simulator trade fallback", () => {
     const result = await executeLiveTradeWithMarketPrice("NVDA", "BUY", 10, 890, 0.05, 0.1);
 
     expect(result.success).toBe(true);
+    expect(result.priceSource).toBe("fallback");
     expect(result.executedPrice).toBeCloseTo(890.445);
     expect(result.totalCost).toBeCloseTo(8913.35445);
   });
@@ -38,6 +39,7 @@ describe("live simulator trade fallback", () => {
     const result = await executeLiveTradeWithMarketPrice("AAPL", "SELL", 10, 100, 0.05, 0.1);
 
     expect(result.success).toBe(true);
+    expect(result.priceSource).toBe("live");
     expect(result.executedPrice).toBeCloseTo(99.95);
     expect(result.commission).toBeCloseTo(0.9995);
     expect(result.totalCost).toBeCloseTo(998.5005);
@@ -49,6 +51,7 @@ describe("live simulator trade fallback", () => {
     const result = await executeLiveTradeWithMarketPrice("MSFT", "BUY", 5, 0, 0.05, 0.1);
 
     expect(result.success).toBe(false);
+    expect(result.priceSource).toBe("fallback");
     expect(result.error).toContain("no fallback price was provided");
   });
 });

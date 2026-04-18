@@ -1,3 +1,7 @@
+import React, { useEffect, useMemo, useState } from "react";
+import { useLocation } from "wouter";
+import { ArrowLeft, AlertCircle, BarChart3, CheckCircle2, DollarSign, History, House, Plus, Target, TrendingDown, TrendingUp } from "lucide-react";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,291 +13,359 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  BarChart3,
-  DollarSign,
-  History,
-  Plus,
-  Target,
-  TrendingDown,
-  TrendingUp,
-} from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { useLocation } from "wouter";
-import { ArrowLeft, CheckCircle2, AlertCircle, House } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { DASHBOARD_HOME_PATH, navigateToDashboardMenu } from "@/lib/navigation";
+import {
+  createEmptyPortfolio,
+  getSelectedPortfolio,
+  getTradePriceSourceLabel,
+  loadTradingSimulatorState,
+  saveTradingSimulatorState,
+  type SimulatorPortfolio,
+  type TradingSimulatorState,
+} from "@/lib/tradingSimulatorState";
 
-interface Portfolio {
-  id: number;
-  name: string;
-  initialCapital: number;
-  currentValue: number;
-  cash: number;
-  totalReturn: number;
-  totalReturnPercent: number;
-}
+const getStorage = () => (typeof window !== "undefined" ? window.localStorage : undefined);
 
-interface Position {
+function isLivePriceResponse(value: unknown): value is {
   ticker: string;
-  quantity: number;
-  entryPrice: number;
-  currentPrice: number;
-  unrealizedPnL: number;
-  unrealizedPnLPercent: number;
-}
-
-interface Trade {
-  id: number;
-  ticker: string;
-  type: "buy" | "sell";
-  quantity: number;
   price: number;
-  date: string;
+  timestamp: string;
+  change?: number;
+  changePercent?: number;
+} {
+  return typeof value === "object" && value !== null && typeof (value as { price?: unknown }).price === "number";
+}
+
+function formatCurrency(value: number) {
+  return `£${value.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+}
+
+function formatTimestamp(value?: string) {
+  if (!value) {
+    return "just now";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "just now";
+  }
+
+  return date.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 export default function TradingSimulator() {
-  const [portfolios, setPortfolios] = useState<Portfolio[]>([
-    {
-      id: 1,
-      name: "Core Strategy",
-      initialCapital: 10000,
-      currentValue: 11247,
-      cash: 5000,
-      totalReturn: 1247,
-      totalReturnPercent: 12.47,
-    },
-  ]);
-
-  const [selectedPortfolio, setSelectedPortfolio] = useState<Portfolio>(portfolios[0]);
-  const [positions, setPositions] = useState<Position[]>([
-    {
-      ticker: "AAPL",
-      quantity: 10,
-      entryPrice: 180.5,
-      currentPrice: 185.2,
-      unrealizedPnL: 47,
-      unrealizedPnLPercent: 2.6,
-    },
-    {
-      ticker: "NVDA",
-      quantity: 5,
-      entryPrice: 890,
-      currentPrice: 892.5,
-      unrealizedPnL: 12.5,
-      unrealizedPnLPercent: 0.28,
-    },
-  ]);
-
-  const [trades, setTrades] = useState<Trade[]>([
-    {
-      id: 1,
-      ticker: "AAPL",
-      type: "buy",
-      quantity: 10,
-      price: 180.5,
-      date: "2026-04-11 09:30",
-    },
-    {
-      id: 2,
-      ticker: "NVDA",
-      type: "buy",
-      quantity: 5,
-      price: 890,
-      date: "2026-04-11 10:15",
-    },
-  ]);
-
+  const [simulatorState, setSimulatorState] = useState<TradingSimulatorState>(() => loadTradingSimulatorState(getStorage()));
   const [tradeForm, setTradeForm] = useState({
     ticker: "",
     quantity: "",
     price: "",
   });
-  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [hasManualPriceOverride, setHasManualPriceOverride] = useState(false);
+  const [, setLocation] = useLocation();
 
-  const exposure = useMemo(() => {
-    return selectedPortfolio.currentValue - selectedPortfolio.cash;
-  }, [selectedPortfolio]);
+  const selectedPortfolio = useMemo(() => getSelectedPortfolio(simulatorState), [simulatorState]);
+  const positions = selectedPortfolio.positions;
+  const trades = selectedPortfolio.trades;
+  const normalizedTicker = tradeForm.ticker.trim().toUpperCase();
+  const exposure = useMemo(() => selectedPortfolio.currentValue - selectedPortfolio.cash, [selectedPortfolio]);
 
-  // Live simulator integration
   const executeLiveTradeWithMarketPrice = trpc.simulator.executeLiveTradeWithMarketPrice.useMutation();
   const calculateLivePortfolioValue = trpc.simulator.calculateLivePortfolioValue.useQuery(
     {
-      positions: positions.map(p => ({
-        ticker: p.ticker,
-        quantity: p.quantity,
-        averagePrice: p.entryPrice,
+      positions: positions.map((position) => ({
+        ticker: position.ticker,
+        quantity: position.quantity,
+        averagePrice: position.entryPrice,
       })),
       cashBalance: selectedPortfolio.cash,
     },
     {
       enabled: positions.length > 0,
-      refetchInterval: 60000, // Refresh every minute
+      refetchInterval: 60000,
     }
   );
 
-  // Update portfolio with live prices
-  useEffect(() => {
-    if (calculateLivePortfolioValue.data) {
-      const liveData = calculateLivePortfolioValue.data;
-      const updatedPositions = liveData.positions.map(livePos => {
-        const existingPos = positions.find(p => p.ticker === livePos.ticker);
-        return {
-          ticker: livePos.ticker,
-          quantity: livePos.quantity,
-          entryPrice: livePos.averagePrice,
-          currentPrice: livePos.currentPrice,
-          unrealizedPnL: livePos.unrealizedPnL,
-          unrealizedPnLPercent: livePos.unrealizedPnLPercent,
-        };
-      });
-      setPositions(updatedPositions);
-
-      setSelectedPortfolio(prev => ({
-        ...prev,
-        currentValue: liveData.totalValue,
-        cash: liveData.cashBalance,
-        totalReturn: liveData.totalPnL,
-        totalReturnPercent: liveData.totalPnLPercent,
-      }));
+  const livePriceQuery = trpc.liveMarket.getPrice.useQuery(
+    { ticker: normalizedTicker },
+    {
+      enabled: normalizedTicker.length > 0,
+      retry: false,
+      refetchOnWindowFocus: false,
+      staleTime: 45000,
     }
-  }, [calculateLivePortfolioValue.data]);
+  );
 
-  const handleTrade = async (type: "buy" | "sell") => {
-    if (!tradeForm.ticker || !tradeForm.quantity || !tradeForm.price) {
-      alert("Please fill in all fields");
+  const livePriceData = isLivePriceResponse(livePriceQuery.data) ? livePriceQuery.data : null;
+  const livePriceUnavailable = normalizedTicker.length > 0 && !livePriceQuery.isLoading && !livePriceData;
+
+  useEffect(() => {
+    saveTradingSimulatorState(simulatorState, getStorage());
+  }, [simulatorState]);
+
+  useEffect(() => {
+    if (!livePriceData || hasManualPriceOverride) {
       return;
     }
 
+    const formattedLivePrice = livePriceData.price.toFixed(2);
+    setTradeForm((current) => {
+      if (current.price === formattedLivePrice) {
+        return current;
+      }
+
+      return {
+        ...current,
+        price: formattedLivePrice,
+      };
+    });
+  }, [hasManualPriceOverride, livePriceData]);
+
+  useEffect(() => {
+    if (!calculateLivePortfolioValue.data) {
+      return;
+    }
+
+    const liveData = calculateLivePortfolioValue.data;
+    setSimulatorState((current) => ({
+      ...current,
+      portfolios: current.portfolios.map((portfolio) => {
+        if (portfolio.id !== current.selectedPortfolioId) {
+          return portfolio;
+        }
+
+        return {
+          ...portfolio,
+          positions: liveData.positions.map((livePosition) => ({
+            ticker: livePosition.ticker,
+            quantity: livePosition.quantity,
+            entryPrice: livePosition.averagePrice,
+            currentPrice: livePosition.currentPrice,
+            unrealizedPnL: livePosition.unrealizedPnL,
+            unrealizedPnLPercent: livePosition.unrealizedPnLPercent,
+          })),
+          currentValue: liveData.totalValue,
+          cash: liveData.cashBalance,
+          totalReturn: liveData.totalPnL,
+          totalReturnPercent: liveData.totalPnLPercent,
+        };
+      }),
+    }));
+  }, [calculateLivePortfolioValue.data]);
+
+  const handleTickerChange = (value: string) => {
+    const nextTicker = value.toUpperCase().replace(/[^A-Z.-]/g, "");
+    setHasManualPriceOverride(false);
+    setTradeForm((current) => ({
+      ...current,
+      ticker: nextTicker,
+      price: current.ticker === nextTicker ? current.price : "",
+    }));
+  };
+
+  const handlePriceChange = (value: string) => {
+    setHasManualPriceOverride(value.trim().length > 0);
+    setTradeForm((current) => ({
+      ...current,
+      price: value,
+    }));
+  };
+
+  const handleTrade = async (type: "buy" | "sell") => {
+    if (!tradeForm.ticker || !tradeForm.quantity || !tradeForm.price) {
+      setFeedback({ type: "error", message: "Please enter a ticker, quantity, and price before placing the trade." });
+      return;
+    }
+
+    const quantity = parseInt(tradeForm.quantity, 10);
+    const requestedPrice = parseFloat(tradeForm.price);
+
+    if (!Number.isFinite(quantity) || quantity <= 0 || !Number.isFinite(requestedPrice) || requestedPrice <= 0) {
+      setFeedback({ type: "error", message: "Quantity and price must both be valid positive numbers." });
+      return;
+    }
+
+    if (type === "sell") {
+      const existingPosition = positions.find((position) => position.ticker === normalizedTicker);
+      if (!existingPosition || existingPosition.quantity < quantity) {
+        setFeedback({ type: "error", message: `You only hold ${existingPosition?.quantity ?? 0} shares of ${normalizedTicker}.` });
+        return;
+      }
+    }
+
     try {
-      // Execute trade with live market price
       const result = await executeLiveTradeWithMarketPrice.mutateAsync({
-        ticker: tradeForm.ticker.toUpperCase(),
+        ticker: normalizedTicker,
         type: type.toUpperCase() as "BUY" | "SELL",
-        quantity: parseInt(tradeForm.quantity, 10),
-        requestedPrice: parseFloat(tradeForm.price),
+        quantity,
+        requestedPrice,
         slippagePercent: 0.05,
         commissionPercent: 0.1,
       });
 
-      if (result.success) {
-        const newTrade: Trade = {
-          id: trades.length + 1,
-          ticker: result.ticker,
-          type,
-          quantity: result.quantity,
-          price: result.executedPrice,
-          date: new Date().toLocaleString(),
-        };
+      if (!result.success) {
+        setFeedback({ type: "error", message: result.error ?? "Trade failed." });
+        return;
+      }
 
-        setTrades((current) => [newTrade, ...current]);
-        
-        // Update positions based on trade
-        setPositions((current) => {
-          const existingPos = current.find(p => p.ticker === result.ticker);
-          if (type === 'buy') {
-            if (existingPos) {
-              const totalCost = existingPos.entryPrice * existingPos.quantity + result.executedPrice * result.quantity;
-              const totalQuantity = existingPos.quantity + result.quantity;
-              const newAvgPrice = totalCost / totalQuantity;
-              return current.map(p => 
-                p.ticker === result.ticker 
+      const priceSource = result.priceSource === "fallback" ? "fallback" : "live";
+      const newTrade = {
+        id: trades.length > 0 ? Math.max(...trades.map((trade) => trade.id)) + 1 : 1,
+        ticker: result.ticker,
+        type,
+        quantity: result.quantity,
+        price: result.executedPrice,
+        date: new Date().toLocaleString(),
+        priceSource,
+      } as const;
+
+      setSimulatorState((current) => ({
+        ...current,
+        portfolios: current.portfolios.map((portfolio) => {
+          if (portfolio.id !== current.selectedPortfolioId) {
+            return portfolio;
+          }
+
+          const existingPosition = portfolio.positions.find((position) => position.ticker === result.ticker);
+          let nextPositions = portfolio.positions;
+
+          if (type === "buy") {
+            if (existingPosition) {
+              const totalCost = existingPosition.entryPrice * existingPosition.quantity + result.executedPrice * result.quantity;
+              const totalQuantity = existingPosition.quantity + result.quantity;
+              const averagePrice = totalCost / totalQuantity;
+              nextPositions = portfolio.positions.map((position) =>
+                position.ticker === result.ticker
                   ? {
-                      ...p,
+                      ...position,
                       quantity: totalQuantity,
-                      entryPrice: newAvgPrice,
+                      entryPrice: averagePrice,
                       currentPrice: result.executedPrice,
-                      unrealizedPnL: (result.executedPrice - newAvgPrice) * totalQuantity,
-                      unrealizedPnLPercent: ((result.executedPrice - newAvgPrice) / newAvgPrice) * 100,
+                      unrealizedPnL: (result.executedPrice - averagePrice) * totalQuantity,
+                      unrealizedPnLPercent: averagePrice > 0 ? ((result.executedPrice - averagePrice) / averagePrice) * 100 : 0,
                     }
-                  : p
+                  : position
               );
             } else {
-              return [...current, {
-                ticker: result.ticker,
-                quantity: result.quantity,
-                entryPrice: result.executedPrice,
-                currentPrice: result.executedPrice,
-                unrealizedPnL: 0,
-                unrealizedPnLPercent: 0,
-              }];
+              nextPositions = [
+                ...portfolio.positions,
+                {
+                  ticker: result.ticker,
+                  quantity: result.quantity,
+                  entryPrice: result.executedPrice,
+                  currentPrice: result.executedPrice,
+                  unrealizedPnL: 0,
+                  unrealizedPnLPercent: 0,
+                },
+              ];
             }
-          } else {
-            if (existingPos) {
-              const remainingQty = existingPos.quantity - result.quantity;
-              if (remainingQty <= 0) {
-                return current.filter(p => p.ticker !== result.ticker);
-              } else {
-                return current.map(p => 
-                  p.ticker === result.ticker 
-                    ? {
-                        ...p,
-                        quantity: remainingQty,
-                        unrealizedPnL: (result.executedPrice - p.entryPrice) * remainingQty,
-                        unrealizedPnLPercent: ((result.executedPrice - p.entryPrice) / p.entryPrice) * 100,
-                      }
-                    : p
-                );
-              }
+          } else if (existingPosition) {
+            const remainingQuantity = existingPosition.quantity - result.quantity;
+            if (remainingQuantity <= 0) {
+              nextPositions = portfolio.positions.filter((position) => position.ticker !== result.ticker);
+            } else {
+              nextPositions = portfolio.positions.map((position) =>
+                position.ticker === result.ticker
+                  ? {
+                      ...position,
+                      quantity: remainingQuantity,
+                      currentPrice: result.executedPrice,
+                      unrealizedPnL: (result.executedPrice - position.entryPrice) * remainingQuantity,
+                      unrealizedPnLPercent: position.entryPrice > 0
+                        ? ((result.executedPrice - position.entryPrice) / position.entryPrice) * 100
+                        : 0,
+                    }
+                  : position
+              );
             }
-            return current;
           }
-        });
-        
-        const tradeValue = result.totalCost;
-        setSelectedPortfolio(prev => {
-          const newCash = type === 'buy' ? prev.cash - tradeValue : prev.cash + tradeValue;
-          const newCurrentValue = prev.currentValue + (type === 'buy' ? -tradeValue : tradeValue);
-          return {
-            ...prev,
-            cash: newCash,
-            currentValue: newCurrentValue,
-          };
-        });
-        
-        setTradeForm({ ticker: "", quantity: "", price: "" });
-        setFeedback({ type: 'success', message: `${type.toUpperCase()} order executed: ${result.quantity} ${result.ticker} @ $${result.executedPrice.toFixed(2)}` });
-        setTimeout(() => setFeedback(null), 3000);
 
-        // Refresh portfolio value
-        await calculateLivePortfolioValue.refetch();
-      } else {
-        alert(`Trade failed: ${result.error}`);
-      }
+          const nextCash = type === "buy"
+            ? portfolio.cash - result.totalCost
+            : portfolio.cash + result.totalCost;
+
+          return {
+            ...portfolio,
+            positions: nextPositions,
+            trades: [newTrade, ...portfolio.trades],
+            cash: nextCash,
+            currentValue: portfolio.currentValue - result.commission,
+          };
+        }),
+      }));
+
+      setTradeForm({ ticker: "", quantity: "", price: "" });
+      setHasManualPriceOverride(false);
+      setFeedback({
+        type: "success",
+        message: `${type.toUpperCase()} order executed for ${result.quantity} ${result.ticker} at ${formatCurrency(result.executedPrice)} using ${getTradePriceSourceLabel(priceSource).toLowerCase()}.`,
+      });
+      setTimeout(() => setFeedback(null), 4000);
+
+      await calculateLivePortfolioValue.refetch();
     } catch (error) {
-      alert(`Trade execution error: ${error instanceof Error ? error.message : "Unknown error"}`);
+      setFeedback({ type: "error", message: error instanceof Error ? error.message : "Trade execution failed." });
     }
   };
 
   const createPortfolio = () => {
-    const newPortfolio: Portfolio = {
-      id: portfolios.length + 1,
-      name: `Portfolio ${portfolios.length + 1}`,
-      initialCapital: 10000,
-      currentValue: 10000,
-      cash: 10000,
-      totalReturn: 0,
-      totalReturnPercent: 0,
-    };
-    setPortfolios((current) => [...current, newPortfolio]);
-    setSelectedPortfolio(newPortfolio);
+    setSimulatorState((current) => {
+      const nextId = current.portfolios.length > 0 ? Math.max(...current.portfolios.map((portfolio) => portfolio.id)) + 1 : 1;
+      const portfolio = createEmptyPortfolio(nextId, `Portfolio ${nextId}`);
+      return {
+        portfolios: [...current.portfolios, portfolio],
+        selectedPortfolioId: portfolio.id,
+      };
+    });
+    setFeedback({ type: "success", message: "New simulator portfolio created. It will now persist in this browser until you reset it." });
   };
 
   const resetPortfolio = () => {
-    if (window.confirm("Reset this simulator portfolio? This cannot be undone.")) {
-      setPositions([]);
-      setTrades([]);
-      setSelectedPortfolio({
-        ...selectedPortfolio,
-        currentValue: selectedPortfolio.initialCapital,
-        cash: selectedPortfolio.initialCapital,
-        totalReturn: 0,
-        totalReturnPercent: 0,
-      });
+    if (!window.confirm("Reset this simulator portfolio? This cannot be undone.")) {
+      return;
     }
+
+    setSimulatorState((current) => ({
+      ...current,
+      portfolios: current.portfolios.map((portfolio) =>
+        portfolio.id === current.selectedPortfolioId
+          ? {
+              ...portfolio,
+              currentValue: portfolio.initialCapital,
+              cash: portfolio.initialCapital,
+              totalReturn: 0,
+              totalReturnPercent: 0,
+              positions: [],
+              trades: [],
+            }
+          : portfolio
+      ),
+    }));
+    setFeedback({ type: "success", message: "The selected simulator portfolio was reset and the cleared state has been saved." });
   };
 
-  const [, setLocation] = useLocation();
+  const priceFieldHint = useMemo(() => {
+    if (!normalizedTicker) {
+      return "Enter a ticker and the latest live price will load automatically when available.";
+    }
+
+    if (livePriceQuery.isLoading) {
+      return `Checking the latest live price for ${normalizedTicker}...`;
+    }
+
+    if (livePriceData) {
+      return `Live price loaded for ${normalizedTicker}: ${formatCurrency(livePriceData.price)} as of ${formatTimestamp(livePriceData.timestamp)}. You can still override it manually if needed.`;
+    }
+
+    return `Live price is unavailable for ${normalizedTicker} right now. Enter a manual fallback price to continue.`;
+  }, [livePriceData, livePriceQuery.isLoading, normalizedTicker]);
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8 page-enter">
@@ -314,10 +386,13 @@ export default function TradingSimulator() {
             Back to dashboard
           </button>
         </div>
+
         <div className="flex items-center justify-between gap-6">
           <div className="space-y-3">
             <h1 className="text-4xl font-bold gradient-text">Trading Simulator</h1>
-            <p className="text-muted-foreground max-w-xl">Practice trading with live market prices</p>
+            <p className="text-muted-foreground max-w-2xl">
+              Practice trades with live market prices when they are available, keep a saved simulator portfolio in this browser, and fall back to a manual price only when live data cannot be reached.
+            </p>
           </div>
           <Button onClick={createPortfolio} className="pill-button pill-button-primary">
             <Plus className="h-4 w-4 mr-2" />
@@ -325,16 +400,24 @@ export default function TradingSimulator() {
           </Button>
         </div>
 
+        {feedback && (
+          <div className={`flex items-start gap-3 rounded-2xl border px-4 py-3 ${feedback.type === "success" ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-100" : "border-rose-500/30 bg-rose-500/10 text-rose-100"}`}>
+            {feedback.type === "success" ? <CheckCircle2 className="h-5 w-5 mt-0.5 shrink-0" /> : <AlertCircle className="h-5 w-5 mt-0.5 shrink-0" />}
+            <p className="text-sm leading-6">{feedback.message}</p>
+          </div>
+        )}
+
         <Card className="premium-card border-0 bg-transparent shadow-none">
           <CardHeader>
             <CardTitle className="text-2xl font-semibold tracking-tight">{selectedPortfolio.name}</CardTitle>
             <CardDescription>
-              {portfolios.length > 1 && (
-                <div className="flex gap-2 mt-2">
-                  {portfolios.map((portfolio) => (
+              Your simulator portfolios now save automatically in this browser. Use <span className="font-medium text-foreground">New Portfolio</span> only when you want a separate paper-trading workspace.
+              {simulatorState.portfolios.length > 1 && (
+                <div className="flex gap-2 mt-3 flex-wrap">
+                  {simulatorState.portfolios.map((portfolio) => (
                     <button
                       key={portfolio.id}
-                      onClick={() => setSelectedPortfolio(portfolio)}
+                      onClick={() => setSimulatorState((current) => ({ ...current, selectedPortfolioId: portfolio.id }))}
                       className={`px-3 py-1 rounded-full text-sm transition ${
                         selectedPortfolio.id === portfolio.id
                           ? "bg-primary text-primary-foreground"
@@ -348,12 +431,12 @@ export default function TradingSimulator() {
               )}
             </CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-6 md:grid-cols-4">
+          <CardContent className="grid gap-6 md:grid-cols-5">
             <div className="metric-card">
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className="metric-label">Portfolio Value</p>
-                  <p className="metric-value">£{selectedPortfolio.currentValue.toLocaleString()}</p>
+                  <p className="metric-value">{formatCurrency(selectedPortfolio.currentValue)}</p>
                 </div>
                 <BarChart3 className="h-5 w-5 text-primary" />
               </div>
@@ -363,7 +446,7 @@ export default function TradingSimulator() {
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className="metric-label">Cash Balance</p>
-                  <p className="metric-value">£{selectedPortfolio.cash.toLocaleString()}</p>
+                  <p className="metric-value">{formatCurrency(selectedPortfolio.cash)}</p>
                 </div>
                 <DollarSign className="h-5 w-5 text-primary" />
               </div>
@@ -374,7 +457,7 @@ export default function TradingSimulator() {
                 <div>
                   <p className="metric-label">Total Return</p>
                   <p className={`metric-value ${selectedPortfolio.totalReturn >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
-                    £{selectedPortfolio.totalReturn.toLocaleString()}
+                    {formatCurrency(selectedPortfolio.totalReturn)}
                   </p>
                 </div>
                 {selectedPortfolio.totalReturn >= 0 ? (
@@ -396,6 +479,16 @@ export default function TradingSimulator() {
                 <Target className="h-5 w-5 text-primary" />
               </div>
             </div>
+
+            <div className="metric-card">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="metric-label">Invested</p>
+                  <p className="metric-value">{formatCurrency(exposure)}</p>
+                </div>
+                <History className="h-5 w-5 text-primary" />
+              </div>
+            </div>
           </CardContent>
         </Card>
 
@@ -403,7 +496,9 @@ export default function TradingSimulator() {
           <Card className="premium-card border-0 bg-transparent shadow-none lg:col-span-2">
             <CardHeader>
               <CardTitle className="text-xl font-semibold tracking-tight">Execute Trade</CardTitle>
-              <CardDescription>Place a buy or sell order with live market prices</CardDescription>
+              <CardDescription>
+                Choose a ticker to auto-load the latest live price. If the live feed is unavailable, you can still enter a manual fallback price and continue.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-3 md:grid-cols-3">
@@ -412,7 +507,7 @@ export default function TradingSimulator() {
                   <Input
                     placeholder="AAPL"
                     value={tradeForm.ticker}
-                    onChange={(e) => setTradeForm({ ...tradeForm, ticker: e.target.value })}
+                    onChange={(e) => handleTickerChange(e.target.value)}
                     className="mt-1"
                   />
                 </div>
@@ -422,21 +517,36 @@ export default function TradingSimulator() {
                     placeholder="10"
                     type="number"
                     value={tradeForm.quantity}
-                    onChange={(e) => setTradeForm({ ...tradeForm, quantity: e.target.value })}
+                    onChange={(e) => setTradeForm((current) => ({ ...current, quantity: e.target.value }))}
                     className="mt-1"
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Price</label>
+                  <div className="flex items-center justify-between gap-2">
+                    <label className="text-sm font-medium">Price</label>
+                    {livePriceData ? (
+                      <Badge variant="secondary" className="text-[11px] uppercase tracking-[0.2em]">
+                        Live auto-fill
+                      </Badge>
+                    ) : livePriceUnavailable ? (
+                      <Badge variant="outline" className="text-[11px] uppercase tracking-[0.2em] border-amber-400/40 text-amber-200">
+                        Manual fallback
+                      </Badge>
+                    ) : null}
+                  </div>
                   <Input
                     placeholder="150.00"
                     type="number"
                     step="0.01"
                     value={tradeForm.price}
-                    onChange={(e) => setTradeForm({ ...tradeForm, price: e.target.value })}
+                    onChange={(e) => handlePriceChange(e.target.value)}
                     className="mt-1"
                   />
                 </div>
+              </div>
+
+              <div className={`rounded-2xl border px-4 py-3 text-sm leading-6 ${livePriceData ? "border-cyan-500/20 bg-cyan-500/10 text-cyan-50" : livePriceUnavailable ? "border-amber-500/20 bg-amber-500/10 text-amber-50" : "border-white/10 bg-white/5 text-muted-foreground"}`}>
+                {priceFieldHint}
               </div>
 
               <div className="flex gap-3">
@@ -456,8 +566,8 @@ export default function TradingSimulator() {
                 </Button>
               </div>
 
-              {calculateLivePortfolioValue.isLoading && (
-                <p className="text-sm text-muted-foreground">Loading live prices...</p>
+              {calculateLivePortfolioValue.isLoading && positions.length > 0 && (
+                <p className="text-sm text-muted-foreground">Refreshing live prices for the current portfolio...</p>
               )}
             </CardContent>
           </Card>
@@ -465,21 +575,21 @@ export default function TradingSimulator() {
           <Card className="premium-card border-0 bg-transparent shadow-none">
             <CardHeader>
               <CardTitle className="text-xl font-semibold tracking-tight">Positions</CardTitle>
-              <CardDescription>{positions.length} open positions</CardDescription>
+              <CardDescription>{positions.length} open positions in this portfolio</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               {positions.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No positions yet. Place a trade to get started.</p>
+                <p className="text-sm text-muted-foreground">No positions yet. Place a trade to start building this portfolio.</p>
               ) : (
                 positions.map((position) => (
                   <div key={position.ticker} className="flex items-center justify-between p-3 rounded-lg bg-secondary/30">
                     <div>
                       <p className="font-semibold">{position.ticker}</p>
-                      <p className="text-sm text-muted-foreground">{position.quantity} shares</p>
+                      <p className="text-sm text-muted-foreground">{position.quantity} shares · Avg {formatCurrency(position.entryPrice)}</p>
                     </div>
                     <div className="text-right">
                       <p className={`font-semibold ${position.unrealizedPnL >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
-                        £{position.unrealizedPnL.toFixed(2)}
+                        {formatCurrency(position.unrealizedPnL)}
                       </p>
                       <p className={`text-sm ${position.unrealizedPnLPercent >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
                         {position.unrealizedPnLPercent.toFixed(2)}%
@@ -494,10 +604,10 @@ export default function TradingSimulator() {
 
         <Card className="premium-card border-0 bg-transparent shadow-none">
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-3">
               <div>
                 <CardTitle className="text-xl font-semibold tracking-tight">Trade History</CardTitle>
-                <CardDescription>{trades.length} total trades</CardDescription>
+                <CardDescription>{trades.length} total trades in this portfolio</CardDescription>
               </div>
               <Button variant="outline" size="sm" onClick={resetPortfolio}>
                 Reset Portfolio
@@ -518,19 +628,20 @@ export default function TradingSimulator() {
                 ) : (
                   <div className="space-y-2">
                     {trades.map((trade) => (
-                      <div key={trade.id} className="flex items-center justify-between p-3 rounded-lg bg-secondary/30">
-                        <div className="flex items-center gap-4">
+                      <div key={trade.id} className="flex items-center justify-between p-3 rounded-lg bg-secondary/30 gap-4">
+                        <div className="flex items-center gap-4 min-w-0">
                           <Badge variant={trade.type === "buy" ? "default" : "secondary"}>
                             {trade.type.toUpperCase()}
                           </Badge>
-                          <div>
+                          <div className="min-w-0">
                             <p className="font-semibold">{trade.ticker}</p>
                             <p className="text-sm text-muted-foreground">{trade.date}</p>
+                            <p className="text-xs text-muted-foreground">{getTradePriceSourceLabel(trade.priceSource)}</p>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="font-semibold">{trade.quantity} @ £{trade.price.toFixed(2)}</p>
-                          <p className="text-sm text-muted-foreground">£{(trade.quantity * trade.price).toFixed(2)}</p>
+                        <div className="text-right shrink-0">
+                          <p className="font-semibold">{trade.quantity} @ {formatCurrency(trade.price)}</p>
+                          <p className="text-sm text-muted-foreground">{formatCurrency(trade.quantity * trade.price)}</p>
                         </div>
                       </div>
                     ))}
