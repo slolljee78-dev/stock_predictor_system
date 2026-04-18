@@ -1,0 +1,3 @@
+# Active Domain Audit Notes
+
+On 2026-04-18, the active domain `https://vortextrade.manus.space` and the `/dashboard` route were opened in the browser. Both rendered the public landing page in this browser session rather than the authenticated dashboard view. This means the currently visible mobile dashboard state reported by the user cannot be verified directly from this browser without an authenticated session, and it also suggests the issue may involve either cached mobile UI, an authenticated-only route state, or a mismatch between the checked checkpoint and the currently published experience.
