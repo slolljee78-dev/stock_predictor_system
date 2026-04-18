@@ -296,8 +296,8 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
       </Sidebar>
 
       <SidebarInset className="bg-transparent">
-        <div className="sticky top-0 z-40 px-3 pt-0 md:px-4 md:pt-0 bg-background/95 backdrop-blur-sm border-b border-border/50">
-          <div className="dashboard-frame flex min-h-14 items-center justify-between gap-2 px-3 py-1.5 md:px-6 md:py-2">
+        <div className="sticky top-0 z-40 -mt-2 px-2 pt-0 md:mt-0 md:px-4 md:pt-0 bg-background/95 backdrop-blur-sm border-b border-border/50">
+          <div className="dashboard-frame flex min-h-[72px] items-center justify-between gap-2 px-3 py-2 md:min-h-14 md:px-6 md:py-2">
             <div className="flex items-center gap-3 min-w-0">
               <div className="flex items-center gap-2 rounded-2xl border border-primary/40 bg-primary/10 px-2 py-1.5 shadow-md shadow-primary/10">
                 <SidebarTrigger title="Open menu" className="h-10 w-10 rounded-xl border-2 border-primary bg-primary/25 hover:bg-primary/35 flex items-center justify-center text-primary shadow-md hover:shadow-lg transition-all" />
@@ -306,20 +306,20 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                   <p className="text-xs text-muted-foreground">Open workspace</p>
                 </div>
               </div>
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <p className="text-lg md:text-xl font-semibold tracking-tight truncate">{activeMenuItem.label}</p>
+                  <p className="text-base font-semibold leading-tight md:text-xl md:tracking-tight truncate">{activeMenuItem.label}</p>
                   {!isMobile && (
                     <Badge variant="secondary" className="rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em]">
                       Premium workspace
                     </Badge>
                   )}
                 </div>
-                <p className="text-sm text-muted-foreground truncate">{activeMenuItem.description}</p>
+                <p className="line-clamp-2 text-xs leading-snug text-muted-foreground md:truncate md:text-sm">{activeMenuItem.description}</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-1 md:gap-2">
+            <div className="flex shrink-0 items-center gap-1 md:gap-2">
               {!isMobile && (
                 <div className="hidden lg:flex items-center gap-2 rounded-full border border-border/70 bg-background/40 px-3 py-2 text-sm text-muted-foreground">
                   <BellRing className="h-4 w-4 text-primary" />
@@ -332,7 +332,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
           </div>
         </div>
 
-        <main className="container py-3 md:py-6 lg:py-8">
+        <main className="container pt-2 pb-3 md:py-6 lg:py-8">
           {children}
         </main>
       </SidebarInset>

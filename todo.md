@@ -436,5 +436,12 @@
 - [x] Add more left padding/edge spacing to Alert Preferences on mobile
 - [x] Fix notification center page visibility in the mobile dashboard menu
 - [x] Run targeted verification for mobile spacing and menu visibility fixes
-- [ ] Save checkpoint after spacing and menu visibility fixes
+- [x] Save checkpoint after spacing and menu visibility fixes
+
+
+## User Reported Regression Fixes - Dashboard Header Final Pass
+- [x] Reduce the remaining empty space above the mobile Overview banner
+- [x] Resize the mobile Overview banner so the full description text is visible
+- [x] Run focused verification for the mobile dashboard header final pass
+- [ ] Save checkpoint after the mobile dashboard header final pass
 
