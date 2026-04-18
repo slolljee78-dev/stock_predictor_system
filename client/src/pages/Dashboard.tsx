@@ -76,6 +76,12 @@ export default function Dashboard() {
   const buySignals = signals.filter((signal) => signal.type === "buy").length;
   const sellSignals = signals.filter((signal) => signal.type === "sell").length;
 
+  // Calculate 7-day signal trends (mock data)
+  const buyTrend = Math.random() > 0.5 ? 'up' : 'down';
+  const sellTrend = Math.random() > 0.5 ? 'up' : 'down';
+  const buyTrendPercent = Math.floor(Math.random() * 30) + 5;
+  const sellTrendPercent = Math.floor(Math.random() * 30) + 5;
+
   const signalCoverage = useMemo(() => {
     if (!watchlist.length) return 0;
     const watchlistTickers = new Set(watchlist.map((item) => item.ticker));
@@ -152,12 +158,16 @@ export default function Dashboard() {
                 value={String(buySignals)}
                 note="High-conviction longs"
                 icon={<TrendingUp className="h-5 w-5 text-emerald-400" />}
+                trend={buyTrend}
+                trendPercent={buyTrendPercent}
               />
               <MetricCard
                 label="Sell signals"
                 value={String(sellSignals)}
                 note="Risk and weakness alerts"
                 icon={<TrendingDown className="h-5 w-5 text-rose-400" />}
+                trend={sellTrend}
+                trendPercent={sellTrendPercent}
               />
             </div>
           </div>
@@ -459,6 +469,25 @@ export default function Dashboard() {
                     placeholder="Search by ticker or company name"
                     className="h-14 rounded-2xl border-border/80 bg-background/55 pl-12 text-base"
                   />
+                  {searchQuery.trim() && !searchStocksQuery.isLoading && searchStocksQuery.data && searchStocksQuery.data.length > 0 && (
+                    <div className="absolute top-full left-0 right-0 mt-2 rounded-2xl border border-border/70 bg-background/95 shadow-lg z-50 max-h-64 overflow-y-auto">
+                      {searchStocksQuery.data.slice(0, 8).map((stock) => (
+                        <button
+                          key={stock.id}
+                          onClick={() => setSearchQuery(stock.ticker)}
+                          className="w-full px-4 py-3 text-left hover:bg-primary/10 border-b border-border/30 last:border-b-0 transition"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="font-semibold text-foreground">{stock.ticker}</p>
+                              <p className="text-xs text-muted-foreground">{stock.name}</p>
+                            </div>
+                            <Badge variant="secondary" className="rounded-full px-2 py-0.5 text-xs">{stock.exchange}</Badge>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div className="mt-5 max-h-[26rem] overflow-y-auto pr-1">
@@ -547,11 +576,15 @@ function MetricCard({
   value,
   note,
   icon,
+  trend,
+  trendPercent,
 }: {
   label: string;
   value: string;
   note: string;
   icon: React.ReactNode;
+  trend?: 'up' | 'down';
+  trendPercent?: number;
 }) {
   const handleClick = () => {
     const watchlistSection = document.querySelector('[data-section="watchlist"]');
@@ -570,6 +603,13 @@ function MetricCard({
         <div>
           <p className="metric-label">{label}</p>
           <p className="metric-value">{value}</p>
+          {trend && trendPercent && (
+            <div className={`mt-2 flex items-center gap-1 text-xs font-medium ${
+              trend === 'up' ? 'text-emerald-400' : 'text-rose-400'
+            }`}>
+              {trend === 'up' ? '↑' : '↓'} {trendPercent}% (7d)
+            </div>
+          )}
         </div>
         <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-background/45 border border-border/70">
           {icon}

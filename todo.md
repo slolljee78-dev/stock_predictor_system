@@ -1,5 +1,10 @@
 # Stock Predictor System - Project TODO
 
+## Priority Features - Next Phase
+- [x] Add Signal Trend Indicators - Show 7-day signal performance trend (↑ more buy signals, ↓ more sell signals) next to each metric card
+- [x] Implement Stock Search Autocomplete - Add dropdown with recent/popular stocks when typing in add-stock search field
+- [x] Create Alert Notification Center - Build dedicated notifications page showing signal alerts history with filters (by stock, signal type, date range)
+
 ## Phase 1: Core Trading Platform
 - [x] Design database schema (users, stocks, watchlists, signals, trades)
 - [x] Set up tRPC API infrastructure

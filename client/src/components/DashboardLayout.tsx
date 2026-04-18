@@ -87,6 +87,12 @@ const menuItems = [
     path: "/alert-preferences",
     description: "Customize alert thresholds and channels",
   },
+  {
+    icon: BellRing,
+    label: "Notifications",
+    path: "/alerts",
+    description: "View signal alerts history and delivery status",
+  },
 ];
 
 export default function DashboardLayout({
