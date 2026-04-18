@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MobileMenuDrawer } from "@/components/MobileMenuDrawer";
+import { PublicSiteHeader } from "@/components/PublicSiteHeader";
 import { getLoginUrl } from "@/const";
 import { useAuth } from "@/_core/hooks/useAuth";
 import {
@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useLocation } from "wouter";
+import { getPublicAudienceState, getPublicPrimaryAction } from "@/lib/publicSite";
 
 type FAQItem = {
   id: string;
@@ -153,6 +154,7 @@ export default function FAQ() {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeCategory, setActiveCategory] = useState("All questions");
   const [openItemIds, setOpenItemIds] = useState<string[]>(faqItems.filter((item) => item.featured).map((item) => item.id));
+  const productAction = getPublicPrimaryAction(getPublicAudienceState(isAuthenticated), "header");
 
   const filteredItems = useMemo(() => {
     return faqItems.filter((item) => {
@@ -181,53 +183,7 @@ export default function FAQ() {
       <div className="hero-orb left-[-8rem] top-[-3rem] h-72 w-72 bg-primary/35" />
       <div className="hero-orb right-[-7rem] top-24 h-80 w-80 bg-accent/25" />
 
-      <header className="sticky top-0 z-50 border-b border-border/70 bg-background/70 backdrop-blur-xl">
-        <div className="container flex items-center justify-between gap-2 py-4 px-4 md:px-6 max-w-full">
-          <button
-            onClick={() => setLocation("/")}
-            className="flex min-w-0 flex-1 items-center gap-3 text-left transition-opacity hover:opacity-80"
-          >
-            <div className="flex h-11 w-11 items-center justify-center rounded-lg text-primary">
-              <LineChart className="h-6 w-6" />
-            </div>
-            <div className="hidden min-w-0 sm:block">
-              <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-primary/90">Stock Predictor</p>
-              <p className="truncate text-sm text-muted-foreground">Premium AI signals for Trading 212</p>
-            </div>
-          </button>
-
-          <div className="hidden items-center gap-8 text-sm text-muted-foreground lg:flex">
-            <a href="/#features" className="transition hover:text-foreground">Features</a>
-            <a href="/#workflow" className="transition hover:text-foreground">How it works</a>
-            <a href="/#demo" className="transition hover:text-foreground">Platform tour</a>
-            <a href="/pricing" className="transition hover:text-foreground">Pricing</a>
-            <a href="/faq" className="text-foreground">FAQ</a>
-          </div>
-
-          <div className="flex items-center gap-2 md:hidden">
-            <MobileMenuDrawer />
-          </div>
-
-          <div className="hidden items-center gap-2 md:flex">
-            {isAuthenticated ? (
-              <Button
-                onClick={() => setLocation("/dashboard")}
-                className="pill-button pill-button-primary h-10 px-4 text-xs sm:h-12 sm:px-5 sm:text-sm md:text-base"
-              >
-                Open dashboard
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            ) : (
-              <Button asChild className="pill-button pill-button-primary h-10 px-4 text-xs sm:h-12 sm:px-5 sm:text-sm md:text-base">
-                <a href={getLoginUrl()}>
-                  Sign in
-                  <ArrowRight className="h-4 w-4" />
-                </a>
-              </Button>
-            )}
-          </div>
-        </div>
-      </header>
+      <PublicSiteHeader currentPath="/faq" />
 
       <main className="focus:outline-none">
         <section className="relative overflow-hidden pt-0">
@@ -362,17 +318,24 @@ export default function FAQ() {
               </button>
               <button
                 type="button"
-                onClick={() => setLocation(isAuthenticated ? "/dashboard" : "/")}
+                onClick={() => {
+                  if (productAction.target === "dashboard") {
+                    setLocation("/dashboard");
+                    return;
+                  }
+
+                  window.location.href = getLoginUrl();
+                }}
                 className="premium-card p-6 text-left transition hover:border-primary/25 hover:shadow-[0_18px_40px_rgba(59,130,246,0.14)]"
               >
                 <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/15 text-primary">
                   <ArrowRight className="h-5 w-5" />
                 </div>
-                <h3 className="text-xl font-semibold tracking-tight">Go to the product</h3>
+                <h3 className="text-xl font-semibold tracking-tight">{productAction.label}</h3>
                 <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                  {isAuthenticated
+                  {productAction.target === "dashboard"
                     ? "Return to your dashboard and continue your current workflow."
-                    : "Return to the homepage and enter the workflow when you are ready to start."}
+                    : "Sign in and move directly into your signal workspace when you are ready to start."}
                 </p>
               </button>
             </div>

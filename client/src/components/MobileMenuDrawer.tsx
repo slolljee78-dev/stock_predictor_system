@@ -1,18 +1,6 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useLocation } from "wouter";
-import {
-  ChevronRight,
-  CircleHelp,
-  Crown,
-  Gauge,
-  Home,
-  LayoutDashboard,
-  LineChart,
-  ShieldCheck,
-  Sparkles,
-  Waves,
-  X,
-} from "lucide-react";
+import { ArrowRight, ChevronRight, Gauge, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -22,73 +10,29 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-
-type MenuItem = {
-  label: string;
-  href: string;
-  description: string;
-  icon: typeof LayoutDashboard;
-  accent: string;
-};
-
-const MENU_ITEMS: MenuItem[] = [
-  {
-    label: "Dashboard",
-    href: "/dashboard",
-    description: "Signals, watchlists, and daily market workflow.",
-    icon: LayoutDashboard,
-    accent: "from-sky-500/30 to-blue-500/10",
-  },
-  {
-    label: "Signals",
-    href: "/signals",
-    description: "Review live trade ideas and signal confidence.",
-    icon: Waves,
-    accent: "from-cyan-500/25 to-sky-500/10",
-  },
-  {
-    label: "Trading Simulator",
-    href: "/simulator",
-    description: "Pressure-test setups before acting with capital.",
-    icon: LineChart,
-    accent: "from-emerald-500/25 to-cyan-500/10",
-  },
-  {
-    label: "Validation",
-    href: "/validation/dashboard",
-    description: "Track live validation progress and outcomes.",
-    icon: ShieldCheck,
-    accent: "from-violet-500/25 to-blue-500/10",
-  },
-  {
-    label: "Pricing",
-    href: "/pricing",
-    description: "Compare premium tiers and feature access.",
-    icon: Crown,
-    accent: "from-amber-400/25 to-sky-500/10",
-  },
-  {
-    label: "FAQ",
-    href: "/faq",
-    description: "Answers on the product and workflow.",
-    icon: CircleHelp,
-    accent: "from-fuchsia-500/20 to-sky-500/10",
-  },
-  {
-    label: "Home",
-    href: "/",
-    description: "Return to the landing page overview.",
-    icon: Home,
-    accent: "from-slate-400/20 to-sky-500/10",
-  },
-];
+import { getLoginUrl } from "@/const";
+import { useAuth } from "@/_core/hooks/useAuth";
+import {
+  getPublicAudienceState,
+  getPublicPrimaryAction,
+  isHashNavigation,
+  PUBLIC_MOBILE_NAV_SECTIONS,
+} from "@/lib/publicSite";
 
 export function MobileMenuDrawer() {
   const [, setLocation] = useLocation();
+  const { isAuthenticated } = useAuth();
   const [open, setOpen] = useState(false);
+  const audienceState = getPublicAudienceState(isAuthenticated);
+  const primaryAction = getPublicPrimaryAction(audienceState, "header");
 
   const handleNavigate = (href: string) => {
-    setLocation(href);
+    if (isHashNavigation(href)) {
+      window.location.href = href;
+    } else {
+      setLocation(href);
+    }
+
     setOpen(false);
   };
 
@@ -121,7 +65,7 @@ export function MobileMenuDrawer() {
                     Navigate the platform
                   </SheetTitle>
                   <SheetDescription className="mt-2 max-w-[26ch] text-sm leading-6 text-slate-300">
-                    Move between signals, simulator, validation, plans, and your dashboard without leaving the premium workflow.
+                    Move through the product story, pricing, FAQ, and your dashboard with the same navigation pattern used across the public site.
                   </SheetDescription>
                 </div>
               </div>
@@ -138,30 +82,69 @@ export function MobileMenuDrawer() {
             </div>
           </SheetHeader>
 
-          <nav className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
-            {MENU_ITEMS.map((item) => {
-              const Icon = item.icon;
-              return (
-                <button
-                  key={item.href}
-                  type="button"
-                  onClick={() => handleNavigate(item.href)}
-                  className="group flex w-full items-center gap-4 rounded-[1.5rem] border border-white/8 bg-white/[0.03] px-4 py-4 text-left transition-all hover:border-primary/25 hover:bg-white/[0.06] hover:shadow-[0_18px_38px_rgba(14,165,233,0.12)]"
-                >
-                  <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-gradient-to-br ${item.accent} text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]`}>
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="truncate text-base font-semibold text-white">{item.label}</p>
-                      <ChevronRight className="h-4 w-4 shrink-0 text-slate-500 transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
-                    </div>
-                    <p className="mt-1 line-clamp-2 text-sm leading-5 text-slate-400">{item.description}</p>
-                  </div>
-                </button>
-              );
-            })}
+          <nav className="flex-1 space-y-6 overflow-y-auto px-4 py-4">
+            {PUBLIC_MOBILE_NAV_SECTIONS.map((section) => (
+              <div key={section.title} className="space-y-3">
+                <p className="px-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                  {section.title}
+                </p>
+                <div className="space-y-3">
+                  {section.items.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <button
+                        key={item.href}
+                        type="button"
+                        onClick={() => handleNavigate(item.href)}
+                        className="group flex w-full items-center gap-4 rounded-[1.5rem] border border-white/8 bg-white/[0.03] px-4 py-4 text-left transition-all hover:border-primary/25 hover:bg-white/[0.06] hover:shadow-[0_18px_38px_rgba(14,165,233,0.12)]"
+                      >
+                        <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-gradient-to-br ${item.accent} text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]`}>
+                          <Icon className="h-5 w-5" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between gap-3">
+                            <p className="truncate text-base font-semibold text-white">{item.label}</p>
+                            <ChevronRight className="h-4 w-4 shrink-0 text-slate-500 transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
+                          </div>
+                          <p className="mt-1 line-clamp-2 text-sm leading-5 text-slate-400">{item.description}</p>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </nav>
+
+          <div className="border-t border-white/8 px-4 pb-5 pt-4">
+            <div className="rounded-[1.5rem] border border-white/8 bg-white/[0.03] p-4">
+              <p className="text-sm font-semibold text-white">Next step</p>
+              <p className="mt-2 text-sm leading-6 text-slate-300">
+                {primaryAction.target === "dashboard"
+                  ? "Return to your dashboard and continue your trading workflow."
+                  : "Sign in to unlock your signal workspace, watchlists, and validation tools."}
+              </p>
+              <div className="mt-4">
+                {primaryAction.target === "dashboard" ? (
+                  <Button
+                    type="button"
+                    onClick={() => handleNavigate("/dashboard")}
+                    className="pill-button pill-button-primary h-12 w-full"
+                  >
+                    {primaryAction.label}
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                ) : (
+                  <Button asChild className="pill-button pill-button-primary h-12 w-full">
+                    <a href={getLoginUrl()} onClick={() => setOpen(false)}>
+                      {primaryAction.label}
+                      <ArrowRight className="h-4 w-4" />
+                    </a>
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </SheetContent>
     </Sheet>

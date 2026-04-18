@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { getLoginUrl } from "@/const";
 import { useAuth } from "@/_core/hooks/useAuth";
 import {
   ArrowRight,
@@ -16,7 +15,9 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { useLocation } from "wouter";
-import { MobileMenuDrawer } from "@/components/MobileMenuDrawer";
+import { PublicSiteHeader } from "@/components/PublicSiteHeader";
+import { getPublicAudienceState, getPublicPrimaryAction } from "@/lib/publicSite";
+import { getLoginUrl } from "@/const";
 
 const featureCards = [
   {
@@ -67,6 +68,7 @@ const workflowSteps = [
 export default function Home() {
   const { isAuthenticated, loading } = useAuth();
   const [, setLocation] = useLocation();
+  const heroPrimaryAction = getPublicPrimaryAction(getPublicAudienceState(isAuthenticated), "hero");
 
   if (loading) {
     return (
@@ -84,54 +86,7 @@ export default function Home() {
       <div className="hero-orb left-[-8rem] top-[-4rem] h-72 w-72 bg-primary/35" />
       <div className="hero-orb right-[-7rem] top-24 h-80 w-80 bg-accent/25" />
 
-      <header className="sticky top-0 z-50 border-b border-border/70 bg-background/70 backdrop-blur-xl">
-        <div className="container flex items-center justify-between gap-2 py-4 px-4 md:px-6 max-w-full">
-          <button
-            onClick={() => setLocation("/")}
-            className="flex items-center gap-3 text-left flex-1 min-w-0 hover:opacity-80 transition-opacity"
-          >
-            <div className="flex h-11 w-11 items-center justify-center rounded-lg text-primary flex-shrink-0">
-              <LineChart className="h-6 w-6" />
-            </div>
-            <div className="hidden sm:block min-w-0">
-              <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-primary/90">Stock Predictor</p>
-              <p className="text-sm text-muted-foreground truncate">Premium AI signals for Trading 212</p>
-            </div>
-          </button>
-
-          <div className="hidden items-center gap-8 text-sm text-muted-foreground lg:flex">
-            <a href="#features" className="transition hover:text-foreground">Features</a>
-            <a href="#workflow" className="transition hover:text-foreground">How it works</a>
-            <a href="#demo" className="transition hover:text-foreground">Platform tour</a>
-            <a href="#pricing" className="transition hover:text-foreground">Pricing</a>
-            <a href="/faq" className="transition hover:text-foreground">FAQ</a>
-          </div>
-
-          <div className="flex items-center gap-2 flex-shrink-0 md:hidden">
-            <MobileMenuDrawer />
-          </div>
-
-          <div className="hidden md:flex items-center gap-2 flex-shrink-0">
-            {isAuthenticated ? (
-              <Button
-                onClick={() => setLocation("/dashboard")}
-                className="pill-button pill-button-primary h-10 px-4 text-xs sm:h-12 sm:px-5 sm:text-sm md:text-base whitespace-nowrap"
-              >
-                <span className="hidden sm:inline">Open dashboard</span>
-                <span className="sm:hidden">Dashboard</span>
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            ) : (
-              <Button asChild className="pill-button pill-button-primary h-10 px-4 text-xs sm:h-12 sm:px-5 sm:text-sm md:text-base whitespace-nowrap">
-                <a href={getLoginUrl()}>
-                  Sign in
-                  <ArrowRight className="h-4 w-4" />
-                </a>
-              </Button>
-            )}
-          </div>
-        </div>
-      </header>
+      <PublicSiteHeader currentPath="/" />
 
       <main className="focus:outline-none">
         <section className="relative overflow-hidden pt-0">
@@ -158,19 +113,19 @@ export default function Home() {
                 </div>
 
                 <div className="flex flex-col gap-4 sm:flex-row">
-                  {isAuthenticated ? (
+                  {heroPrimaryAction.target === "dashboard" ? (
                     <Button
                       onClick={() => setLocation("/dashboard")}
                       size="lg"
                       className="pill-button pill-button-primary h-14 px-7 text-base"
                     >
-                      Go to my dashboard
+                      {heroPrimaryAction.label}
                       <ArrowRight className="h-4 w-4" />
                     </Button>
                   ) : (
                     <Button asChild size="lg" className="pill-button pill-button-primary h-14 px-7 text-base">
                       <a href={getLoginUrl()}>
-                        Start 7-day free trial
+                        {heroPrimaryAction.label}
                         <ArrowRight className="h-4 w-4" />
                       </a>
                     </Button>

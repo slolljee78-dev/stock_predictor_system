@@ -1,0 +1,47 @@
+/** @vitest-environment jsdom */
+
+import React from "react";
+import { render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+
+const setLocation = vi.fn();
+const authState = {
+  isAuthenticated: false,
+};
+
+vi.mock("@/const", () => ({
+  getLoginUrl: () => "/mock-login",
+}));
+
+vi.mock("@/_core/hooks/useAuth", () => ({
+  useAuth: () => authState,
+}));
+
+vi.mock("wouter", () => ({
+  useLocation: () => ["/pricing", setLocation],
+}));
+
+describe("PublicSiteHeader", () => {
+  afterEach(() => {
+    setLocation.mockReset();
+    authState.isAuthenticated = false;
+  });
+
+  it("shows the visitor sign-in CTA on public pages", async () => {
+    const { PublicSiteHeader } = await import("../client/src/components/PublicSiteHeader.tsx");
+
+    render(React.createElement(PublicSiteHeader, { currentPath: "/pricing" }));
+
+    expect(screen.getByRole("link", { name: /sign in/i }).getAttribute("href")).toBe("/mock-login");
+    expect(screen.getAllByText("Pricing").length).toBeGreaterThan(0);
+  });
+
+  it("shows the member dashboard CTA when the user is authenticated", async () => {
+    authState.isAuthenticated = true;
+    const { PublicSiteHeader } = await import("../client/src/components/PublicSiteHeader.tsx");
+
+    render(React.createElement(PublicSiteHeader, { currentPath: "/faq" }));
+
+    expect(screen.getByRole("button", { name: /open dashboard/i })).not.toBeNull();
+  });
+});

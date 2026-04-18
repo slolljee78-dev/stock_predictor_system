@@ -12,6 +12,7 @@ import { getQuickAddStockSelection } from "@/pages/dashboard.helpers";
 import { trpc } from "@/lib/trpc";
 import { getLoginUrl } from "@/const";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { getPublicPrimaryAction } from "@/lib/publicSite";
 import {
   ArrowRight,
   BellRing,
@@ -36,6 +37,7 @@ export default function Dashboard() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const utils = trpc.useUtils();
+  const dashboardGateAction = getPublicPrimaryAction("visitor", "dashboard_gate");
 
   const [isAddStockOpen, setIsAddStockOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -154,7 +156,7 @@ export default function Dashboard() {
               <div className="flex flex-col gap-3 sm:flex-row">
                 <Button asChild className="pill-button pill-button-primary h-12 px-6">
                   <a href={getLoginUrl()}>
-                    Sign in to continue
+                    {dashboardGateAction.label}
                     <ArrowRight className="h-4 w-4" />
                   </a>
                 </Button>

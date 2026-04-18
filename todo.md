@@ -485,5 +485,17 @@
 - [x] Create a clear gated entry state for direct dashboard visits by unauthenticated users
 - [x] Standardize mobile public navigation and internal header behavior where still inconsistent
 - [x] Run focused verification for the improved public and app-entry UX flows
-- [ ] Save checkpoint after the audit-driven UX and design improvement pass
+- [x] Save checkpoint after the audit-driven UX and design improvement pass
 
+
+## Post-Audit Backlog Prioritization Request
+- [x] Review the audit findings and current product state for remaining follow-up opportunities
+- [x] Classify remaining work into critical next fixes, worthwhile improvements, and optional enhancements
+- [x] Deliver a prioritized post-audit backlog with rationale for each priority tier
+
+## Critical Next Fixes Pass
+- [x] Stabilize CTA logic by audience state across homepage, pricing, FAQ, and dashboard-entry flows
+- [x] Formalize shared public/mobile header and navigation patterns to reduce future regressions
+- [x] Add focused regression tests for the shared CTA and header/navigation behavior
+- [x] Run focused verification for the critical next-fix pass
+- [ ] Save checkpoint after completing the critical next-fix pass
