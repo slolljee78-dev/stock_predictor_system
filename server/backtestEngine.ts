@@ -6,6 +6,99 @@
 import { MarketData } from "./realMarketDataFetcher";
 import { calculateAllIndicators } from "./indicators";
 
+/**
+ * Generate buy/sell signals based on technical indicators for backtesting
+ */
+function generateBacktestSignal(
+  indicators: any,
+  currentPrice: number
+): { type: "BUY" | "SELL" | "HOLD"; confidence: number } {
+  let signalType: "BUY" | "SELL" | "HOLD" = "HOLD";
+  let confidence = 0;
+  let signalCount = 0;
+  let buySignals = 0;
+  let sellSignals = 0;
+
+  // RSI Analysis (14-period)
+  if (indicators.rsi14 !== undefined && indicators.rsi14 !== null) {
+    signalCount++;
+    if (indicators.rsi14 < 30) {
+      buySignals++;
+      confidence += 40;
+    } else if (indicators.rsi14 > 70) {
+      sellSignals++;
+      confidence += 40;
+    } else if (indicators.rsi14 < 50) {
+      buySignals++;
+      confidence += 20;
+    } else {
+      sellSignals++;
+      confidence += 20;
+    }
+  }
+
+  // MACD Analysis
+  if (indicators.macd !== undefined && indicators.macdSignal !== undefined) {
+    signalCount++;
+    const macdHistogram = indicators.macd - indicators.macdSignal;
+    if (macdHistogram > 0 && indicators.macd > 0) {
+      buySignals++;
+      confidence += 30;
+    } else if (macdHistogram < 0 && indicators.macd < 0) {
+      sellSignals++;
+      confidence += 30;
+    } else if (macdHistogram > 0) {
+      buySignals++;
+      confidence += 25;
+    } else {
+      sellSignals++;
+      confidence += 25;
+    }
+  }
+
+  // SMA Analysis
+  if (indicators.sma20 !== undefined && indicators.sma50 !== undefined) {
+    signalCount++;
+    if (currentPrice > indicators.sma20 && indicators.sma20 > indicators.sma50) {
+      buySignals++;
+      confidence += 25;
+    } else if (currentPrice < indicators.sma20 && indicators.sma20 < indicators.sma50) {
+      sellSignals++;
+      confidence += 25;
+    }
+  }
+
+  // Bollinger Bands Analysis
+  if (indicators.bbUpper !== undefined && indicators.bbLower !== undefined) {
+    signalCount++;
+    const bbMiddle = (indicators.bbUpper + indicators.bbLower) / 2;
+    if (currentPrice < indicators.bbLower) {
+      buySignals++;
+      confidence += 20;
+    } else if (currentPrice > indicators.bbUpper) {
+      sellSignals++;
+      confidence += 20;
+    }
+  }
+
+  // Determine final signal
+  if (buySignals > sellSignals) {
+    signalType = "BUY";
+  } else if (sellSignals > buySignals) {
+    signalType = "SELL";
+  } else {
+    signalType = "HOLD";
+  }
+
+  // Normalize confidence
+  const normalizedConfidence = signalCount > 0 ? Math.min(100, Math.round((confidence / signalCount) * 1.2)) : 0;
+
+  return {
+    type: signalType,
+    confidence: normalizedConfidence,
+  };
+}
+
 export interface BacktestTrade {
   entryTime: Date;
   entryPrice: number;
@@ -68,8 +161,8 @@ export async function runBacktestSimulation(
     }));
     const indicators = calculateAllIndicators(pricePoints);
 
-    // Generate signal (simplified for backtest)
-    const signal = { type: "BUY" as const, confidence: Math.random() * 100 };
+    // Generate signal based on technical indicators
+    const signal = generateBacktestSignal(indicators, nextCandle.close);
 
     // Check if we should enter or exit
     if (!position && signal.type === "BUY" && signal.confidence > 60) {

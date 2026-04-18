@@ -361,3 +361,11 @@
 - [x] Add menu items to DashboardLayout for both pages
 - [x] Verify pages render without 404 errors
 - [x] Test navigation from dashboard menu
+
+
+## Audit Fixes - Critical Issues Resolved
+- [x] Fix backtestEngine.ts - Implement real signal generation based on technical indicators (RSI, MACD, SMA, BB)
+- [x] Fix liveSimulator.ts - Correct P&L calculation formula (was always 0, now sums unrealizedPnL)
+- [x] Fix backtestRouter.ts - Use real backtest engine instead of mock data, generate realistic historical data
+- [x] Fix TradingSimulator.tsx - Update positions after trades, calculate average price for multiple entries
+- [x] Add feedback display to Trading Simulator UI - Success/error messages with auto-dismiss

@@ -9,6 +9,45 @@ import { runBacktestSimulation } from '../backtestEngine';
 import { getDb } from '../db';
 import { backtestRuns, backtestTrades } from '../../drizzle/schema';
 import { eq, and } from 'drizzle-orm';
+import { MarketData } from '../realMarketDataFetcher';
+
+/**
+ * Generate sample historical data for backtesting
+ * In production, this would fetch real historical OHLCV data from an API
+ */
+function generateSampleHistoricalData(startDate: Date, endDate: Date): MarketData[] {
+  const data: MarketData[] = [];
+  const current = new Date(startDate);
+  let price = 100; // Starting price
+
+  while (current < endDate) {
+    // Skip weekends
+    if (current.getDay() !== 0 && current.getDay() !== 6) {
+      // Generate realistic OHLCV data with trend
+      const dailyChange = (Math.random() - 0.48) * 4; // Slight upward bias
+      const open = price;
+      const close = price * (1 + dailyChange / 100);
+      const high = Math.max(open, close) * (1 + Math.random() * 0.01);
+      const low = Math.min(open, close) * (1 - Math.random() * 0.01);
+      const volume = Math.floor(Math.random() * 5000000) + 1000000;
+
+      data.push({
+        timestamp: new Date(current),
+        open,
+        high,
+        low,
+        close,
+        volume,
+      });
+
+      price = close;
+    }
+
+    current.setDate(current.getDate() + 1);
+  }
+
+  return data;
+}
 
 export const backtestRouter = router({
   /**
@@ -80,7 +119,8 @@ export const backtestRouter = router({
       const runs = await db
         .select()
         .from(backtestRuns)
-        .where(and(eq(backtestRuns.id, input.backtestId), eq(backtestRuns.userId, userId)));
+        .where(and(eq(backtestRuns.id, input.backtestId), eq(backtestRuns.userId, userId)))
+        .limit(1);
 
       if (runs.length === 0) {
         throw new Error('Backtest not found');
@@ -95,20 +135,19 @@ export const backtestRouter = router({
         .where(eq(backtestTrades.backtestRunId, input.backtestId));
 
       return {
-        backtest: run,
+        run,
         trades,
-        status: run.status,
       };
     }),
 
   /**
-   * List all backtests for user
+   * List all backtests for the current user
    */
   listBacktests: protectedProcedure
     .input(
       z.object({
-        limit: z.number().default(10),
-        offset: z.number().default(0),
+        limit: z.number().int().positive().default(20),
+        offset: z.number().int().nonnegative().default(0),
       })
     )
     .query(async ({ ctx, input }) => {
@@ -120,7 +159,6 @@ export const backtestRouter = router({
         .select()
         .from(backtestRuns)
         .where(eq(backtestRuns.userId, userId))
-        .orderBy(backtestRuns.createdAt)
         .limit(input.limit)
         .offset(input.offset);
 
@@ -141,13 +179,17 @@ export const backtestRouter = router({
       const runs = await db
         .select()
         .from(backtestRuns)
-        .where(and(eq(backtestRuns.id, input.backtestId), eq(backtestRuns.userId, userId)));
+        .where(and(eq(backtestRuns.id, input.backtestId), eq(backtestRuns.userId, userId)))
+        .limit(1);
 
       if (runs.length === 0) {
         throw new Error('Backtest not found');
       }
 
-      // Delete backtest (cascades to trades)
+      // Delete trades first
+      await db.delete(backtestTrades).where(eq(backtestTrades.backtestRunId, input.backtestId));
+
+      // Delete backtest run
       await db.delete(backtestRuns).where(eq(backtestRuns.id, input.backtestId));
 
       return { success: true };
@@ -157,7 +199,11 @@ export const backtestRouter = router({
    * Compare multiple backtests
    */
   compareBacktests: protectedProcedure
-    .input(z.object({ backtestIds: z.array(z.number()) }))
+    .input(
+      z.object({
+        backtestIds: z.array(z.number()).min(2).max(5),
+      })
+    )
     .query(async ({ ctx, input }) => {
       const userId = ctx.user.id;
       const db = await getDb();
@@ -166,20 +212,15 @@ export const backtestRouter = router({
       const runs = await db
         .select()
         .from(backtestRuns)
-        .where(eq(backtestRuns.userId, userId));
+        .where(and(eq(backtestRuns.userId, userId)));
 
-      // Filter to only requested backtests
-      const filteredRuns = runs.filter((r: any) => input.backtestIds.includes(r.id));
+      const filtered = runs.filter(r => input.backtestIds.includes(r.id));
 
-      return {
-        backtests: filteredRuns,
-        comparison: {
-          bestReturn: Math.max(...filteredRuns.map((r: any) => r.totalReturn)),
-          bestSharpe: Math.max(...filteredRuns.map((r: any) => r.sharpeRatio)),
-          bestWinRate: Math.max(...filteredRuns.map((r: any) => r.winRate)),
-          avgReturn: filteredRuns.reduce((sum: number, r: any) => sum + r.totalReturn, 0) / filteredRuns.length,
-        },
-      };
+      if (filtered.length !== input.backtestIds.length) {
+        throw new Error('One or more backtests not found');
+      }
+
+      return filtered;
     }),
 
   /**
@@ -192,35 +233,70 @@ export const backtestRouter = router({
       const db = await getDb();
       if (!db) throw new Error('Database not available');
 
-      // Fetch backtest and trades
+      // Fetch backtest run
       const runs = await db
         .select()
         .from(backtestRuns)
-        .where(and(eq(backtestRuns.id, input.backtestId), eq(backtestRuns.userId, userId)));
+        .where(and(eq(backtestRuns.id, input.backtestId), eq(backtestRuns.userId, userId)))
+        .limit(1);
 
       if (runs.length === 0) {
         throw new Error('Backtest not found');
       }
 
+      const run = runs[0];
+
+      // Fetch trades
       const trades = await db
         .select()
         .from(backtestTrades)
         .where(eq(backtestTrades.backtestRunId, input.backtestId));
 
       // Generate CSV
-      const csvHeader = 'Ticker,Type,Entry Date,Entry Price,Exit Date,Exit Price,Quantity,Profit/Loss,Return %,Exit Reason,Confidence\n';
-      const csvRows = trades
-        .map(
-          (t: any) =>
-            `${t.ticker || 'N/A'},${t.type},${t.entryDate},${t.entryPrice},${t.exitDate},${t.exitPrice},${t.quantity},${t.profitLoss},${t.returnPercent},${t.exitReason},${t.signalConfidence}`
-        )
-        .join('\n');
+      const headers = [
+        'Entry Date',
+        'Entry Price',
+        'Exit Date',
+        'Exit Price',
+        'Quantity',
+        'Type',
+        'Profit/Loss',
+        'Return %',
+        'Exit Reason',
+        'Signal Confidence',
+      ];
 
-      const csv = csvHeader + csvRows;
+      const rows = trades.map(t => [
+        t.entryDate?.toISOString() || '',
+        t.entryPrice || 0,
+        t.exitDate?.toISOString() || '',
+        t.exitPrice || 0,
+        t.quantity || 0,
+        t.type || '',
+        t.profitLoss || 0,
+        t.returnPercent || 0,
+        t.exitReason || '',
+        t.signalConfidence || 0,
+      ]);
+
+      const csvContent = [
+        `Backtest Results: ${run.name}`,
+        `Start Date: ${run.startDate}`,
+        `End Date: ${run.endDate}`,
+        `Initial Capital: $${run.initialCapital}`,
+        `Final Capital: $${run.finalCapital}`,
+        `Total Return: ${run.totalReturn}%`,
+        `Win Rate: ${run.winRate}%`,
+        `Sharpe Ratio: ${run.sharpeRatio}`,
+        `Max Drawdown: ${run.maxDrawdown}%`,
+        '',
+        headers.join(','),
+        ...rows.map(r => r.join(',')),
+      ].join('\n');
 
       return {
-        csv,
-        filename: `backtest-${input.backtestId}-${new Date().toISOString().split('T')[0]}.csv`,
+        filename: `backtest-${input.backtestId}-${Date.now()}.csv`,
+        content: csvContent,
       };
     }),
 });
@@ -233,60 +309,60 @@ async function runBacktestAsync(backtestId: number, userId: number, config: any)
     const db = await getDb();
     if (!db) throw new Error('Database not available');
 
-    // Simulate backtest run (in production, fetch real historical data)
-    const mockResults = {
-      totalTrades: Math.floor(Math.random() * 50) + 10,
-      winningTrades: Math.floor(Math.random() * 30) + 5,
-      winRate: Math.random() * 100,
-      totalReturn: Math.random() * 50 - 10,
-      sharpeRatio: Math.random() * 2,
-      maxDrawdown: Math.random() * 20,
-      avgWin: Math.random() * 500 + 100,
-      avgLoss: Math.random() * 300 + 50,
-      profitFactor: Math.random() * 3,
-      finalCapital: config.initialCapital + Math.random() * 10000 - 5000,
-      trades: [],
-    };
+    // Generate sample historical data
+    const historicalData = generateSampleHistoricalData(config.startDate, config.endDate);
 
-    // Update backtest run with results
+    if (historicalData.length < 20) {
+      throw new Error('Insufficient historical data for backtest');
+    }
+
+    // Run the actual backtest simulation with proper signal generation
+    const results = await runBacktestSimulation(
+      historicalData,
+      config.initialCapital,
+      0.02, // Risk per trade (2%)
+      0.0005, // Slippage
+      0.001 // Commission
+    );
+
+    // Update backtest run with real results
     await db
       .update(backtestRuns)
       .set({
-        finalCapital: Math.round(mockResults.finalCapital),
-        totalReturn: Math.round(mockResults.totalReturn * 100),
-        winRate: Math.round(mockResults.winRate),
-        sharpeRatio: Math.round(mockResults.sharpeRatio * 100),
-        maxDrawdown: Math.round(mockResults.maxDrawdown),
-        totalTrades: mockResults.totalTrades,
-        winningTrades: mockResults.winningTrades,
-        avgWin: Math.round(mockResults.avgWin),
-        avgLoss: Math.round(mockResults.avgLoss),
-        profitFactor: Math.round(mockResults.profitFactor * 100),
+        finalCapital: Math.round(results.totalProfit + config.initialCapital),
+        totalReturn: Math.round(results.totalReturn * 100) / 100,
+        winRate: Math.round(results.winRate * 100) / 100,
+        sharpeRatio: Math.round(results.sharpeRatio * 100) / 100,
+        maxDrawdown: Math.round(results.maxDrawdown * 100) / 100,
+        totalTrades: results.totalTrades,
+        winningTrades: results.winningTrades,
+        avgWin: Math.round(results.averageWin),
+        avgLoss: Math.round(results.averageLoss),
+        profitFactor: Math.round(results.profitFactor * 100) / 100,
         status: 'completed',
         completedAt: new Date(),
       })
       .where(eq(backtestRuns.id, backtestId));
 
-    // Insert mock trades
-    for (let i = 0; i < mockResults.totalTrades; i++) {
-      const isWin = i < mockResults.winningTrades;
-      const profitLoss = isWin ? Math.random() * 1000 : -Math.random() * 500;
-
+    // Insert actual trades from backtest results
+    for (const trade of results.trades) {
       await db.insert(backtestTrades).values({
         backtestRunId: backtestId,
-        stockId: config.stockIds[Math.floor(Math.random() * config.stockIds.length)],
-        type: 'buy',
-        entryDate: new Date(config.startDate.getTime() + Math.random() * (config.endDate.getTime() - config.startDate.getTime())),
-        entryPrice: Math.round(Math.random() * 30000 + 5000),
-        exitDate: new Date(),
-        exitPrice: Math.round(Math.random() * 30000 + 5000),
-        quantity: Math.floor(Math.random() * 100) + 10,
-        profitLoss: Math.round(profitLoss),
-        returnPercent: Math.round(Math.random() * 10 - 5),
-        exitReason: isWin ? 'take-profit' : 'stop-loss',
-        signalConfidence: Math.floor(Math.random() * 40) + 60,
+        stockId: config.stockIds[0], // Use first stock ID
+        type: trade.type === 'BUY' ? 'buy' : 'sell',
+        entryDate: trade.entryTime,
+        entryPrice: Math.round(trade.entryPrice * 100) / 100,
+        exitDate: trade.exitTime,
+        exitPrice: Math.round(trade.exitPrice * 100) / 100,
+        quantity: Math.floor(trade.quantity),
+        profitLoss: Math.round(trade.profit),
+        returnPercent: Math.round(trade.profitPercent * 100) / 100,
+        exitReason: trade.profit > 0 ? 'take-profit' : 'stop-loss',
+        signalConfidence: Math.floor(trade.confidence),
       });
     }
+
+    console.log(`[Backtest] Completed backtest ${backtestId} with ${results.totalTrades} trades`);
   } catch (error) {
     console.error(`Backtest ${backtestId} error:`, error);
     const db = await getDb();

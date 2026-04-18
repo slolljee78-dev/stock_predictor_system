@@ -198,7 +198,73 @@ export default function TradingSimulator() {
         };
 
         setTrades((current) => [newTrade, ...current]);
+        
+        // Update positions based on trade
+        setPositions((current) => {
+          const existingPos = current.find(p => p.ticker === result.ticker);
+          if (type === 'buy') {
+            if (existingPos) {
+              const totalCost = existingPos.entryPrice * existingPos.quantity + result.executedPrice * result.quantity;
+              const totalQuantity = existingPos.quantity + result.quantity;
+              const newAvgPrice = totalCost / totalQuantity;
+              return current.map(p => 
+                p.ticker === result.ticker 
+                  ? {
+                      ...p,
+                      quantity: totalQuantity,
+                      entryPrice: newAvgPrice,
+                      currentPrice: result.executedPrice,
+                      unrealizedPnL: (result.executedPrice - newAvgPrice) * totalQuantity,
+                      unrealizedPnLPercent: ((result.executedPrice - newAvgPrice) / newAvgPrice) * 100,
+                    }
+                  : p
+              );
+            } else {
+              return [...current, {
+                ticker: result.ticker,
+                quantity: result.quantity,
+                entryPrice: result.executedPrice,
+                currentPrice: result.executedPrice,
+                unrealizedPnL: 0,
+                unrealizedPnLPercent: 0,
+              }];
+            }
+          } else {
+            if (existingPos) {
+              const remainingQty = existingPos.quantity - result.quantity;
+              if (remainingQty <= 0) {
+                return current.filter(p => p.ticker !== result.ticker);
+              } else {
+                return current.map(p => 
+                  p.ticker === result.ticker 
+                    ? {
+                        ...p,
+                        quantity: remainingQty,
+                        unrealizedPnL: (result.executedPrice - p.entryPrice) * remainingQty,
+                        unrealizedPnLPercent: ((result.executedPrice - p.entryPrice) / p.entryPrice) * 100,
+                      }
+                    : p
+                );
+              }
+            }
+            return current;
+          }
+        });
+        
+        const tradeValue = result.totalCost;
+        setSelectedPortfolio(prev => {
+          const newCash = type === 'buy' ? prev.cash - tradeValue : prev.cash + tradeValue;
+          const newCurrentValue = prev.currentValue + (type === 'buy' ? -tradeValue : tradeValue);
+          return {
+            ...prev,
+            cash: newCash,
+            currentValue: newCurrentValue,
+          };
+        });
+        
         setTradeForm({ ticker: "", quantity: "", price: "" });
+        setFeedback({ type: 'success', message: `${type.toUpperCase()} order executed: ${result.quantity} ${result.ticker} @ $${result.executedPrice.toFixed(2)}` });
+        setTimeout(() => setFeedback(null), 3000);
 
         // Refresh portfolio value
         await calculateLivePortfolioValue.refetch();

@@ -145,8 +145,9 @@ export async function calculateLivePortfolioValue(
   }
 
   const totalValue = investedValue + cashBalance;
-  const totalPnL = totalValue - (investedValue + cashBalance);
-  const totalPnLPercent = totalValue > 0 ? (totalPnL / totalValue) * 100 : 0;
+  // Calculate total P&L based on unrealized gains from all positions
+  const totalPnL = livePositions.reduce((sum, pos) => sum + pos.unrealizedPnL, 0);
+  const totalPnLPercent = investedValue > 0 ? (totalPnL / investedValue) * 100 : 0;
 
   return {
     totalCapital: investedValue + cashBalance,
