@@ -505,4 +505,11 @@
 - [x] Fix watchlist stock item navigation so tapping a stock no longer routes to a 404 page
 - [x] Add focused regression coverage for the dashboard interaction fixes
 - [x] Run focused verification for the dashboard interaction fixes
-- [ ] Save checkpoint after completing the dashboard interaction fixes
+- [x] Save checkpoint after completing the dashboard interaction fixes
+
+## Trading Simulator Purchase Fixes
+- [x] Diagnose why simulator trade execution fails to fetch a current price for every stock purchase
+- [x] Fix the simulator buy flow so trades can complete even when live price fetching is unreliable
+- [x] Add focused regression coverage for the simulator trade-execution fix
+- [x] Run focused verification for the simulator purchase fix
+- [ ] Save checkpoint after completing the simulator purchase fix

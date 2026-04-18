@@ -52,10 +52,12 @@ export async function executeLiveTradeWithMarketPrice(
   commissionPercent: number = 0.1
 ): Promise<LiveTradeExecution> {
   try {
-    // Fetch current market price
+    // Fetch current market price and fall back to the trader-provided price when live data is unavailable.
     const priceData = await fetchStockPriceWithCache(ticker);
+    const hasRequestedPriceFallback = Number.isFinite(requestedPrice) && requestedPrice > 0;
+    const currentPrice = priceData?.price ?? (hasRequestedPriceFallback ? requestedPrice : null);
 
-    if (!priceData) {
+    if (currentPrice === null) {
       return {
         ticker,
         type,
@@ -67,11 +69,9 @@ export async function executeLiveTradeWithMarketPrice(
         commission: 0,
         totalCost: 0,
         success: false,
-        error: `Could not fetch current price for ${ticker}`,
+        error: `Could not fetch current price for ${ticker} and no fallback price was provided`,
       };
     }
-
-    const currentPrice = priceData.price;
 
     // Calculate slippage (worse price due to market impact)
     const slippageAmount = currentPrice * (slippagePercent / 100);
@@ -81,8 +81,8 @@ export async function executeLiveTradeWithMarketPrice(
     const tradeValue = executedPrice * quantity;
     const commission = tradeValue * (commissionPercent / 100);
 
-    // Total cost (including commission)
-    const totalCost = tradeValue + commission;
+    // Total cash impact for the portfolio: buys spend cash, sells receive net proceeds.
+    const totalCost = type === "BUY" ? tradeValue + commission : tradeValue - commission;
 
     return {
       ticker,
