@@ -330,6 +330,6 @@
 - [x] Add Vitest tests for getSignalTrend function covering edge cases (zero history, equal periods, negative trends)
 - [x] Implement per-day trend breakdown returning daily buy/sell counts for 7-day period
 - [x] Extend dashboard.getTrendData to return daily breakdown data structure
-- [ ] Update Dashboard component to display daily trend chart/visualization
+- [x] Update Dashboard component to display daily trend chart/visualization
 - [x] Test daily breakdown calculations and edge cases
 - [x] Add Vitest tests for getSignalTrendByDay covering empty data, missing days, and error fallback

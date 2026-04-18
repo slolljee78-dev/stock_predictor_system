@@ -73,6 +73,7 @@ export default function Dashboard() {
   const watchlist = watchlistQuery.data ?? [];
   const signals = signalsQuery.data ?? [];
   const { data: trendData } = trpc.dashboard.getTrendData.useQuery();
+  const { data: dailyTrendData } = trpc.dashboard.getTrendDataByDay.useQuery();
 
   const buySignals = trendData?.buyCount ?? signals.filter((signal) => signal.type === "buy").length;
   const sellSignals = trendData?.sellCount ?? signals.filter((signal) => signal.type === "sell").length;
@@ -173,6 +174,42 @@ export default function Dashboard() {
             </div>
           </div>
         </section>
+
+        {dailyTrendData && dailyTrendData.length > 0 && (
+          <section className="dashboard-frame relative overflow-hidden px-4 py-3 sm:px-6 sm:py-4 md:px-8 md:py-5">
+            <Card className="border-0 bg-transparent shadow-none">
+              <CardHeader className="pb-5">
+                <div className="space-y-2">
+                  <CardTitle className="text-xl font-semibold tracking-tight">7-Day Signal Trend</CardTitle>
+                  <CardDescription>Daily buy and sell signal activity over the past week</CardDescription>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-7">
+                  {dailyTrendData.map((day) => (
+                    <div key={day.date} className="premium-card border border-border/50 p-3 text-center">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-[0.1em]">
+                        {new Date(day.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short' })}
+                      </p>
+                      <p className="mt-2 text-xs text-muted-foreground">{day.date}</p>
+                      <div className="mt-3 flex items-center justify-center gap-2">
+                        <div className="flex flex-col items-center">
+                          <p className="text-lg font-bold text-emerald-400">{day.buyCount}</p>
+                          <p className="text-xs text-muted-foreground">buys</p>
+                        </div>
+                        <div className="h-8 w-px bg-border/30" />
+                        <div className="flex flex-col items-center">
+                          <p className="text-lg font-bold text-rose-400">{day.sellCount}</p>
+                          <p className="text-xs text-muted-foreground">sells</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </section>
+        )}
 
         <section data-section="watchlist" className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
           <Card className="premium-card border-0 bg-transparent shadow-none">
