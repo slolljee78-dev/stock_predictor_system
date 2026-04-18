@@ -427,4 +427,14 @@
 - [x] Reduce extra top spacing between Pricing navigation buttons and the Premium Plans banner
 - [x] Add Back to menu and Back to dashboard buttons to Alert Notification Center
 - [x] Run targeted verification for dashboard drawer navigation and affected page headers
-- [ ] Save checkpoint after follow-up regression fixes
+- [x] Save checkpoint after follow-up regression fixes
+
+## User Reported Regression Fixes - Spacing & Menu Visibility Round
+- [x] Reduce the top gap above the mobile overview hero card
+- [x] Increase the mobile overview banner height so all overview text is visible
+- [x] Add more left padding/edge spacing to Signal Accuracy on mobile
+- [x] Add more left padding/edge spacing to Alert Preferences on mobile
+- [x] Fix notification center page visibility in the mobile dashboard menu
+- [x] Run targeted verification for mobile spacing and menu visibility fixes
+- [ ] Save checkpoint after spacing and menu visibility fixes
+

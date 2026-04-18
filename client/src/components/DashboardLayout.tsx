@@ -200,7 +200,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
       <Sidebar collapsible="icon" className="border-r-0 bg-transparent">
         <div className="h-full px-3 py-3">
           <div className="dashboard-frame h-full overflow-hidden">
-            <SidebarHeader className="border-b border-border/70 px-4 py-4">
+            <SidebarHeader className="border-b border-border/70 px-4 py-3">
               <div className="flex items-center gap-3">
                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/25">
                   <TrendingUp className="h-5 w-5" />
@@ -212,13 +212,13 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
               </div>
             </SidebarHeader>
 
-            <SidebarContent className="px-3 py-4 overflow-y-auto scroll-smooth">
+            <SidebarContent className="px-3 py-3 overflow-y-auto scroll-smooth">
               <SidebarGroup>
-                <div className="px-3 pb-2 group-data-[collapsible=icon]:hidden pt-2">
+                <div className="px-3 pb-1 group-data-[collapsible=icon]:hidden pt-1">
                   <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Workspace</p>
                 </div>
                 <SidebarGroupContent>
-                  <SidebarMenu className="gap-2">
+                  <SidebarMenu className="gap-1.5">
                     {menuItems.map((item) => {
                       const isActive =
                         item.path === "/dashboard"
@@ -234,12 +234,12 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                               isActive={isActive}
                               tooltip={item.label}
                               onClick={() => setLocation(item.path)}
-                              className="h-auto rounded-2xl px-3 py-4 md:py-3 data-[active=true]:bg-primary data-[active=true]:text-primary-foreground data-[active=true]:shadow-lg data-[active=true]:shadow-primary/20 hover:bg-secondary/80 min-h-[56px] md:min-h-auto"
+                              className="h-auto min-h-[72px] items-start rounded-2xl px-3 py-3 md:min-h-auto md:py-3 data-[active=true]:bg-primary data-[active=true]:text-primary-foreground data-[active=true]:shadow-lg data-[active=true]:shadow-primary/20 hover:bg-secondary/80"
                             >
                               <item.icon className="h-5 w-5 md:h-4 md:w-4 shrink-0" />
                               <div className="min-w-0 group-data-[collapsible=icon]:hidden">
-                                <p className="truncate text-sm md:text-sm font-semibold">{item.label}</p>
-                                <p className="truncate text-xs opacity-75">{item.description}</p>
+                                <p className="text-sm font-semibold leading-tight md:text-sm">{item.label}</p>
+                                <p className="line-clamp-2 text-xs leading-snug opacity-75">{item.description}</p>
                               </div>
                             </SidebarMenuButton>
                             {showBadge && (
@@ -255,7 +255,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                 </SidebarGroupContent>
               </SidebarGroup>
 
-              <div className="mt-5 px-1 group-data-[collapsible=icon]:hidden">
+              <div className="mt-4 hidden px-1 group-data-[collapsible=icon]:hidden md:block">
                 <div className="rounded-3xl border border-border/70 bg-background/40 p-4">
                   <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
                     <Sparkles className="h-4 w-4 text-primary" />

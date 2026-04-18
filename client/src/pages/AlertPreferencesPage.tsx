@@ -32,7 +32,7 @@ export default function AlertPreferencesPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-1 sm:px-0">
       <div className="flex items-center justify-between gap-3 mb-8 pt-2">
         <button
           onClick={() => navigateToDashboardMenu(setLocation)}
