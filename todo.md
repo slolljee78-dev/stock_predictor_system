@@ -353,3 +353,11 @@
 - [ ] Add swipe animation/drag feedback using @react-spring/web
 - [ ] Add Vitest tests for swipe interactions
 - [ ] Run all mobile enhancement tests successfully
+
+## Bug Fixes - 404 Errors on Signal Accuracy & Alert Preferences
+- [x] Create SignalAccuracyDashboard.tsx page component
+- [x] Create AlertPreferencesPage.tsx page component
+- [x] Add routes for /signal-accuracy and /alert-preferences in App.tsx
+- [x] Add menu items to DashboardLayout for both pages
+- [x] Verify pages render without 404 errors
+- [x] Test navigation from dashboard menu

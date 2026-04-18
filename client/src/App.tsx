@@ -17,6 +17,8 @@ import { Backtesting } from "./pages/Backtesting";
 import SignalsDashboard from "./pages/SignalsDashboard";
 import { AlertNotificationCenter } from "./pages/AlertNotificationCenter";
 import MobileAppShell from "./pages/MobileAppShell";
+import SignalAccuracyDashboard from "./pages/SignalAccuracyDashboard";
+import AlertPreferencesPage from "./pages/AlertPreferencesPage";
 
 function Router() {
   return (
@@ -32,6 +34,8 @@ function Router() {
       <Route path="/backtesting" component={Backtesting} />
       <Route path="/signals" component={SignalsDashboard} />
       <Route path="/alerts" component={AlertNotificationCenter} />
+      <Route path="/signal-accuracy" component={SignalAccuracyDashboard} />
+      <Route path="/alert-preferences" component={AlertPreferencesPage} />
       <Route path="/mobile" component={MobileAppShell} />
       <Route path="/watchlist/:watchlistId/settings" component={WatchlistSettings} />
       <Route path="/404" component={NotFound} />
