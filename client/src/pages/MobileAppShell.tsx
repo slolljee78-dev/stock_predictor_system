@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useGesture } from "@use-gesture/react";
 import { useSpring, animated } from "@react-spring/web";
@@ -233,15 +233,17 @@ function MobileWatchlistScreen({ watchlist }: { watchlist: any[] }) {
   const [removedIds, setRemovedIds] = useState<number[]>([]);
   const removeWatchlistMutation = trpc.watchlist.remove.useMutation();
 
-  const handleRemoveStock = (stockId: number) => {
-    // Note: watchlist.remove expects watchlistId, not stockId
-    // For now, we'll just update UI state
+  const handleRemoveStock = (watchlistId: number) => {
+    // Add to removed IDs for optimistic UI update
     setRemovedIds((prev) => {
-      if (!prev.includes(stockId)) {
-        return [...prev, stockId];
+      if (!prev.includes(watchlistId)) {
+        return [...prev, watchlistId];
       }
       return prev;
     });
+    
+    // Call API to remove from watchlist
+    removeWatchlistMutation.mutate({ watchlistId });
   };
 
   const visibleWatchlist = watchlist.filter((stock) => {
@@ -290,13 +292,18 @@ function SwipeableWatchlistCard({
   onViewDetails: () => void;
 }) {
   const [{ x }, api] = useSpring(() => ({ x: 0 }));
+  const [isDragging, setIsDragging] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   const bind = useGesture({
+    onDragStart: () => {
+      setIsDragging(true);
+    },
     onDrag: ({ offset: [ox] }) => {
       api.start({ x: ox, immediate: true });
     },
     onDragEnd: ({ offset: [ox], velocity: [vx] }) => {
+      setIsDragging(false);
       // Swipe left (negative) to remove
       if (ox < -50 || (ox < 0 && vx < -0.5)) {
         api.start({ x: -200, config: { duration: 300 } });
@@ -327,7 +334,9 @@ function SwipeableWatchlistCard({
       {/* Card content */}
       <animated.div
         style={{ x, touchAction: "none" }}
-        className="relative z-10 bg-card/50 rounded-lg p-3 cursor-pointer hover:bg-card/70"
+        className={`relative z-10 rounded-lg p-3 cursor-pointer transition-all ${
+          isDragging ? "bg-card/80 shadow-lg" : "bg-card/50 hover:bg-card/70"
+        }`}
         {...bind()}
       >
         <div

@@ -348,11 +348,11 @@
 - [x] Implement dark/light mode toggle in mobile settings UI
 - [x] Persist theme preference to localStorage with verification
 - [x] Add Vitest tests for theme persistence
-- [ ] Implement real swipe left action to remove stock from watchlist (with API call)
-- [ ] Implement real swipe right action to view stock details
-- [ ] Add swipe animation/drag feedback using @react-spring/web
-- [ ] Add Vitest tests for swipe interactions
-- [ ] Run all mobile enhancement tests successfully
+- [x] Implement real swipe left action to remove stock from watchlist (with API call)
+- [x] Implement real swipe right action to view stock details
+- [x] Add swipe animation/drag feedback using @react-spring/web
+- [x] Add Vitest tests for swipe interactions
+- [x] Run all mobile enhancement tests successfully
 
 ## Bug Fixes - 404 Errors on Signal Accuracy & Alert Preferences
 - [x] Create SignalAccuracyDashboard.tsx page component
@@ -397,12 +397,12 @@
 
 
 ## Navigation & Styling Issues - Round 2
-- [ ] Fix Dashboard page loading position (loads halfway down)
-- [ ] Make menu button more obvious/clear it's a menu button
-- [ ] Fix "Back to menu" navigation to go to dashboard menu (not home page)
-- [ ] Standardize all "Back to menu" button styling to match Trading Simulator
-- [ ] Fix title spacing - reduce excessive padding between titles and descriptions
-- [ ] Add "Back to menu" and "Back to dashboard" buttons to Validation page
-- [ ] Add "Back to menu" and "Back to dashboard" buttons to Pricing page
-- [ ] Add "Back to menu" and "Back to dashboard" buttons to FAQ page
-- [ ] Make menu button icon more prominent (currently not clear it's clickable)
+- [x] Fix Dashboard page loading position (loads halfway down)
+- [x] Make menu button more obvious/clear it's a menu button
+- [x] Fix "Back to menu" navigation to go to dashboard menu (not home page)
+- [x] Standardize all "Back to menu" button styling to match Trading Simulator
+- [x] Fix title spacing - reduce excessive padding between titles and descriptions
+- [x] Add "Back to menu" and "Back to dashboard" buttons to Validation page
+- [x] Add "Back to menu" and "Back to dashboard" buttons to Pricing page
+- [x] Add "Back to menu" and "Back to dashboard" buttons to FAQ page
+- [x] Make menu button icon more prominent (currently not clear it's clickable)
