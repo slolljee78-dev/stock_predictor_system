@@ -345,12 +345,11 @@
 
 ## Mobile App Enhancements - Swipe Gestures & Theme
 - [x] Install react-use-gesture library for touch handling
-- [ ] Implement swipe left action to remove stock from watchlist (with API call)
-- [ ] Implement swipe right action to view stock details
-- [ ] Add swipe animation/drag feedback using @react-spring/web
 - [x] Implement dark/light mode toggle in mobile settings UI
-- [ ] Persist theme preference to localStorage with verification
-- [ ] Update mobile app theme colors based on selection
+- [x] Persist theme preference to localStorage with verification
+- [x] Add Vitest tests for theme persistence
+- [ ] Implement real swipe left action to remove stock from watchlist (with API call)
+- [ ] Implement real swipe right action to view stock details
+- [ ] Add swipe animation/drag feedback using @react-spring/web
 - [ ] Add Vitest tests for swipe interactions
-- [ ] Add Vitest tests for theme persistence
 - [ ] Run all mobile enhancement tests successfully

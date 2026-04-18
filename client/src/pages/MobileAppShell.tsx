@@ -364,7 +364,7 @@ function MobileSignalsScreen() {
 function MobileSettingsScreen() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
-  const { theme, setTheme } = useTheme() as any;
+  const { theme, setTheme } = useTheme();
 
   return (
     <div className="space-y-4 px-4 py-4">
@@ -379,21 +379,23 @@ function MobileSettingsScreen() {
           <div className="flex gap-2">
             <button
               onClick={() => setTheme("dark")}
-              className={`p-2 rounded ${
+              className={`p-2 rounded transition-colors ${
                 theme === "dark"
                   ? "bg-blue-500 text-white"
-                  : "bg-muted text-muted-foreground"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
               }`}
+              title="Dark mode"
             >
               <Moon className="h-4 w-4" />
             </button>
             <button
               onClick={() => setTheme("light")}
-              className={`p-2 rounded ${
+              className={`p-2 rounded transition-colors ${
                 theme === "light"
                   ? "bg-blue-500 text-white"
-                  : "bg-muted text-muted-foreground"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
               }`}
+              title="Light mode"
             >
               <Sun className="h-4 w-4" />
             </button>
