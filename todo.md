@@ -333,3 +333,11 @@
 - [x] Update Dashboard component to display daily trend chart/visualization
 - [x] Test daily breakdown calculations and edge cases
 - [x] Add Vitest tests for getSignalTrendByDay covering empty data, missing days, and error fallback
+
+
+## Mobile App Companion - PWA Implementation
+- [x] Create mobile-optimized app shell with PWA support
+- [x] Implement mobile watchlist screen with swipe gestures
+- [x] Implement mobile alerts screen with push notifications
+- [x] Add offline caching and sync capabilities
+- [x] Test mobile experience and finalize

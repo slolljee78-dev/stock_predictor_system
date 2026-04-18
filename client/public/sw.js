@@ -6,6 +6,7 @@
 const CACHE_NAME = 'stock-predictor-v2-premium-homepage';
 const URLS_TO_CACHE = [
   '/',
+  '/mobile',
   '/index.html',
   '/manifest.json',
 ];
@@ -50,7 +51,7 @@ self.addEventListener('fetch', event => {
   }
 
   // Skip API requests (let them go to network)
-  if (event.request.url.includes('/api/')) {
+  if (event.request.url.includes('/api/trpc/')) {
     event.respondWith(
       fetch(event.request).catch(() => {
         return new Response(
@@ -222,4 +223,11 @@ self.addEventListener('periodicsync', event => {
   }
 });
 
-console.log('[Service Worker] Loaded and ready');
+// Mobile app shell initialization
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
+console.log('[Service Worker] Loaded and ready - Mobile app support enabled');
