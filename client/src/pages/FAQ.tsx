@@ -152,7 +152,7 @@ const faqItems: FAQItem[] = [
     id: 'ps-3',
     category: 'Pricing & Subscriptions',
     question: 'Is there a free trial?',
-    answer: 'Yes. New users get a 14-day free trial of the Pro plan. No credit card required. After the trial ends, you\'ll revert to the free plan unless you choose to upgrade.',
+    answer: 'Yes. New users get a 7-day free trial of the Pro plan. No credit card required. After the trial ends, you\'ll revert to the free plan unless you choose to upgrade.',
   },
   {
     id: 'ps-4',

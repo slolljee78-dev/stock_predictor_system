@@ -170,7 +170,7 @@ export default function Home() {
                   ) : (
                     <Button asChild size="lg" className="pill-button pill-button-primary h-14 px-7 text-base">
                       <a href={getLoginUrl()}>
-                        Start free
+                        Start 7-day free trial
                         <ArrowRight className="h-4 w-4" />
                       </a>
                     </Button>

@@ -80,7 +80,7 @@ const faqs = [
   {
     question: "Is there a trial?",
     answer:
-      "Yes. Every plan includes a trial period so you can assess the workflow before committing to a subscription.",
+      "Yes. Every plan includes a 7-day free trial so you can assess the workflow before committing to a subscription.",
   },
   {
     question: "What happens after I subscribe?",

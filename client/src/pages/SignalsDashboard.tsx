@@ -6,8 +6,9 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
-import { TrendingUp, TrendingDown, AlertCircle, RefreshCw } from 'lucide-react';
+import { TrendingUp, TrendingDown, AlertCircle, RefreshCw, ArrowLeft } from 'lucide-react';
 import { SignalDetailsModal } from '@/components/SignalDetailsModal';
+import { useLocation } from 'wouter';
 
 interface SignalWithMetrics {
   ticker: string;
@@ -22,6 +23,7 @@ interface SignalWithMetrics {
 }
 
 export default function SignalsDashboard() {
+  const [, setLocation] = useLocation();
   const [selectedSignalType, setSelectedSignalType] = useState<'all' | 'buy' | 'sell'>('all');
   const [minConfidence, setMinConfidence] = useState(60);
   const [sortBy, setSortBy] = useState<'confidence' | 'price' | 'time'>('confidence');
@@ -29,6 +31,18 @@ export default function SignalsDashboard() {
   const [signals, setSignals] = useState<SignalWithMetrics[]>([]);
   const [selectedSignal, setSelectedSignal] = useState<SignalWithMetrics | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [backPath, setBackPath] = useState('/dashboard');
+  const [backLabel, setBackLabel] = useState('Back to dashboard');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && document.referrer.includes('/dashboard')) {
+      setBackPath('/dashboard');
+      setBackLabel('Back to dashboard');
+    } else {
+      setBackPath('/');
+      setBackLabel('Back to menu');
+    }
+  }, []);
 
   // Fetch market overview with signals
   const { data: overviewData, isLoading, refetch } = trpc.realtimeSignals.getMarketOverview.useQuery(
@@ -90,6 +104,17 @@ export default function SignalsDashboard() {
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
+        {/* Navigation */}
+        <div className="mb-6 flex items-center gap-4">
+          <button
+            onClick={() => setLocation(backPath)}
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="h-5 w-5" />
+            <span className="text-sm">{backLabel}</span>
+          </button>
+        </div>
+
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">Real-time Signals Dashboard</h1>

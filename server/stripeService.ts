@@ -35,11 +35,15 @@ export async function createCheckoutSession(params: CreateCheckoutSessionParams)
         quantity: 1,
       },
     ],
+    subscription_data: {
+      trial_period_days: 7, // 7-day free trial for all subscriptions
+    },
     metadata: {
       user_id: userId,
       customer_email: userEmail,
       customer_name: userName,
       subscription_tier: tier,
+      trial_days: 7,
     },
     success_url: `${origin}/dashboard?payment=success&session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/pricing?payment=cancelled`,

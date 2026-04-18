@@ -3,12 +3,17 @@
  * Define all products and prices here for centralized management
  */
 
+// Trial configuration: 7 days free for all new subscriptions
+export const TRIAL_DAYS = 7;
+export const TRIAL_PERIOD_SECONDS = TRIAL_DAYS * 24 * 60 * 60; // 604800 seconds
+
 export const SUBSCRIPTION_PRODUCTS = {
   STARTER: {
     name: 'Starter',
     description: 'Basic stock analysis for beginners',
     priceUSD: 9.99,
     priceGBP: 7.99,
+    trialDays: TRIAL_DAYS,
     features: [
       '50 stocks monitoring',
       'Basic AI signals',
@@ -22,6 +27,7 @@ export const SUBSCRIPTION_PRODUCTS = {
     description: 'Full access to all features',
     priceUSD: 29.99,
     priceGBP: 23.99,
+    trialDays: TRIAL_DAYS,
     features: [
       'All 212 stocks',
       'Advanced AI signals',
@@ -38,6 +44,7 @@ export const SUBSCRIPTION_PRODUCTS = {
     description: 'Professional trading suite',
     priceUSD: 99.99,
     priceGBP: 79.99,
+    trialDays: TRIAL_DAYS,
     features: [
       'Everything in Pro',
       'API access',

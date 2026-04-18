@@ -369,3 +369,12 @@
 - [x] Fix backtestRouter.ts - Use real backtest engine instead of mock data, generate realistic historical data
 - [x] Fix TradingSimulator.tsx - Update positions after trades, calculate average price for multiple entries
 - [x] Add feedback display to Trading Simulator UI - Success/error messages with auto-dismiss
+
+
+## User Reported Issues - Fixed
+- [x] Add back/navigation buttons to Real-time Signals Dashboard (back to menu/dashboard)
+- [x] Update FAQ to mention 7-day free trial (changed from 14 days)
+- [x] Update Pricing page to mention 7-day free trial
+- [x] Update Home page CTA to "Start 7-day free trial"
+- [x] Implement 7-day trial period in Stripe checkout (trial_period_days: 7)
+- [x] Add trial configuration to products.ts (TRIAL_DAYS constant)
