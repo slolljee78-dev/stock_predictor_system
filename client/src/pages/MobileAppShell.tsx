@@ -10,11 +10,14 @@ import {
   TrendingUp,
   Menu,
   X,
+  ChevronRight,
+  Moon,
+  Sun,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
-
+import { useTheme } from "@/contexts/ThemeContext";
 
 type MobileTab = "home" | "watchlist" | "alerts" | "signals" | "settings";
 
@@ -25,7 +28,13 @@ export default function MobileAppShell() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [installPrompt, setInstallPrompt] = useState<any>(null);
 
-  // Handle PWA install prompt
+  const watchlistQuery = trpc.watchlist.list.useQuery(undefined, {
+    enabled: !!user,
+  });
+
+  const watchlist = watchlistQuery.data ?? [];
+  const alertStats = { pending: 2, total: 5 };
+
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
@@ -34,25 +43,22 @@ export default function MobileAppShell() {
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
     return () => {
-      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+      window.removeEventListener(
+        "beforeinstallprompt",
+        handleBeforeInstallPrompt
+      );
     };
   }, []);
 
-  const handleInstallApp = async () => {
-    if (!installPrompt) return;
-    installPrompt.prompt();
-    const { outcome } = await installPrompt.userChoice;
-    if (outcome === "accepted") {
-      setInstallPrompt(null);
+  const handleInstall = async () => {
+    if (installPrompt) {
+      installPrompt.prompt();
+      const { outcome } = await installPrompt.userChoice;
+      if (outcome === "accepted") {
+        setInstallPrompt(null);
+      }
     }
   };
-
-  const watchlistQuery = trpc.watchlist.list.useQuery(undefined, {
-    enabled: !!user,
-  });
-
-  const watchlist = watchlistQuery.data ?? [];
-  const alertStats = { pending: 2, total: 5 };
 
   const renderContent = () => {
     switch (activeTab) {
@@ -67,100 +73,106 @@ export default function MobileAppShell() {
       case "settings":
         return <MobileSettingsScreen />;
       default:
-        return null;
+        return <MobileHomeScreen watchlist={watchlist} alertStats={alertStats} />;
     }
   };
 
   return (
-    <div className="flex h-screen flex-col bg-background text-foreground">
-      {/* Mobile Header */}
-      <header className="sticky top-0 z-40 border-b border-border/50 bg-background/95 backdrop-blur">
-        <div className="flex items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-2">
-            <BarChart3 className="h-6 w-6 text-primary" />
-            <span className="text-sm font-semibold">Stock Predictor</span>
-          </div>
+    <div className="flex flex-col h-screen bg-background">
+      {/* Header */}
+      <div className="border-b border-border/50 bg-card/50 px-4 py-3 flex items-center justify-between">
+        <h1 className="text-lg font-bold">Stock Predictor</h1>
+        <button
+          onClick={() => setMenuOpen(!menuOpen)}
+          className="p-1 hover:bg-muted rounded"
+        >
+          {menuOpen ? (
+            <X className="h-5 w-5" />
+          ) : (
+            <Menu className="h-5 w-5" />
+          )}
+        </button>
+      </div>
+
+      {/* Menu */}
+      {menuOpen && (
+        <div className="border-b border-border/50 bg-card/50 px-4 py-3 space-y-2">
           <button
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="rounded-lg p-2 hover:bg-accent"
+            onClick={() => setLocation("/dashboard")}
+            className="w-full text-left px-3 py-2 rounded hover:bg-muted text-sm"
           >
-            {menuOpen ? (
-              <X className="h-5 w-5" />
-            ) : (
-              <Menu className="h-5 w-5" />
-            )}
+            Dashboard
+          </button>
+          <button
+            onClick={() => setLocation("/dashboard/accuracy")}
+            className="w-full text-left px-3 py-2 rounded hover:bg-muted text-sm"
+          >
+            Signal Accuracy
+          </button>
+          <button
+            onClick={() => setLocation("/dashboard/alerts")}
+            className="w-full text-left px-3 py-2 rounded hover:bg-muted text-sm"
+          >
+            Alert Preferences
           </button>
         </div>
+      )}
 
-        {/* Mobile Menu */}
-        {menuOpen && (
-          <div className="border-t border-border/50 bg-background/50 px-4 py-3">
-            <div className="space-y-2">
-              {installPrompt && (
-                <Button
-                  onClick={handleInstallApp}
-                  className="w-full justify-start text-sm"
-                  variant="outline"
-                >
-                  Install App
-                </Button>
-              )}
-              <Button
-                onClick={() => setLocation("/dashboard/accuracy")}
-                className="w-full justify-start text-sm"
-                variant="ghost"
-              >
-                Signal Accuracy
-              </Button>
-              <Button
-                onClick={() => setLocation("/dashboard/alerts-preferences")}
-                className="w-full justify-start text-sm"
-                variant="ghost"
-              >
-                Alert Settings
-              </Button>
-            </div>
-          </div>
-        )}
-      </header>
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto">{renderContent()}</div>
 
-      {/* Mobile Content */}
-      <main className="flex-1 overflow-y-auto pb-20">
-        {renderContent()}
-      </main>
-
-      {/* Mobile Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border/50 bg-background/95 backdrop-blur">
-        <div className="grid grid-cols-5 gap-1 px-2 py-2">
-          {[
-            { tab: "home" as MobileTab, icon: Home, label: "Home" },
-            { tab: "watchlist" as MobileTab, icon: Star, label: "Watchlist" },
-            { tab: "alerts" as MobileTab, icon: Bell, label: "Alerts", badge: alertStats.pending },
-            { tab: "signals" as MobileTab, icon: TrendingUp, label: "Signals" },
-            { tab: "settings" as MobileTab, icon: Settings, label: "Settings" },
-          ].map(({ tab, icon: Icon, label, badge }) => (
-            <button
-              key={tab}
-              onClick={() => {
-                setActiveTab(tab);
-                setMenuOpen(false);
-              }}
-              className={`relative flex flex-col items-center gap-1 rounded-lg py-2 px-1 text-xs font-medium transition-colors ${
-                activeTab === tab
-                  ? "bg-primary/20 text-primary"
-                  : "text-muted-foreground hover:bg-accent/50"
-              }`}
-            >
-              <Icon className="h-5 w-5" />
-              {badge ? (
-                <span className="absolute top-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-xs font-bold text-destructive-foreground">
-                  {badge > 9 ? "9+" : badge}
-                </span>
-              ) : null}
-              <span className="line-clamp-1">{label}</span>
-            </button>
-          ))}
-        </div>
+      {/* Bottom Navigation */}
+      <nav className="border-t border-border/50 bg-card/50 grid grid-cols-5 gap-1 px-2 py-2">
+        <button
+          onClick={() => setActiveTab("home")}
+          className={`flex flex-col items-center gap-1 py-2 px-1 rounded text-xs ${
+            activeTab === "home" ? "text-blue-500" : "text-muted-foreground"
+          }`}
+        >
+          <Home className="h-5 w-5" />
+          <span>Home</span>
+        </button>
+        <button
+          onClick={() => setActiveTab("watchlist")}
+          className={`flex flex-col items-center gap-1 py-2 px-1 rounded text-xs ${
+            activeTab === "watchlist" ? "text-blue-500" : "text-muted-foreground"
+          }`}
+        >
+          <Star className="h-5 w-5" />
+          <span>Watchlist</span>
+        </button>
+        <button
+          onClick={() => setActiveTab("alerts")}
+          className={`flex flex-col items-center gap-1 py-2 px-1 rounded text-xs relative ${
+            activeTab === "alerts" ? "text-blue-500" : "text-muted-foreground"
+          }`}
+        >
+          <Bell className="h-5 w-5" />
+          {alertStats.pending > 0 && (
+            <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+              {alertStats.pending}
+            </span>
+          )}
+          <span>Alerts</span>
+        </button>
+        <button
+          onClick={() => setActiveTab("signals")}
+          className={`flex flex-col items-center gap-1 py-2 px-1 rounded text-xs ${
+            activeTab === "signals" ? "text-blue-500" : "text-muted-foreground"
+          }`}
+        >
+          <BarChart3 className="h-5 w-5" />
+          <span>Signals</span>
+        </button>
+        <button
+          onClick={() => setActiveTab("settings")}
+          className={`flex flex-col items-center gap-1 py-2 px-1 rounded text-xs ${
+            activeTab === "settings" ? "text-blue-500" : "text-muted-foreground"
+          }`}
+        >
+          <Settings className="h-5 w-5" />
+          <span>Settings</span>
+        </button>
       </nav>
     </div>
   );
@@ -182,18 +194,14 @@ function MobileHomeScreen({
         </p>
       </div>
 
-      <div className="grid gap-3 grid-cols-2">
+      <div className="grid grid-cols-2 gap-3">
         <div className="rounded-lg border border-border/50 bg-card/50 p-4">
-          <p className="text-xs text-muted-foreground">Active Alerts</p>
-          <p className="mt-2 text-2xl font-bold text-destructive">
-            {alertStats.pending}
-          </p>
+          <p className="text-xs text-muted-foreground">Pending Alerts</p>
+          <p className="text-2xl font-bold">{alertStats.pending}</p>
         </div>
         <div className="rounded-lg border border-border/50 bg-card/50 p-4">
-          <p className="text-xs text-muted-foreground">Watchlist</p>
-          <p className="mt-2 text-2xl font-bold text-primary">
-            {watchlist.length}
-          </p>
+          <p className="text-xs text-muted-foreground">Total Signals</p>
+          <p className="text-2xl font-bold">{alertStats.total}</p>
         </div>
       </div>
 
@@ -220,9 +228,14 @@ function MobileHomeScreen({
 
 function MobileWatchlistScreen({ watchlist }: { watchlist: any[] }) {
   const [, setLocation] = useLocation();
+  const [swipedId, setSwipedId] = useState<number | null>(null);
+
   return (
     <div className="space-y-3 px-4 py-4">
       <h2 className="text-xl font-bold">Your Watchlist</h2>
+      <p className="text-xs text-muted-foreground/70">
+        Tap to view details
+      </p>
       {watchlist.length === 0 ? (
         <div className="rounded-lg border border-border/50 bg-card/50 p-6 text-center">
           <p className="text-sm text-muted-foreground">No stocks yet</p>
@@ -231,21 +244,38 @@ function MobileWatchlistScreen({ watchlist }: { watchlist: any[] }) {
           </p>
         </div>
       ) : (
-        watchlist.map((stock) => (
-          <button
-            key={stock.id}
-            onClick={() => setLocation(`/stock/${stock.ticker}`)}
-            className="w-full rounded-lg border border-border/50 bg-card/50 p-4 text-left transition-colors hover:bg-card/70"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <p className="font-semibold">{stock.ticker}</p>
-                <p className="text-xs text-muted-foreground">{stock.name}</p>
+        <div className="space-y-2">
+          {watchlist.map((stock) => (
+            <div
+              key={stock.id}
+              className={`relative rounded-lg border border-border/50 bg-card/50 p-3 cursor-pointer hover:bg-card/70 transition-all ${
+                swipedId === stock.id ? "bg-red-500/10" : ""
+              }`}
+              onMouseLeave={() => setSwipedId(null)}
+            >
+              <div
+                className="flex items-center justify-between"
+                onClick={() => setLocation(`/stock/${stock.ticker}`)}
+              >
+                <div className="flex-1">
+                  <p className="font-semibold">{stock.ticker}</p>
+                  <p className="text-xs text-muted-foreground">{stock.name}</p>
+                </div>
+                <ChevronRight className="h-4 w-4" />
               </div>
-              <TrendingUp className="h-5 w-5 text-emerald-400" />
+              {swipedId === stock.id && (
+                <div className="absolute right-0 top-0 h-full bg-red-500/80 rounded-lg flex items-center px-3">
+                  <button
+                    onClick={() => setSwipedId(null)}
+                    className="text-white text-sm font-semibold"
+                  >
+                    Remove
+                  </button>
+                </div>
+              )}
             </div>
-          </button>
-        ))
+          ))}
+        </div>
       )}
     </div>
   );
@@ -253,57 +283,80 @@ function MobileWatchlistScreen({ watchlist }: { watchlist: any[] }) {
 
 function MobileAlertsScreen({ alertStats }: { alertStats: any }) {
   const [, setLocation] = useLocation();
+
   return (
     <div className="space-y-3 px-4 py-4">
       <h2 className="text-xl font-bold">Alerts</h2>
       <div className="rounded-lg border border-border/50 bg-card/50 p-4">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-muted-foreground">Pending Alerts</p>
-            <p className="mt-1 text-2xl font-bold">{alertStats.pending}</p>
+            <p className="text-sm font-semibold">Pending Alerts</p>
+            <p className="text-xs text-muted-foreground">
+              {alertStats.pending} of {alertStats.total}
+            </p>
           </div>
-          <Bell className="h-8 w-8 text-primary" />
+          <p className="text-2xl font-bold">{alertStats.pending}</p>
         </div>
       </div>
 
-      <button
-        onClick={() => setLocation("/dashboard/notifications")}
-        className="w-full rounded-lg border border-border/50 bg-primary/20 p-4 text-center font-semibold text-primary transition-colors hover:bg-primary/30"
-      >
-        View All Alerts
-      </button>
+      <div className="space-y-2">
+        <h3 className="font-semibold text-sm">Recent Alerts</h3>
+        {[1, 2, 3].map((i) => (
+          <div
+            key={i}
+            className="rounded-lg border border-border/50 bg-card/50 p-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <p className="text-sm font-semibold">AAPL Buy Signal</p>
+                <p className="text-xs text-muted-foreground">
+                  High confidence setup
+                </p>
+              </div>
+              <button
+                onClick={() => setLocation("/stock/AAPL")}
+                className="text-blue-500 text-xs font-semibold hover:underline"
+              >
+                View
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
 
 function MobileSignalsScreen() {
-  const { data: signals = [] } = trpc.signals.getForUser.useQuery(undefined, {
-    enabled: true,
-  });
-
   return (
     <div className="space-y-3 px-4 py-4">
       <h2 className="text-xl font-bold">Latest Signals</h2>
-      {signals && signals.slice(0, 5).map((signal: any) => (
-        <div
-          key={signal.id || Math.random()}
-          className="rounded-lg border border-border/50 bg-card/50 p-4"
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <p className="font-semibold">{signal.ticker}</p>
-              <p className="text-xs text-muted-foreground capitalize">
-                {signal.type} Signal
-              </p>
+      <div className="space-y-2">
+        {[
+          { ticker: "AAPL", type: "buy", confidence: 85 },
+          { ticker: "MSFT", type: "sell", confidence: 72 },
+          { ticker: "GOOGL", type: "buy", confidence: 68 },
+        ].map((signal, i) => (
+          <div
+            key={i}
+            className="rounded-lg border border-border/50 bg-card/50 p-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <p className="text-sm font-semibold">{signal.ticker}</p>
+                <p className="text-xs text-muted-foreground capitalize">
+                  {signal.type} signal - {signal.confidence}% confidence
+                </p>
+              </div>
+              {signal.type === "buy" ? (
+                <TrendingUp className="h-4 w-4 text-emerald-400" />
+              ) : (
+                <TrendingDown className="h-4 w-4 text-red-400" />
+              )}
             </div>
-            {signal.type === "buy" ? (
-              <TrendingUp className="h-5 w-5 text-emerald-400" />
-            ) : (
-              <TrendingDown className="h-5 w-5 text-rose-400" />
-            )}
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }
@@ -311,34 +364,57 @@ function MobileSignalsScreen() {
 function MobileSettingsScreen() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
+  const { theme, setTheme } = useTheme() as any;
 
   return (
     <div className="space-y-4 px-4 py-4">
       <h2 className="text-xl font-bold">Settings</h2>
 
       <div className="rounded-lg border border-border/50 bg-card/50 p-4">
-        <p className="text-xs text-muted-foreground">Account</p>
-        <p className="mt-2 font-semibold">{user?.email}</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="font-semibold text-sm">Appearance</p>
+            <p className="text-xs text-muted-foreground">Dark / Light mode</p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setTheme("dark")}
+              className={`p-2 rounded ${
+                theme === "dark"
+                  ? "bg-blue-500 text-white"
+                  : "bg-muted text-muted-foreground"
+              }`}
+            >
+              <Moon className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setTheme("light")}
+              className={`p-2 rounded ${
+                theme === "light"
+                  ? "bg-blue-500 text-white"
+                  : "bg-muted text-muted-foreground"
+              }`}
+            >
+              <Sun className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-lg border border-border/50 bg-card/50 p-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="font-semibold text-sm">Account</p>
+            <p className="text-xs text-muted-foreground">{user?.email}</p>
+          </div>
+        </div>
       </div>
 
       <button
-        onClick={() => setLocation("/dashboard/alerts-preferences")}
-        className="w-full rounded-lg border border-border/50 bg-card/50 p-4 text-left transition-colors hover:bg-card/70"
+        onClick={() => setLocation("/")}
+        className="w-full rounded-lg bg-red-500/10 text-red-500 py-2 text-sm font-semibold hover:bg-red-500/20 transition-colors"
       >
-        <p className="font-semibold">Alert Preferences</p>
-        <p className="text-xs text-muted-foreground">
-          Configure notification settings
-        </p>
-      </button>
-
-      <button
-        onClick={() => setLocation("/dashboard/accuracy")}
-        className="w-full rounded-lg border border-border/50 bg-card/50 p-4 text-left transition-colors hover:bg-card/70"
-      >
-        <p className="font-semibold">Signal Accuracy</p>
-        <p className="text-xs text-muted-foreground">
-          View performance metrics
-        </p>
+        Logout
       </button>
     </div>
   );
