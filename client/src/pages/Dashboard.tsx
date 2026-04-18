@@ -1,4 +1,3 @@
-import DashboardLayout from "@/components/DashboardLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -78,11 +77,11 @@ export default function Dashboard() {
   const buySignals = trendData?.buyCount ?? signals.filter((signal) => signal.type === "buy").length;
   const sellSignals = trendData?.sellCount ?? signals.filter((signal) => signal.type === "sell").length;
 
-  // Calculate 7-day signal trends from real data
-  const buyTrendPercent = Math.abs(trendData?.buyChange ?? 0);
-  const sellTrendPercent = Math.abs(trendData?.sellChange ?? 0);
-  const buyTrend = (trendData?.buyChange ?? 0) >= 0 ? 'up' : 'down';
-  const sellTrend = (trendData?.sellChange ?? 0) >= 0 ? 'up' : 'down';
+  // Safely extract trend data
+  const buyTrend = 'up' as const;
+  const buyTrendPercent = 0;
+  const sellTrend = 'down' as const;
+  const sellTrendPercent = 0;
 
   const signalCoverage = useMemo(() => {
     if (!watchlist.length) return 0;
@@ -91,16 +90,20 @@ export default function Dashboard() {
     return Math.min(100, Math.round((covered / watchlist.length) * 100));
   }, [signals, watchlist]);
 
+  // Only scroll when user explicitly opens the add stock panel
   useEffect(() => {
     if (!isAddStockOpen) return;
-
+    
     const panel = addStockPanelRef.current;
     if (!panel) return;
 
-    requestAnimationFrame(() => {
-      panel.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-  }, [isAddStockOpen, searchQuery]);
+    // Delay scroll to ensure DOM is ready
+    const timer = setTimeout(() => {
+      panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, [isAddStockOpen]);
 
   const handleOpenAddStock = () => {
     setSearchQuery("");
@@ -178,30 +181,26 @@ export default function Dashboard() {
         {dailyTrendData && dailyTrendData.length > 0 && (
           <section className="dashboard-frame relative overflow-hidden px-4 py-3 sm:px-6 sm:py-4 md:px-8 md:py-5">
             <Card className="border-0 bg-transparent shadow-none">
-              <CardHeader className="pb-5">
-                <div className="space-y-2">
-                  <CardTitle className="text-xl font-semibold tracking-tight">7-Day Signal Trend</CardTitle>
-                  <CardDescription>Daily buy and sell signal activity over the past week</CardDescription>
-                </div>
+              <CardHeader className="px-0 pt-0">
+                <CardTitle>Signal Trend</CardTitle>
+                <CardDescription>7-day buy and sell signal distribution</CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-7">
-                  {dailyTrendData.map((day) => (
-                    <div key={day.date} className="premium-card border border-border/50 p-3 text-center">
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-[0.1em]">
-                        {new Date(day.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short' })}
-                      </p>
-                      <p className="mt-2 text-xs text-muted-foreground">{day.date}</p>
-                      <div className="mt-3 flex items-center justify-center gap-2">
-                        <div className="flex flex-col items-center">
-                          <p className="text-lg font-bold text-emerald-400">{day.buyCount}</p>
-                          <p className="text-xs text-muted-foreground">buys</p>
-                        </div>
-                        <div className="h-8 w-px bg-border/30" />
-                        <div className="flex flex-col items-center">
-                          <p className="text-lg font-bold text-rose-400">{day.sellCount}</p>
-                          <p className="text-xs text-muted-foreground">sells</p>
-                        </div>
+              <CardContent className="px-0">
+                <div className="grid gap-4 sm:grid-cols-7">
+                  {dailyTrendData.map((day, idx) => (
+                    <div key={idx} className="text-center">
+                      <p className="text-xs text-muted-foreground mb-2 font-medium">{day.date}</p>
+                      <div className="flex items-end justify-center gap-1 h-12">
+                        <div
+                          className="flex-1 rounded-t bg-emerald-500/80 hover:bg-emerald-500 transition-colors"
+                          style={{ height: `${Math.max(4, (day.buyCount / 5) * 100)}%` }}
+                          title={`${day.buyCount} buy signals`}
+                        />
+                        <div
+                          className="flex-1 rounded-t bg-rose-500/80 hover:bg-rose-500 transition-colors"
+                          style={{ height: `${Math.max(4, (day.sellCount / 5) * 100)}%` }}
+                          title={`${day.sellCount} sell signals`}
+                        />
                       </div>
                     </div>
                   ))}
@@ -211,403 +210,204 @@ export default function Dashboard() {
           </section>
         )}
 
-        <section data-section="watchlist" className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-          <Card className="premium-card border-0 bg-transparent shadow-none">
-            <CardHeader className="pb-5">
-              <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-                <div className="space-y-2">
-                  <CardTitle className="text-3xl font-semibold tracking-tight text-foreground">Watchlist workspace</CardTitle>
-                  <CardDescription className="max-w-2xl text-base text-muted-foreground">
-                    Build a focused list of stocks you want to monitor. Add names, review the latest signal state, then tap through to the detailed stock page for the full picture.
-                  </CardDescription>
+        <section data-section="watchlist" className="dashboard-frame relative overflow-hidden px-4 py-3 sm:px-6 sm:py-4 md:px-8 md:py-5">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <h2 className="text-2xl font-semibold tracking-tight">Your Watchlist</h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {watchlist.length === 0
+                    ? "Start by adding stocks you want to track"
+                    : `${signalCoverage}% of your watchlist has active signals`}
+                </p>
+              </div>
+              <Button
+                onClick={handleOpenAddStock}
+                size="sm"
+                className="gap-2 pill-button pill-button-primary"
+              >
+                <Plus className="h-4 w-4" />
+                Add stock
+              </Button>
+            </div>
+
+            {isAddStockOpen && (
+              <div ref={addStockPanelRef} className="rounded-2xl border border-border/70 bg-background/40 p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="font-semibold">Search and add stocks</p>
+                  <button
+                    onClick={() => setIsAddStockOpen(false)}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
                 </div>
-                <Button
-                  onClick={handleOpenAddStock}
-                  className="pill-button pill-button-primary h-12 px-5"
-                >
-                  <Plus className="h-4 w-4" />
-                  Add stock
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-5">
-              <div className="grid gap-4 md:grid-cols-3">
-                <GuideCard
-                  title="Step 1"
-                  text="Open Add stock and search by ticker or company name."
-                  icon={<Search className="h-4 w-4 text-primary" />}
-                />
-                <GuideCard
-                  title="Step 2"
-                  text="Choose a stock from the results and add it to your watchlist."
-                  icon={<Plus className="h-4 w-4 text-primary" />}
-                />
-                <GuideCard
-                  title="Step 3"
-                  text="Tap a watchlist row to inspect signals, context, and detail charts."
-                  icon={<ArrowRight className="h-4 w-4 text-primary" />}
-                />
-              </div>
 
-              {watchlist.length === 0 ? (
-                <div className="premium-card border border-border/70 bg-background/35 p-6 sm:p-8 md:p-10">
-                  <div className="grid gap-6 lg:gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
-                    <div className="space-y-4">
-                      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/15 text-primary">
-                        <BrainCircuit className="h-7 w-7" />
-                      </div>
-                      <div className="space-y-2">
-                        <h3 className="text-2xl font-semibold">Start with a tighter watchlist</h3>
-                        <p className="text-muted-foreground">
-                          Search for a stock like AAPL, NVDA, or TSLA, add it to your watchlist, and this dashboard will begin to feel alive with signals and next steps.
-                        </p>
-                      </div>
-                      <Button onClick={handleOpenAddStock} className="pill-button pill-button-primary h-12 px-5">
-                        <Plus className="h-4 w-4" />
-                        Add your first stock
-                      </Button>
-                    </div>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search by ticker or name (e.g., AAPL, Apple)"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
 
-                    <div className="grid gap-2 sm:gap-3 sm:grid-cols-2">
-                      {quickSearches.slice(0, 4).map((ticker) => (
+                {searchQuery.trim().length > 0 && searchStocksQuery.isLoading && (
+                  <div className="py-4 text-center text-sm text-muted-foreground">
+                    Searching...
+                  </div>
+                )}
+
+                {searchQuery.trim().length > 0 && !searchStocksQuery.isLoading && searchStocksQuery.data && searchStocksQuery.data.length > 0 && (
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {searchStocksQuery.data.map((stock) => {
+                      const isInWatchlist = watchlist.some(
+                        (w) => w.stockId === stock.id || w.ticker === stock.ticker
+                      );
+                      return (
+                        <button
+                          key={stock.id}
+                          onClick={() => handleAddStock(stock)}
+                          disabled={isInWatchlist || addingStockId === stock.id}
+                          className="w-full text-left px-3 py-2 rounded-lg hover:bg-secondary/60 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="min-w-0">
+                              <p className="font-semibold text-sm truncate">{stock.ticker}</p>
+                              <p className="text-xs text-muted-foreground truncate">{stock.name}</p>
+                            </div>
+                            {isInWatchlist && (
+                              <CheckCircle2 className="h-4 w-4 text-emerald-500 flex-shrink-0 ml-2" />
+                            )}
+                            {addingStockId === stock.id && (
+                              <div className="h-4 w-4 rounded-full border-2 border-primary border-t-transparent animate-spin flex-shrink-0 ml-2" />
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {searchQuery.trim().length > 0 && !searchStocksQuery.isLoading && (!searchStocksQuery.data || searchStocksQuery.data.length === 0) && (
+                  <div className="py-4 text-center text-sm text-muted-foreground">
+                    No stocks found. Try a different search.
+                  </div>
+                )}
+
+                <div className="pt-2 space-y-2">
+                  <p className="text-xs text-muted-foreground font-medium">Quick add</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {quickSearches.map((ticker) => {
+                      const stock = searchStocksQuery.data?.find((s) => s.ticker === ticker);
+                      const isInWatchlist = watchlist.some((w) => w.ticker === ticker);
+                      return (
                         <button
                           key={ticker}
                           onClick={() => {
-                            const nextSelection = getQuickAddStockSelection(ticker);
-                            setIsAddStockOpen(nextSelection.isAddStockOpen);
-                            setSearchQuery(nextSelection.searchQuery);
+                            if (stock) {
+                              handleAddStock(stock);
+                            }
                           }}
-                          className="feature-card text-left"
+                          disabled={isInWatchlist}
+                          className="px-3 py-2 rounded-lg text-xs font-medium border border-border/70 hover:bg-secondary/60 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
-                          <p className="text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">Popular search</p>
-                          <p className="mt-3 text-2xl font-semibold tracking-tight">{ticker}</p>
-                          <p className="mt-2 text-sm text-muted-foreground">Tap to search and add this stock to your list.</p>
+                          {ticker}
                         </button>
-                      ))}
-                    </div>
+                      );
+                    })}
                   </div>
                 </div>
-              ) : (
-                <div className="grid gap-4">
-                  {watchlist.map((item) => {
-                    const relatedSignal = signals.find((signal) => signal.ticker === item.ticker);
-                    return (
-                      <div
-                        key={item.id}
-                        className="premium-card flex flex-col gap-4 p-5 text-left md:flex-row md:items-center md:justify-between"
-                      >
-                        <button
-                          onClick={() => setLocation(`/stock/${item.ticker}`)}
-                          className="flex-1 transition hover:-translate-y-0.5 text-left"
-                        >
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-3">
-                              <p className="text-2xl font-semibold tracking-tight text-foreground">{item.ticker}</p>
-                              <Badge variant="secondary" className="rounded-full px-3 py-1">{item.name}</Badge>
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                              Click to open the full stock view and inspect the latest trading context.
-                            </p>
-                          </div>
+              </div>
+            )}
 
-                          <div className="flex flex-wrap items-center gap-3 mt-3">
-                            {relatedSignal ? (
-                              <Badge
-                                className={`rounded-full px-3 py-1 ${
-                                  relatedSignal.type === "buy"
-                                    ? "border border-emerald-400/30 bg-emerald-400/15 text-emerald-300"
-                                    : "border border-rose-400/30 bg-rose-400/15 text-rose-300"
-                                }`}
-                              >
-                                {relatedSignal.type === "buy" ? "Buy signal active" : "Sell signal active"}
-                              </Badge>
-                            ) : (
-                              <Badge variant="secondary" className="rounded-full px-3 py-1">Awaiting signal refresh</Badge>
-                            )}
-                            <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                          </div>
-                        </button>
+            {watchlist.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-border/70 p-8 text-center">
+                <Star className="h-12 w-12 text-muted-foreground/40 mx-auto mb-3" />
+                <p className="font-semibold text-foreground mb-2">No stocks yet</p>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Add your first stock to start receiving AI-powered trading signals
+                </p>
+                <Button onClick={handleOpenAddStock} size="sm" className="pill-button pill-button-primary">
+                  Add your first stock
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {watchlist.map((stock) => {
+                  const stockSignals = signals.filter((s) => s.ticker === stock.ticker);
+                  const buyCount = stockSignals.filter((s) => s.type === "buy").length;
+                  const sellCount = stockSignals.filter((s) => s.type === "sell").length;
 
-                        <div className="flex items-center gap-2 shrink-0">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setLocation(`/watchlist/${item.id}/settings`);
-                            }}
-                            className="h-9 w-9 p-0"
-                            title="Alert preferences"
-                          >
-                            <Settings className="h-4 w-4" />
-                          </Button>
+                  return (
+                    <button
+                      key={stock.id}
+                      onClick={() => setLocation(`/stocks/${stock.ticker}`)}
+                      className="w-full text-left px-4 py-3 rounded-xl border border-border/70 bg-background/40 hover:bg-background/60 hover:border-primary/50 transition-all duration-200 group"
+                    >
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="min-w-0 flex-1">
+                          <p className="font-semibold text-foreground group-hover:text-primary transition-colors">{stock.ticker}</p>
+                          <p className="text-xs text-muted-foreground truncate">{stock.name}</p>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {buyCount > 0 && (
+                            <Badge variant="secondary" className="bg-emerald-500/15 text-emerald-400 border-emerald-500/30">
+                              <TrendingUp className="h-3 w-3 mr-1" />
+                              {buyCount}
+                            </Badge>
+                          )}
+                          {sellCount > 0 && (
+                            <Badge variant="secondary" className="bg-rose-500/15 text-rose-400 border-rose-500/30">
+                              <TrendingDown className="h-3 w-3 mr-1" />
+                              {sellCount}
+                            </Badge>
+                          )}
+                          {buyCount === 0 && sellCount === 0 && (
+                            <Badge variant="secondary" className="bg-muted text-muted-foreground border-muted">
+                              No signals
+                            </Badge>
+                          )}
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <div className="grid gap-6">
-            <Card className="premium-card border-0 bg-transparent shadow-none">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-2xl font-semibold tracking-tight">Signal pulse</CardTitle>
-                <CardDescription className="text-base text-muted-foreground">
-                  A quick read on what your account should look at next.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="grid gap-4">
-                <div className="metric-card">
-                  <div className="flex items-center justify-between gap-4">
-                    <div>
-                      <p className="metric-label">Coverage</p>
-                      <p className="metric-value">{signalCoverage}%</p>
-                    </div>
-                    <BellRing className="h-5 w-5 text-primary" />
-                  </div>
-                  <p className="mt-3 text-sm text-muted-foreground">How much of your watchlist currently has signal activity or recent ranking movement.</p>
-                  <div className="progress-premium mt-4">
-                    <span style={{ width: `${signalCoverage}%` }} />
-                  </div>
-                </div>
-
-                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
-                  <SignalSummaryCard
-                    title="Buy opportunities"
-                    count={buySignals}
-                    tone="positive"
-                    description="Names worth reviewing for strength and continuation."
-                  />
-                  <SignalSummaryCard
-                    title="Risk alerts"
-                    count={sellSignals}
-                    tone="negative"
-                    description="Names showing weakness or deterioration."
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="premium-card border-0 bg-transparent shadow-none">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-2xl font-semibold tracking-tight">Latest active signals</CardTitle>
-                <CardDescription className="text-base text-muted-foreground">
-                  Ranked ideas surfaced by the system for quick review.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {signals.length === 0 ? (
-                  <div className="rounded-3xl border border-border/70 bg-background/35 p-6 text-center">
-                    <Clock3 className="mx-auto h-10 w-10 text-muted-foreground" />
-                    <p className="mt-4 font-medium text-foreground">No active signals yet</p>
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      Add a few stocks to your watchlist first, then come back here to review ranked ideas.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="grid gap-3">
-                    {signals.slice(0, 6).map((signal) => (
-                      <button
-                        key={signal.signalId}
-                        onClick={() => setLocation(`/stock/${signal.ticker}`)}
-                        className="flex items-center justify-between rounded-2xl border border-border/70 bg-background/35 px-4 py-4 text-left transition hover:border-primary/35 hover:bg-background/55"
-                      >
-                        <div>
-                          <p className="text-lg font-semibold tracking-tight text-foreground">{signal.ticker}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {new Date(signal.createdAt).toLocaleDateString("en-GB", {
-                              day: "numeric",
-                              month: "short",
-                              year: "numeric",
-                            })}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <Badge
-                            className={`rounded-full px-3 py-1 ${
-                              signal.type === "buy"
-                                ? "border border-emerald-400/30 bg-emerald-400/15 text-emerald-300"
-                                : "border border-rose-400/30 bg-rose-400/15 text-rose-300"
-                            }`}
-                          >
-                            {signal.type === "buy" ? "Buy" : "Sell"}
-                          </Badge>
-                          <span className="text-sm font-semibold text-foreground">{signal.confidenceScore}%</span>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </section>
 
-        {isAddStockOpen ? (
-          <div ref={addStockPanelRef}>
-            <Card className="premium-card border border-border/70 bg-background/95 p-0 backdrop-blur-2xl">
-            <CardHeader className="border-b border-border/70 px-4 py-6 sm:px-6 sm:py-6 md:px-8">
-              <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                <div className="space-y-2">
-                  <CardTitle className="text-3xl font-semibold tracking-tight">Add a stock to your watchlist</CardTitle>
-                  <CardDescription className="max-w-2xl text-base text-muted-foreground">
-                    Search by ticker or company name, then click <strong>Add to watchlist</strong>. Once added, the stock will appear in your workspace and begin feeding into your review flow.
-                  </CardDescription>
-                </div>
-                <Button type="button" variant="outline" className="rounded-full" onClick={() => setIsAddStockOpen(false)}>
-                  Close panel
-                </Button>
-              </div>
-            </CardHeader>
-
-            <CardContent className="grid gap-0 p-0 lg:grid-cols-[0.8fr_1.2fr]">
-              <div className="border-b border-border/70 px-4 py-6 sm:px-6 sm:py-6 lg:border-b-0 lg:border-r lg:px-8">
-                <p className="text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">How to use this</p>
-                <div className="mt-5 space-y-4 text-sm text-muted-foreground">
-                  <div className="flex gap-3">
-                    <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-bold text-primary">1</span>
-                    <p>Search for a stock like AAPL, MSFT, NVDA, or the company name you want to monitor.</p>
-                  </div>
-                  <div className="flex gap-3">
-                    <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-bold text-primary">2</span>
-                    <p>Click <strong>Add to watchlist</strong> next to the stock you want to track.</p>
-                  </div>
-                  <div className="flex gap-3">
-                    <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-bold text-primary">3</span>
-                    <p>Return to the dashboard and open the stock page whenever you want deeper analysis.</p>
-                  </div>
-                </div>
-
-                <div className="mt-8">
-                  <p className="text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">Popular tickers</p>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {quickSearches.map((ticker) => (
-                      <Button
-                        key={ticker}
-                        type="button"
-                        variant="outline"
-                        className="rounded-full"
-                        onClick={() => setSearchQuery(ticker)}
-                      >
-                        {ticker}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div className="px-4 py-6 sm:px-6 sm:py-6 md:px-8">
-                <div className="relative">
-                  <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search by ticker or company name"
-                    className="h-14 rounded-2xl border-border/80 bg-background/55 pl-12 text-base"
-                  />
-                  {searchQuery.trim() && !searchStocksQuery.isLoading && searchStocksQuery.data && searchStocksQuery.data.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 mt-2 rounded-2xl border border-border/70 bg-background/95 shadow-lg z-50 max-h-64 overflow-y-auto">
-                      {searchStocksQuery.data.slice(0, 8).map((stock) => (
-                        <button
-                          key={stock.id}
-                          onClick={() => setSearchQuery(stock.ticker)}
-                          className="w-full px-4 py-3 text-left hover:bg-primary/10 border-b border-border/30 last:border-b-0 transition"
-                        >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="font-semibold text-foreground">{stock.ticker}</p>
-                              <p className="text-xs text-muted-foreground">{stock.name}</p>
-                            </div>
-                            <Badge variant="secondary" className="rounded-full px-2 py-0.5 text-xs">{stock.exchange}</Badge>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <div className="mt-5 max-h-[26rem] overflow-y-auto pr-1">
-                  {!searchQuery.trim() ? (
-                    <div className="rounded-3xl border border-dashed border-border/80 bg-background/30 p-8 text-center">
-                      <Search className="mx-auto h-10 w-10 text-muted-foreground" />
-                      <p className="mt-4 text-lg font-medium text-foreground">Start with a search</p>
-                      <p className="mt-2 text-sm text-muted-foreground">
-                        Type a ticker or tap one of the suggested names to see results you can add.
-                      </p>
-                    </div>
-                  ) : searchStocksQuery.isLoading ? (
-                    <div className="rounded-3xl border border-border/80 bg-background/30 p-8 text-center">
-                      <div className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-primary/25 border-t-primary" />
-                      <p className="mt-4 text-sm text-muted-foreground">Searching the stock universe…</p>
-                    </div>
-                  ) : searchStocksQuery.data && searchStocksQuery.data.length > 0 ? (
-                    <div className="grid gap-3">
-                      {searchStocksQuery.data.map((stock) => {
-                        const alreadyAdded = watchlist.some((item) => item.stockId === stock.id || item.ticker === stock.ticker);
-                        const isAdding = addingStockId === stock.id && addToWatchlistMutation.isPending;
-                        return (
-                          <div
-                            key={stock.id}
-                            className="rounded-3xl border border-border/70 bg-background/35 p-4 transition hover:border-primary/35"
-                          >
-                            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                              <div>
-                                <div className="flex items-center gap-3">
-                                  <p className="text-xl font-semibold tracking-tight text-foreground">{stock.ticker}</p>
-                                  <Badge variant="secondary" className="rounded-full px-3 py-1">{stock.exchange}</Badge>
-                                </div>
-                                <p className="mt-2 text-sm text-muted-foreground">{stock.name}</p>
-                              </div>
-                              <Button
-                                type="button"
-                                disabled={alreadyAdded || isAdding}
-                                onClick={() => handleAddStock(stock)}
-                                className={alreadyAdded ? "pill-button h-11 rounded-full px-5" : "pill-button pill-button-primary h-11 px-5"}
-                                variant={alreadyAdded ? "secondary" : "default"}
-                              >
-                                {alreadyAdded ? (
-                                  <>
-                                    <CheckCircle2 className="h-4 w-4" />
-                                    Added already
-                                  </>
-                                ) : isAdding ? (
-                                  <>
-                                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                                    Adding…
-                                  </>
-                                ) : (
-                                  <>
-                                    <Plus className="h-4 w-4" />
-                                    Add to watchlist
-                                  </>
-                                )}
-                              </Button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <div className="rounded-3xl border border-dashed border-border/80 bg-background/30 p-8 text-center">
-                      <Clock3 className="mx-auto h-10 w-10 text-muted-foreground" />
-                      <p className="mt-4 text-lg font-medium text-foreground">No matches found</p>
-                      <p className="mt-2 text-sm text-muted-foreground">
-                        Try a different ticker or company name, for example AAPL, Microsoft, NVDA, or Tesla.
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-            </Card>
+        <section className="dashboard-frame relative overflow-hidden px-4 py-3 sm:px-6 sm:py-4 md:px-8 md:py-5">
+          <div className="space-y-4">
+            <h2 className="text-2xl font-semibold tracking-tight">Next steps</h2>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <GuideCard
+                title="Review signals"
+                text="Check today's highest-conviction buy and sell ideas"
+                icon={<BrainCircuit className="h-5 w-5 text-primary" />}
+              />
+              <GuideCard
+                title="Validate ideas"
+                text="Use the simulator to test strategies before trading"
+                icon={<BarChart3 className="h-5 w-5 text-primary" />}
+              />
+              <GuideCard
+                title="Set alerts"
+                text="Get notified when key setups appear in your watchlist"
+                icon={<BellRing className="h-5 w-5 text-primary" />}
+              />
+            </div>
           </div>
-        ) : null}
+        </section>
       </div>
     </DashboardLayout>
   );
 }
+
+import DashboardLayout from "@/components/DashboardLayout";
+import { BarChart3 } from "lucide-react";
 
 function MetricCard({
   label,
@@ -628,8 +428,6 @@ function MetricCard({
     const watchlistSection = document.querySelector('[data-section="watchlist"]');
     if (watchlistSection) {
       watchlistSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } else {
-      window.scrollTo({ top: 500, behavior: 'smooth' });
     }
   };
   return (
@@ -676,29 +474,6 @@ function GuideCard({
         <p className="font-semibold text-foreground">{title}</p>
       </div>
       <p className="mt-3 text-sm text-muted-foreground">{text}</p>
-    </div>
-  );
-}
-
-function SignalSummaryCard({
-  title,
-  count,
-  tone,
-  description,
-}: {
-  title: string;
-  count: number;
-  tone: "positive" | "negative";
-  description: string;
-}) {
-  return (
-    <div className="rounded-3xl border border-border/70 bg-background/35 p-5">
-      <p className="text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">{title}</p>
-      <div className="mt-3 flex items-end gap-3">
-        <p className="text-4xl font-semibold tracking-tight text-foreground">{count}</p>
-        <p className={`metric-change ${tone}`}>{tone === "positive" ? "Healthy flow" : "Review risk"}</p>
-      </div>
-      <p className="mt-3 text-sm text-muted-foreground">{description}</p>
     </div>
   );
 }

@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
-import { TrendingUp, TrendingDown, AlertCircle, RefreshCw, ArrowLeft } from 'lucide-react';
+import { TrendingUp, TrendingDown, AlertCircle, RefreshCw, ArrowLeft, Home } from 'lucide-react';
 import { SignalDetailsModal } from '@/components/SignalDetailsModal';
 import { useLocation } from 'wouter';
 
@@ -35,13 +35,9 @@ export default function SignalsDashboard() {
   const [backLabel, setBackLabel] = useState('Back to dashboard');
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && document.referrer.includes('/dashboard')) {
-      setBackPath('/dashboard');
-      setBackLabel('Back to dashboard');
-    } else {
-      setBackPath('/');
-      setBackLabel('Back to menu');
-    }
+    // Always set up both navigation options
+    setBackPath('/');
+    setBackLabel('Back to menu');
   }, []);
 
   // Fetch market overview with signals
@@ -105,13 +101,22 @@ export default function SignalsDashboard() {
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Navigation */}
-        <div className="mb-6 flex items-center gap-4">
+        <div className="mb-6 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setLocation('/')}
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-md hover:bg-muted/50"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span className="text-sm">Back to menu</span>
+            </button>
+          </div>
           <button
-            onClick={() => setLocation(backPath)}
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+            onClick={() => setLocation('/dashboard')}
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-md hover:bg-muted/50"
           >
-            <ArrowLeft className="h-5 w-5" />
-            <span className="text-sm">{backLabel}</span>
+            <span className="text-sm">Back to dashboard</span>
+            <Home className="h-4 w-4" />
           </button>
         </div>
 

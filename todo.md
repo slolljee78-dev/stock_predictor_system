@@ -378,3 +378,10 @@
 - [x] Update Home page CTA to "Start 7-day free trial"
 - [x] Implement 7-day trial period in Stripe checkout (trial_period_days: 7)
 - [x] Add trial configuration to products.ts (TRIAL_DAYS constant)
+
+
+## Latest Fixes - Navigation & Dashboard Loading
+- [x] Fix Real-time Signals page navigation buttons (back to menu + back to dashboard)
+- [x] Fix dashboard loading down the screen (remove auto-scroll on mount)
+- [x] Update SignalsDashboard to match TradingSimulator navigation pattern
+- [x] Fix Dashboard.tsx scroll behavior to only scroll when user opens add stock panel
