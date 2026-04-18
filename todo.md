@@ -296,3 +296,9 @@
 - [x] Enable signal monitoring job at application startup
 - [x] Test real-time signal generation and notifications
 - [x] Verify multi-channel notification delivery (email, push, in-app)
+
+
+## UX Fixes - Landing Page & Watchlist Cards
+- [x] Reduce top spacing on landing page (premium banner too far from top)
+- [x] Tighten spacing between "guessing" and "Trade" text on landing page
+- [x] Make watchlist cards clickable to navigate to watchlist page

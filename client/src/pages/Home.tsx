@@ -134,9 +134,9 @@ export default function Home() {
       </header>
 
       <main className="focus:outline-none">
-        <section className="relative overflow-hidden pt-4 md:pt-0">
+        <section className="relative overflow-hidden pt-0">
           <div className="hero-grid absolute inset-0 opacity-60" />
-          <div className="container relative py-16 md:py-24 lg:py-28">
+          <div className="container relative py-8 md:py-16 lg:py-20">
             <div className="grid items-center gap-14 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16">
               <div className="space-y-8">
                 <div className="eyebrow">
@@ -147,8 +147,8 @@ export default function Home() {
                 <div className="space-y-6">
                   <div className="space-y-3">
                     <p className="text-sm font-bold uppercase tracking-[0.24em] text-primary/85">Stock Predictor</p>
-                    <h1 className="display-title max-w-5xl text-balance">
-                      Stop guessing. <span className="gradient-text">Trade with a clearer signal stack.</span>
+                    <h1 className="display-title max-w-5xl text-balance leading-tight">
+                      Stop guessing.<br className="hidden sm:block" /> <span className="gradient-text">Trade with a clearer signal stack.</span>
                     </h1>
                   </div>
 
@@ -211,7 +211,10 @@ export default function Home() {
                   </div>
 
                   <div className="grid gap-4 md:grid-cols-2">
-                    <div className="feature-card min-h-44">
+                    <button
+                      onClick={() => setLocation("/dashboard")}
+                      className="feature-card min-h-44 text-left hover:shadow-lg hover:shadow-primary/20 transition-all duration-200 cursor-pointer"
+                    >
                       <div className="mb-6 flex items-center justify-between">
                         <div className="flex h-14 w-14 md:h-12 md:w-12 items-center justify-center rounded-2xl bg-primary/15 text-primary">
                           <LineChart className="h-7 w-7 md:h-6 md:w-6" />
@@ -221,9 +224,12 @@ export default function Home() {
                       <p className="text-xs md:text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">AI signal density</p>
                       <p className="mt-3 text-3xl md:text-3xl font-semibold tracking-tight">14 fresh setups</p>
                       <p className="mt-3 text-sm text-muted-foreground">Morning momentum and reversal candidates ranked by confidence.</p>
-                    </div>
+                    </button>
 
-                    <div className="feature-card min-h-44">
+                    <button
+                      onClick={() => setLocation("/dashboard")}
+                      className="feature-card min-h-44 text-left hover:shadow-lg hover:shadow-primary/20 transition-all duration-200 cursor-pointer"
+                    >
                       <div className="mb-6 flex items-center justify-between">
                         <div className="flex h-14 w-14 md:h-12 md:w-12 items-center justify-center rounded-2xl bg-accent/15 text-accent">
                           <ShieldCheck className="h-7 w-7 md:h-6 md:w-6" />
@@ -233,7 +239,7 @@ export default function Home() {
                       <p className="text-xs md:text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">Portfolio discipline</p>
                       <p className="mt-3 text-3xl md:text-3xl font-semibold tracking-tight">92% coverage</p>
                       <p className="mt-3 text-sm text-muted-foreground">Watchlist alerts, simulator testing, and stock detail pages connected in one flow.</p>
-                    </div>
+                    </button>
                   </div>
 
                   <div className="premium-card p-5">
