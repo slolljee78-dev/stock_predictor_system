@@ -1,3 +1,4 @@
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -50,18 +51,18 @@ const proofStats = [
 const workflowSteps = [
   {
     step: "01",
-    title: "Build a focused watchlist",
-    body: "Add the shares you actually care about and keep your workspace centred on the names that matter to you.",
+    title: "Create a watchlist that suits you",
+    body: "Add the stocks you want to follow and keep everything you care about in one simple, easy-to-scan view.",
   },
   {
     step: "02",
-    title: "Review the daily signal pulse",
-    body: "Use AI-ranked buy and sell ideas as a starting point, then inspect the stock detail page for context and confidence.",
+    title: "Check your strongest opportunities",
+    body: "See the clearest buy and sell opportunities first, then open each stock for the extra detail you need before making a move.",
   },
   {
     step: "03",
-    title: "Pressure-test ideas before acting",
-    body: "Use the simulator and validation views to practice, compare outcomes, and build conviction before committing capital.",
+    title: "Test ideas before you trade",
+    body: "Use the simulator and validation tools to practise, compare outcomes, and feel more confident before risking real money.",
   },
 ];
 
@@ -310,9 +311,9 @@ export default function Home() {
                 <ShieldCheck className="h-4 w-4 text-primary" />
                 How the workflow works
               </div>
-              <h2>A premium product flow, not just a list of widgets.</h2>
+              <h2>A smoother way to move from ideas to action.</h2>
               <p className="lead-copy">
-                The redesign focuses on clarity. New users should understand what to do first, and experienced users should be able to move from signals to deeper inspection without friction.
+                Stock Predictor is designed to help you know what to look at first, what deserves closer attention, and what to review before you place a trade.
               </p>
             </div>
 
@@ -341,18 +342,18 @@ export default function Home() {
                 <Star className="h-4 w-4 text-primary" />
                 Product walkthrough
               </div>
-              <h2>See the signal workflow from watchlist to validation.</h2>
+              <h2>See how the platform helps you make better trading decisions.</h2>
               <p className="lead-copy">
-                The walkthrough is now framed as a guided product story so prospects can understand what the platform helps them do, not just what screens it contains.
+                This quick walkthrough shows how Stock Predictor helps you move from tracking stocks, to spotting opportunities, to checking your ideas before you act.
               </p>
               <div className="premium-card p-5">
                 <p className="text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">What you will see in under two minutes</p>
                 <div className="mt-4 space-y-4 text-sm text-muted-foreground">
                   {[
-                    "How a focused watchlist becomes a calmer daily review workflow.",
-                    "How confidence-ranked signals help you prioritise which names to inspect first.",
-                    "How stock detail pages and alerts support deeper review before action.",
-                    "How simulator and validation views help pressure-test ideas responsibly.",
+                    "How your watchlist keeps the stocks you care about organised in one place.",
+                    "How buy and sell signals help you spot the opportunities worth reviewing first.",
+                    "How stock pages and alerts give you more context before you act.",
+                    "How the simulator and validation tools help you test ideas with more confidence.",
                   ].map((item, index) => (
                     <div key={item} className="flex items-start gap-3">
                       <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-semibold text-primary">

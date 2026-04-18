@@ -512,4 +512,9 @@
 - [x] Fix the simulator buy flow so trades can complete even when live price fetching is unreliable
 - [x] Add focused regression coverage for the simulator trade-execution fix
 - [x] Run focused verification for the simulator purchase fix
-- [ ] Save checkpoint after completing the simulator purchase fix
+- [x] Save checkpoint after completing the simulator purchase fix
+
+## Public Copy Refresh
+- [x] Rewrite the walkthrough and product-flow descriptions in more customer-friendly language
+- [x] Verify the updated public copy in the app
+- [ ] Save checkpoint after completing the public copy refresh
