@@ -338,6 +338,10 @@ export const appRouter = router({
       const { getSignalTrend } = await import('./db');
       return getSignalTrend(7);
     }),
+    getTrendDataByDay: publicProcedure.query(async () => {
+      const { getSignalTrendByDay } = await import('./db');
+      return getSignalTrendByDay(7);
+    }),
   }),
 
   backtest: backtestRouter,
