@@ -425,14 +425,10 @@ function MetricCard({
   trendPercent?: number;
 }) {
   const handleClick = () => {
-    const watchlistSection = document.querySelector('[data-section="watchlist"]');
-    if (watchlistSection) {
-      watchlistSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    // Removed auto-scroll - let user scroll naturally
   };
   return (
     <button
-      onClick={handleClick}
       className="metric-card cursor-pointer hover:shadow-lg hover:shadow-primary/20 transition-all duration-200 text-left"
     >
       <div className="flex items-center justify-between gap-4">

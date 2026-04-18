@@ -394,3 +394,15 @@
 - [x] Fix "Back to menu" navigation - should go to dashboard menu, not home page
 - [x] Update all page titles to match 3-Month Validation page style (large gradient text)
 - [x] Apply consistent title styling across Alert Preferences, Signal Accuracy, and other pages
+
+
+## Navigation & Styling Issues - Round 2
+- [ ] Fix Dashboard page loading position (loads halfway down)
+- [ ] Make menu button more obvious/clear it's a menu button
+- [ ] Fix "Back to menu" navigation to go to dashboard menu (not home page)
+- [ ] Standardize all "Back to menu" button styling to match Trading Simulator
+- [ ] Fix title spacing - reduce excessive padding between titles and descriptions
+- [ ] Add "Back to menu" and "Back to dashboard" buttons to Validation page
+- [ ] Add "Back to menu" and "Back to dashboard" buttons to Pricing page
+- [ ] Add "Back to menu" and "Back to dashboard" buttons to FAQ page
+- [ ] Make menu button icon more prominent (currently not clear it's clickable)

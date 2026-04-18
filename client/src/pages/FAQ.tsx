@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, ChevronLeft, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useLocation } from 'wouter';
 
 interface FAQItem {
   id: string;
@@ -205,6 +206,7 @@ const faqItems: FAQItem[] = [
 const categories = Array.from(new Set(faqItems.map(item => item.category)));
 
 export default function FAQ() {
+  const [, setLocation] = useLocation();
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -224,6 +226,24 @@ export default function FAQ() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 pt-20 pb-16">
       <div className="container max-w-4xl mx-auto px-4">
+        {/* Navigation Buttons */}
+        <div className="flex items-center justify-between gap-3 mb-8">
+          <button
+            onClick={() => setLocation("/dashboard")}
+            className="flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:text-white transition-colors hover:bg-slate-700 rounded-lg"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Back to menu
+          </button>
+          <button
+            onClick={() => setLocation("/dashboard")}
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-600 text-white hover:bg-cyan-700 transition-colors text-sm font-medium"
+          >
+            <Home className="h-4 w-4" />
+            Back to dashboard
+          </button>
+        </div>
+
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">

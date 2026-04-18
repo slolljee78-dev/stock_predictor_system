@@ -178,8 +178,21 @@ export default function Pricing() {
       </header>
 
       <main>
-        <div className="container mt-8">
+        <div className="container mt-8 flex items-center justify-between gap-3 mb-6">
+          <button
+            onClick={() => setLocation("/dashboard")}
+            className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors hover:bg-primary/10 rounded-lg"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Back to menu
+          </button>
           <Breadcrumb items={[{ label: "Pricing", href: "/pricing" }]} />
+          <button
+            onClick={() => setLocation("/dashboard")}
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-sm font-medium"
+          >
+            Back to dashboard
+          </button>
         </div>
         <section className="section-shell pb-12 pt-16 md:pt-24">
           <div className="container grid gap-10 lg:grid-cols-[1fr_0.9fr] lg:items-end">

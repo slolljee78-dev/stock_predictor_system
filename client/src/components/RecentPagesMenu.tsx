@@ -22,7 +22,7 @@ const PAGE_DEFINITIONS: Record<string, { label: string; icon: React.ReactNode }>
   "/dashboard": { label: "Dashboard", icon: <BarChart3 className="h-4 w-4" /> },
   "/simulator": { label: "Trading Simulator", icon: <TrendingUp className="h-4 w-4" /> },
   "/pricing": { label: "Pricing", icon: <BarChart3 className="h-4 w-4" /> },
-  "/validation": { label: "Validation", icon: <CheckSquare className="h-4 w-4" /> },
+  "/validation/dashboard": { label: "Validation", icon: <CheckSquare className="h-4 w-4" /> },
 };
 
 const STORAGE_KEY = "recent_pages";

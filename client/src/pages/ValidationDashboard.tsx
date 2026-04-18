@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-import { TrendingUp, TrendingDown, Target, AlertTriangle, RefreshCw, CheckCircle, AlertCircle, Zap } from "lucide-react";
+import { TrendingUp, TrendingDown, Target, AlertTriangle, RefreshCw, CheckCircle, AlertCircle, Zap, ChevronLeft, Home } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import PageTransition from "@/components/PageTransition";
+import { useLocation } from "wouter";
 
 interface ValidationMetrics {
   currentCapital: number;
@@ -23,6 +24,7 @@ interface MonthlyTarget {
 }
 
 export default function ValidationDashboard() {
+  const [, setLocation] = useLocation();
   const [metrics, setMetrics] = useState<ValidationMetrics>({
     currentCapital: 100,
     dailyPnL: 0,
@@ -110,6 +112,24 @@ export default function ValidationDashboard() {
   return (
     <PageTransition>
       <div className="space-y-8 p-6">
+      {/* Navigation Buttons */}
+      <div className="flex items-center justify-between gap-3 mb-6">
+        <button
+          onClick={() => setLocation("/dashboard")}
+          className="flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:text-white transition-colors hover:bg-slate-700 rounded-lg"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          Back to menu
+        </button>
+        <button
+          onClick={() => setLocation("/dashboard")}
+          className="flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-600 text-white hover:bg-cyan-700 transition-colors text-sm font-medium"
+        >
+          <Home className="h-4 w-4" />
+          Back to dashboard
+        </button>
+      </div>
+
       {/* Premium Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 animate-fade-in-up">
         <div>

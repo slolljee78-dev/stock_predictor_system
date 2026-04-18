@@ -60,17 +60,17 @@ export default function SignalAccuracyDashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4 mb-6">
+      <div className="flex items-center justify-between gap-3 mb-8">
         <button
           onClick={() => setLocation("/dashboard")}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+          className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors hover:bg-primary/10 rounded-lg"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to menu
         </button>
         <button
           onClick={() => setLocation("/dashboard")}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-sm font-medium"
         >
           <Home className="h-4 w-4" />
           Back to dashboard
@@ -78,8 +78,8 @@ export default function SignalAccuracyDashboard() {
       </div>
 
       <div>
-        <h1 className="text-4xl font-bold tracking-tight gradient-text">Signal Accuracy</h1>
-        <p className="text-muted-foreground mt-3">
+        <h1 className="text-4xl font-bold gradient-text mb-2">Signal Accuracy</h1>
+        <p className="text-muted-foreground">
           Track your signal performance metrics and trading statistics
         </p>
       </div>

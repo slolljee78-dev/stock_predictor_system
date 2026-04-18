@@ -14,7 +14,7 @@ const MENU_ITEMS = [
   { label: "Dashboard", href: "/dashboard" },
   { label: "Signals", href: "/signals" },
   { label: "Trading Simulator", href: "/simulator" },
-  { label: "Validation", href: "/validation" },
+  { label: "Validation", href: "/validation/dashboard" },
   { label: "Pricing", href: "/pricing" },
   { label: "FAQ", href: "/faq" },
   { label: "Home", href: "/" },

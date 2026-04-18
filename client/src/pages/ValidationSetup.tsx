@@ -106,8 +106,8 @@ export default function ValidationSetup() {
         <div className="flex items-center gap-3">
           <CheckCircle className="w-8 h-8 text-green-600" />
           <div>
-            <h1 className="text-3xl font-bold">Validation Session Started!</h1>
-            <p className="text-gray-600">Your 3-month paper trading validation has begun</p>
+            <h1 className="text-4xl font-bold gradient-text mb-2">Validation Session Started!</h1>
+            <p className="text-muted-foreground">Your 3-month paper trading validation has begun</p>
           </div>
         </div>
 
@@ -235,8 +235,8 @@ export default function ValidationSetup() {
       </div>
       <Breadcrumb items={[{ label: "Validation", href: "/validation" }]} />
       <div>
-        <h1 className="text-3xl font-bold">Start 3-Month Validation</h1>
-        <p className="text-gray-600 mt-2">Initialize your paper trading validation session</p>
+        <h1 className="text-4xl font-bold gradient-text mb-2">Start 3-Month Validation</h1>
+        <p className="text-muted-foreground">Initialize your paper trading validation session</p>
       </div>
 
       {error && (
