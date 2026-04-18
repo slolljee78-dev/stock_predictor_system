@@ -7,8 +7,10 @@ import { generateTradingSignal } from './signalGenerator';
 import { getDb } from './db';
 import { TRADING_212_STOCKS } from './stockDataFetcher';
 import { notifyBuySignal, notifySellSignal } from './pushNotificationService';
+import { startSignalMonitoring, stopSignalMonitoring, getMonitoringStatus } from './signalMonitoringJob';
 
 let isRunning = false;
+let monitoringJobId: NodeJS.Timeout | null = null;
 
 /**
  * Generate signals for all stocks in watchlists
@@ -51,6 +53,16 @@ export async function generateSignalsForWatchlists() {
 export function startBackgroundJobs() {
   console.log('[Background Jobs] Starting scheduler...');
 
+  // Start real-time signal monitoring job
+  console.log('[Background Jobs] Initializing signal monitoring...');
+  startSignalMonitoring({
+    interval: 5 * 60 * 1000, // 5 minutes
+    confidenceThreshold: 60,
+    maxStocksPerRun: 50,
+    notifyOnSignal: true,
+    updateSentiment: true,
+  });
+
   // Generate signals every 5 minutes during market hours
   const signalInterval = setInterval(async () => {
     const now = new Date();
@@ -69,6 +81,7 @@ export function startBackgroundJobs() {
   // Cleanup on process exit
   process.on('exit', () => {
     clearInterval(signalInterval);
+    stopSignalMonitoring();
     console.log('[Background Jobs] Scheduler stopped');
   });
 
@@ -96,8 +109,10 @@ export async function triggerSignalGeneration() {
  * Get background job status
  */
 export function getBackgroundJobStatus() {
+  const monitoringStatus = getMonitoringStatus();
   return {
     isRunning,
+    signalMonitoring: monitoringStatus,
     timestamp: new Date(),
     nextRun: new Date(Date.now() + 5 * 60 * 1000),
   };

@@ -64,10 +64,8 @@ async function startServer() {
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
     
-    // Start background jobs
-    if (process.env.NODE_ENV === "production") {
-      startBackgroundJobs();
-    }
+    // Start background jobs (both development and production)
+    startBackgroundJobs();
   });
 }
 
