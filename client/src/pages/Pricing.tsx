@@ -1,36 +1,64 @@
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { MobileMenuDrawer } from "@/components/MobileMenuDrawer";
+import { getLoginUrl } from "@/const";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { Check, ChevronLeft, ShieldCheck, Sparkles, X } from "lucide-react";
+import {
+  ArrowRight,
+  Check,
+  ChevronRight,
+  Crown,
+  LineChart,
+  ShieldCheck,
+  Sparkles,
+  Users,
+  Zap,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
-import { DASHBOARD_HOME_PATH, navigateToDashboardMenu } from "@/lib/navigation";
 
-const PRICING_TIERS = [
+const PRICING_TIERS: Array<{
+  name: string;
+  price: number;
+  currency: string;
+  tier: string;
+  audience: string;
+  description: string;
+  cta: string;
+  highlight: string;
+  recommended?: boolean;
+  bullets: Array<{ name: string; included: boolean }>;
+}> = [
   {
     name: "Starter",
     price: 9.99,
     currency: "£",
-    description: "For investors who want a clean daily review workflow without market overload.",
     tier: "STARTER",
+    audience: "Best for first-time signal users",
+    description:
+      "For investors who want a clean daily review workflow without market overload.",
     cta: "Start Starter trial",
+    highlight: "Daily signal review",
     bullets: [
       { name: "Monitor up to 50 stocks", included: true },
       { name: "Daily AI-ranked signals", included: true },
       { name: "Weekly summary email", included: true },
       { name: "Simulator access", included: true },
       { name: "Real-time alerts", included: false },
-      { name: "Full 212-stock universe", included: false },
-      { name: "API and export access", included: false },
+      { name: "Full Trading 212 coverage", included: false },
+      { name: "Exports and API access", included: false },
     ],
   },
   {
     name: "Pro",
     price: 29.99,
     currency: "£",
-    description: "Best for active Trading 212 users who want richer coverage and faster alerts.",
     tier: "PRO",
+    audience: "Best for active Trading 212 investors",
+    description:
+      "For members who want faster alerts, broader market coverage, and a more responsive workflow.",
     cta: "Start Pro trial",
+    highlight: "Real-time conviction workflow",
     recommended: true,
     bullets: [
       { name: "Monitor the full Trading 212 universe", included: true },
@@ -39,20 +67,23 @@ const PRICING_TIERS = [
       { name: "Priority support", included: true },
       { name: "Simulator access", included: true },
       { name: "Validation workflow", included: true },
-      { name: "API and export access", included: false },
+      { name: "Exports and API access", included: false },
     ],
   },
   {
     name: "Elite",
     price: 99.99,
     currency: "£",
-    description: "For serious operators who want advanced workflow access, exports, and premium tooling.",
     tier: "ELITE",
+    audience: "Best for power users and advanced workflows",
+    description:
+      "For serious operators who want exports, deeper validation tools, and more advanced workspace control.",
     cta: "Start Elite trial",
+    highlight: "Full workflow access",
     bullets: [
       { name: "Everything in Pro", included: true },
       { name: "Advanced validation workspace", included: true },
-      { name: "API and export access", included: true },
+      { name: "Exports and API access", included: true },
       { name: "Priority product support", included: true },
       { name: "Deeper portfolio workflows", included: true },
       { name: "Multi-workspace usage", included: true },
@@ -61,26 +92,59 @@ const PRICING_TIERS = [
   },
 ];
 
+const comparisonRows = [
+  {
+    label: "Watchlist coverage",
+    starter: "50 stocks",
+    pro: "Full Trading 212 universe",
+    elite: "Full universe + advanced workflows",
+  },
+  {
+    label: "Signal delivery",
+    starter: "Daily review",
+    pro: "Daily + real-time alerts",
+    elite: "Daily + real-time alerts",
+  },
+  {
+    label: "Validation tools",
+    starter: "Simulator only",
+    pro: "Simulator + validation",
+    elite: "Advanced validation workspace",
+  },
+  {
+    label: "Exports and API",
+    starter: "Not included",
+    pro: "Not included",
+    elite: "Included",
+  },
+  {
+    label: "Support level",
+    starter: "Standard",
+    pro: "Priority",
+    elite: "Priority + premium",
+  },
+];
+
 const faqs = [
   {
     question: "Can I change plans later?",
     answer:
-      "Yes. You can move up or down at any time. Plan changes are managed through Stripe and take effect according to the billing cycle.",
+      "Yes. You can move up or down at any time. Plan changes are managed through Stripe and take effect according to your billing cycle.",
   },
   {
     question: "Is there a trial?",
     answer:
-      "Yes. Every plan includes a 7-day free trial so you can assess the workflow before committing to a subscription.",
+      "Yes. Every paid plan includes a 7-day trial so you can evaluate the workflow before subscribing.",
   },
   {
     question: "What happens after I subscribe?",
     answer:
-      "You will be taken to a secure checkout page. Once completed, the upgraded access is connected to your account and reflected in the product workspace.",
+      "You will be taken to a secure checkout page. After payment, your upgraded access is tied to your account and reflected inside the workspace.",
   },
   {
     question: "Can I cancel any time?",
     answer:
-      "Yes. There are no long-term contracts. You can cancel at any point and keep access through the remainder of the paid period.",
+      "Yes. There are no long-term contracts. You can cancel whenever you like and keep access through the end of the paid period.",
   },
 ];
 
@@ -101,7 +165,7 @@ export default function Pricing() {
 
   const handleSubscribe = async (tier: string) => {
     if (!isAuthenticated) {
-      setLocation("/");
+      window.location.href = getLoginUrl();
       return;
     }
 
@@ -135,83 +199,160 @@ export default function Pricing() {
 
   return (
     <div className="app-shell min-h-screen overflow-x-hidden pb-20 page-enter">
-      <div className="hero-orb left-[-6rem] top-0 h-72 w-72 bg-primary/30" />
-      <div className="hero-orb right-[-7rem] top-32 h-72 w-72 bg-accent/20" />
+      <div className="hero-orb left-[-8rem] top-[-3rem] h-72 w-72 bg-primary/35" />
+      <div className="hero-orb right-[-7rem] top-24 h-80 w-80 bg-accent/25" />
 
-      <main className="container pt-6 pb-20 md:pt-8">
-        <div className="space-y-10">
-          <div className="flex items-center justify-between gap-3 pt-2">
-            <button
-              onClick={() => navigateToDashboardMenu(setLocation)}
-              className="flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:text-white transition-colors hover:bg-slate-700 rounded-lg"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Back to menu
-            </button>
-            <button
-              onClick={() => setLocation(DASHBOARD_HOME_PATH)}
-              className="flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-600 text-white hover:bg-cyan-700 transition-colors text-sm font-medium"
-            >
-              Back to dashboard
-            </button>
+      <header className="sticky top-0 z-50 border-b border-border/70 bg-background/70 backdrop-blur-xl">
+        <div className="container flex items-center justify-between gap-2 py-4 px-4 md:px-6 max-w-full">
+          <button
+            onClick={() => setLocation("/")}
+            className="flex min-w-0 flex-1 items-center gap-3 text-left transition-opacity hover:opacity-80"
+          >
+            <div className="flex h-11 w-11 items-center justify-center rounded-lg text-primary">
+              <LineChart className="h-6 w-6" />
+            </div>
+            <div className="hidden min-w-0 sm:block">
+              <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-primary/90">Stock Predictor</p>
+              <p className="truncate text-sm text-muted-foreground">Premium AI signals for Trading 212</p>
+            </div>
+          </button>
+
+          <div className="hidden items-center gap-8 text-sm text-muted-foreground lg:flex">
+            <a href="/#features" className="transition hover:text-foreground">Features</a>
+            <a href="/#workflow" className="transition hover:text-foreground">How it works</a>
+            <a href="/#demo" className="transition hover:text-foreground">Platform tour</a>
+            <a href="/pricing" className="text-foreground">Pricing</a>
+            <a href="/faq" className="transition hover:text-foreground">FAQ</a>
           </div>
 
-          <section className="section-shell pb-12 pt-5 md:pt-8">
-            <div className="grid gap-10 lg:grid-cols-[1fr_0.9fr] lg:items-end">
+          <div className="flex items-center gap-2 md:hidden">
+            <MobileMenuDrawer />
+          </div>
+
+          <div className="hidden items-center gap-2 md:flex">
+            {isAuthenticated ? (
+              <Button
+                onClick={() => setLocation("/dashboard")}
+                className="pill-button pill-button-primary h-10 px-4 text-xs sm:h-12 sm:px-5 sm:text-sm md:text-base"
+              >
+                Open dashboard
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            ) : (
+              <Button asChild className="pill-button pill-button-primary h-10 px-4 text-xs sm:h-12 sm:px-5 sm:text-sm md:text-base">
+                <a href={getLoginUrl()}>
+                  Sign in
+                  <ArrowRight className="h-4 w-4" />
+                </a>
+              </Button>
+            )}
+          </div>
+        </div>
+      </header>
+
+      <main className="focus:outline-none">
+        <section className="relative overflow-hidden pt-0">
+          <div className="hero-grid absolute inset-0 opacity-60" />
+          <div className="container relative py-10 md:py-16 lg:py-20">
+            <div className="grid items-start gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14">
               <div className="space-y-6">
                 <div className="eyebrow">
-                  <Sparkles className="h-4 w-4 text-primary" />
-                  Premium plans
+                  <Crown className="h-4 w-4 text-primary" />
+                  Pricing designed for serious trading workflows
                 </div>
-                <div className="space-y-3">
-                  <h1 className="text-4xl font-bold gradient-text md:text-5xl">Pricing designed around serious trading workflows</h1>
-                  <p className="lead-copy max-w-4xl">
-                    Choose the access level that matches how you review opportunities. Every tier is built around the same premium product experience: cleaner watchlists, stronger signals, and a calmer decision flow.
+                <div className="space-y-4">
+                  <h1 className="display-title max-w-5xl text-balance leading-tight">
+                    Choose the plan that matches your <span className="gradient-text">decision speed and market coverage.</span>
+                  </h1>
+                  <p className="lead-copy max-w-3xl">
+                    Every plan gives you the same premium product foundation. The difference is how much coverage, alerting, and validation depth you want in your daily trading workflow.
                   </p>
+                </div>
+                <div className="flex flex-col gap-4 sm:flex-row">
+                  <Button
+                    onClick={() => document.getElementById("plan-grid")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                    size="lg"
+                    className="pill-button pill-button-primary h-14 px-7 text-base"
+                  >
+                    Compare plans
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                  <Button asChild size="lg" variant="outline" className="pill-button pill-button-secondary h-14 px-7 text-base">
+                    <a href="/faq">
+                      Read common questions
+                      <ArrowRight className="h-4 w-4" />
+                    </a>
+                  </Button>
                 </div>
               </div>
 
-            <div className="premium-card p-6 md:p-7">
-              <p className="text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">Included across the platform</p>
-              <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                {[
-                  "Focused watchlist workflow",
-                  "AI-ranked trade signals",
-                  "Stock detail review pages",
-                  "Simulator and validation tools",
-                ].map((item) => (
-                  <div key={item} className="rounded-2xl border border-border/70 bg-background/35 p-4 text-sm text-muted-foreground">
-                    <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-primary/15 text-primary">
-                      <ShieldCheck className="h-4 w-4" />
-                    </div>
-                    {item}
-                  </div>
-                ))}
+              <div className="premium-card p-6 md:p-7">
+                <p className="text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">What all plans include</p>
+                <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                  {[
+                    {
+                      icon: Sparkles,
+                      title: "AI-ranked ideas",
+                      body: "Signals are organised by conviction so you can review the strongest setups first.",
+                    },
+                    {
+                      icon: ShieldCheck,
+                      title: "Cleaner workflow",
+                      body: "Watchlists, alerts, and validation live in one calmer product experience.",
+                    },
+                    {
+                      icon: Zap,
+                      title: "Faster decision-making",
+                      body: "Spend less time filtering charts and more time reviewing actual opportunities.",
+                    },
+                    {
+                      icon: Users,
+                      title: "Built for Trading 212",
+                      body: "Messaging, features, and coverage stay focused on the audience the product serves.",
+                    },
+                  ].map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <div key={item.title} className="rounded-2xl border border-border/70 bg-background/35 p-4 text-sm text-muted-foreground">
+                        <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-primary/15 text-primary">
+                          <Icon className="h-4 w-4" />
+                        </div>
+                        <p className="font-semibold text-foreground">{item.title}</p>
+                        <p className="mt-2 leading-6">{item.body}</p>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>
         </section>
 
-        <section className="section-shell pt-6">
+        <section id="plan-grid" className="section-shell pt-0 md:pt-4">
           <div className="container grid gap-6 lg:grid-cols-3">
             {PRICING_TIERS.map((tier) => (
               <article
                 key={tier.name}
                 className={`premium-card relative flex h-full flex-col p-7 md:p-8 ${tier.recommended ? "ring-1 ring-primary/50 shadow-primary/15" : ""}`}
               >
-                {tier.recommended && (
-                  <Badge className="mb-5 w-fit rounded-full bg-primary text-primary-foreground px-3 py-1">
-                    Most popular
-                  </Badge>
-                )}
-
-                <div>
-                  <p className="text-sm font-bold uppercase tracking-[0.18em] text-primary/85">{tier.name}</p>
-                  <div className="mt-4 flex items-end gap-2">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-bold uppercase tracking-[0.18em] text-primary/85">{tier.name}</p>
+                    {tier.recommended ? (
+                      <Badge className="rounded-full bg-primary px-3 py-1 text-primary-foreground">
+                        Most popular
+                      </Badge>
+                    ) : null}
+                  </div>
+                  <p className="text-sm text-primary/80">{tier.audience}</p>
+                  <div className="flex items-end gap-2">
                     <span className="text-5xl font-semibold tracking-tight">{tier.currency}{tier.price}</span>
                     <span className="pb-1 text-muted-foreground">/month</span>
                   </div>
-                  <p className="mt-4 text-muted-foreground">{tier.description}</p>
+                  <p className="text-muted-foreground">{tier.description}</p>
+                  <div className="rounded-2xl border border-primary/15 bg-primary/8 px-4 py-3 text-sm text-slate-200">
+                    <span className="font-semibold text-white">Ideal outcome:</span> {tier.highlight}
+                  </div>
                 </div>
 
                 <Button
@@ -225,15 +366,9 @@ export default function Pricing() {
                 <div className="mt-8 space-y-4">
                   {tier.bullets.map((feature) => (
                     <div key={feature.name} className="flex items-start gap-3 text-sm">
-                      {feature.included ? (
-                        <div className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary/15 text-primary">
-                          <Check className="h-3.5 w-3.5" />
-                        </div>
-                      ) : (
-                        <div className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                          <X className="h-3.5 w-3.5" />
-                        </div>
-                      )}
+                      <div className={`mt-0.5 flex h-5 w-5 items-center justify-center rounded-full ${feature.included ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"}`}>
+                        {feature.included ? <Check className="h-3.5 w-3.5" /> : <span className="h-1.5 w-1.5 rounded-full bg-current" />}
+                      </div>
                       <span className={feature.included ? "text-foreground" : "text-muted-foreground"}>{feature.name}</span>
                     </div>
                   ))}
@@ -243,16 +378,51 @@ export default function Pricing() {
           </div>
         </section>
 
+        <section className="section-shell pt-4">
+          <div className="container grid gap-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-start">
+            <div className="space-y-4">
+              <div className="eyebrow">
+                <ShieldCheck className="h-4 w-4 text-primary" />
+                Compare the plans directly
+              </div>
+              <h2>See exactly what changes as you move up a tier</h2>
+              <p className="lead-copy">
+                This view is designed to answer the upgrade question quickly: how much extra speed, coverage, and workflow depth do you actually gain at each level?
+              </p>
+            </div>
+
+            <div className="premium-card overflow-hidden p-0">
+              <div className="grid grid-cols-[1.2fr_repeat(3,minmax(0,1fr))] border-b border-border/70 bg-background/30 text-sm">
+                <div className="px-4 py-4 font-semibold text-foreground md:px-6">Feature</div>
+                <div className="px-4 py-4 text-center font-semibold text-foreground md:px-6">Starter</div>
+                <div className="px-4 py-4 text-center font-semibold text-primary md:px-6">Pro</div>
+                <div className="px-4 py-4 text-center font-semibold text-foreground md:px-6">Elite</div>
+              </div>
+              {comparisonRows.map((row, index) => (
+                <div
+                  key={row.label}
+                  className={`grid grid-cols-[1.2fr_repeat(3,minmax(0,1fr))] text-sm ${index !== comparisonRows.length - 1 ? "border-b border-border/60" : ""}`}
+                >
+                  <div className="px-4 py-4 font-medium text-foreground md:px-6">{row.label}</div>
+                  <div className="px-4 py-4 text-center text-muted-foreground md:px-6">{row.starter}</div>
+                  <div className="px-4 py-4 text-center text-primary md:px-6">{row.pro}</div>
+                  <div className="px-4 py-4 text-center text-muted-foreground md:px-6">{row.elite}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         <section className="section-shell">
           <div className="container grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
             <div className="space-y-4">
               <div className="eyebrow">
                 <ShieldCheck className="h-4 w-4 text-primary" />
-                FAQ
+                Questions traders ask before upgrading
               </div>
-              <h2>Questions traders ask before upgrading</h2>
+              <h2>Clear commercial answers build confidence faster</h2>
               <p className="lead-copy">
-                The commercial side should be as clear as the product itself. These are the essentials most users want answered before they start.
+                The commercial side should be as calm and understandable as the product itself. These are the essential questions most users ask before they begin.
               </p>
             </div>
 
@@ -266,7 +436,6 @@ export default function Pricing() {
             </div>
           </div>
         </section>
-        </div>
       </main>
     </div>
   );

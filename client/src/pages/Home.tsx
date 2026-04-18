@@ -281,6 +281,43 @@ export default function Home() {
           </div>
         </section>
 
+        <section className="section-shell pt-0">
+          <div className="container grid gap-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-start">
+            <div className="space-y-4">
+              <div className="eyebrow">
+                <ShieldCheck className="h-4 w-4 text-primary" />
+                Why traders trust the workflow
+              </div>
+              <h2>Designed to make signal review clearer, calmer, and more accountable.</h2>
+              <p className="lead-copy">
+                The product does not ask you to trust a black box. It gives you ranked ideas, confidence context, watchlist focus, and validation tools so you can understand what deserves attention before acting.
+              </p>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-3">
+              {[
+                {
+                  title: "Clear ranking logic",
+                  body: "Signals are prioritised so you can review the strongest opportunities first instead of scanning dozens of charts in random order.",
+                },
+                {
+                  title: "Built-in validation",
+                  body: "Simulator and validation views encourage practice and review before you commit capital to a live idea.",
+                },
+                {
+                  title: "Responsible use",
+                  body: "The workflow is designed as decision support for investors, not as a promise of automatic profits or risk-free outcomes.",
+                },
+              ].map((item) => (
+                <div key={item.title} className="premium-card p-6">
+                  <p className="text-sm font-bold uppercase tracking-[0.18em] text-primary/80">{item.title}</p>
+                  <p className="mt-4 text-sm leading-7 text-muted-foreground">{item.body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         <section id="features" className="section-shell">
           <div className="container grid-section">
             <div className="max-w-3xl space-y-4">
@@ -347,20 +384,29 @@ export default function Home() {
             <div className="space-y-4">
               <div className="eyebrow">
                 <Star className="h-4 w-4 text-primary" />
-                Product tour
+                Product walkthrough
               </div>
-              <h2>Watch the platform walkthrough.</h2>
+              <h2>See the signal workflow from watchlist to validation.</h2>
               <p className="lead-copy">
-                This section is reserved for the full walkthrough video so prospects can immediately understand the watchlist flow, signal ranking, and stock inspection experience.
+                The walkthrough is now framed as a guided product story so prospects can understand what the platform helps them do, not just what screens it contains.
               </p>
               <div className="premium-card p-5">
-                <p className="text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">What the tour should show</p>
-                <ul className="mt-4 space-y-3 text-sm text-muted-foreground">
-                  <li>• How to add a stock to a watchlist</li>
-                  <li>• How to read active buy and sell signals</li>
-                  <li>• How to inspect stock details before acting</li>
-                  <li>• How to use the simulator for idea testing</li>
-                </ul>
+                <p className="text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">What you will see in under two minutes</p>
+                <div className="mt-4 space-y-4 text-sm text-muted-foreground">
+                  {[
+                    "How a focused watchlist becomes a calmer daily review workflow.",
+                    "How confidence-ranked signals help you prioritise which names to inspect first.",
+                    "How stock detail pages and alerts support deeper review before action.",
+                    "How simulator and validation views help pressure-test ideas responsibly.",
+                  ].map((item, index) => (
+                    <div key={item} className="flex items-start gap-3">
+                      <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-semibold text-primary">
+                        {index + 1}
+                      </div>
+                      <p>{item}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 

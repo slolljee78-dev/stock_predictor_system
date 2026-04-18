@@ -459,7 +459,7 @@
 - [x] Verify whether the redesigned mobile menu trigger and drawer are actually reflected on the active domain
 - [x] Apply any missing mobile dashboard and menu design changes to the active experience
 - [x] Run focused verification against the current visible state
-- [ ] Save checkpoint after confirming the visible mobile changes
+- [x] Save checkpoint after confirming the visible mobile changes
 
 
 ## User Reported Blocking Issue - Mobile Breakpoint Confirmation
@@ -467,5 +467,23 @@
 - [x] Verify the mobile menu trigger and drawer styling specifically under the mobile breakpoint
 - [x] Apply any remaining mobile-only fixes to match the phone view the user sees
 - [x] Run focused verification for the mobile breakpoint behavior
-- [ ] Save checkpoint after the mobile breakpoint fix pass
+- [x] Save checkpoint after the mobile breakpoint fix pass
+
+
+## Website Audit Request
+- [x] Audit the live website for UX issues across key public and in-app pages
+- [x] Audit the visual design consistency of navigation, spacing, hierarchy, and mobile behavior
+- [x] Produce prioritized recommendations with suggested next actions
+
+
+## Audit-Driven UX & Design Improvement Pass
+- [x] Unify public page headers so Pricing and FAQ match the homepage navigation and visual rhythm
+- [x] Add a clearer trust and methodology section near the homepage hero
+- [x] Replace the product-tour placeholder framing with a more persuasive walkthrough section
+- [x] Improve pricing comparison clarity and plan differentiation
+- [x] Refactor FAQ information hierarchy to emphasize top pre-purchase questions first
+- [x] Create a clear gated entry state for direct dashboard visits by unauthenticated users
+- [x] Standardize mobile public navigation and internal header behavior where still inconsistent
+- [x] Run focused verification for the improved public and app-entry UX flows
+- [ ] Save checkpoint after the audit-driven UX and design improvement pass
 

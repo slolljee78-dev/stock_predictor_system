@@ -1,375 +1,384 @@
-import { useState } from 'react';
-import { ChevronDown, ChevronLeft, Home } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { useLocation } from 'wouter';
-import { DASHBOARD_HOME_PATH, navigateToDashboardMenu } from '@/lib/navigation';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { MobileMenuDrawer } from "@/components/MobileMenuDrawer";
+import { getLoginUrl } from "@/const";
+import { useAuth } from "@/_core/hooks/useAuth";
+import {
+  ArrowRight,
+  ChevronDown,
+  CircleHelp,
+  LineChart,
+  Search,
+  ShieldCheck,
+  Sparkles,
+} from "lucide-react";
+import { useMemo, useState } from "react";
+import { useLocation } from "wouter";
 
-interface FAQItem {
+type FAQItem = {
   id: string;
   question: string;
   answer: string;
   category: string;
-}
+  featured?: boolean;
+};
 
 const faqItems: FAQItem[] = [
-  // Getting Started
   {
-    id: 'gs-1',
-    category: 'Getting Started',
-    question: 'What is Stock Predictor?',
-    answer: 'Stock Predictor is an advanced AI-powered trading intelligence platform designed for retail investors. It combines machine learning models, technical analysis, and real-time market data to generate high-conviction trading signals. The platform includes a paper trading simulator with comprehensive risk management to help you validate strategies before risking real capital.',
+    id: "top-1",
+    category: "Before you start",
+    featured: true,
+    question: "What does Stock Predictor actually do for a Trading 212 investor?",
+    answer:
+      "It turns a large watchlist into a cleaner daily workflow. Instead of checking every chart yourself, you see ranked buy and sell ideas, review their confidence, and move into simulator or validation views before acting.",
   },
   {
-    id: 'gs-2',
-    category: 'Getting Started',
-    question: 'Do I need trading experience to use Stock Predictor?',
-    answer: 'No. Stock Predictor is designed for both beginners and experienced traders. The platform provides educational resources, signal explanations, and automated risk management that protects your portfolio even if you\'re new to trading. All signals include confidence scores and reasoning to help you understand each recommendation.',
+    id: "top-2",
+    category: "Before you start",
+    featured: true,
+    question: "Do I need trading experience to use it?",
+    answer:
+      "No. The product is designed to help beginners and active self-directed investors review opportunities faster. Signals are intended to improve decision quality, not replace judgment.",
   },
   {
-    id: 'gs-3',
-    category: 'Getting Started',
-    question: 'Is Stock Predictor available on mobile?',
-    answer: 'Yes. Stock Predictor is a Progressive Web App (PWA) that works on iOS and Android devices. You can install it directly from your browser, and it works offline for viewing your portfolio and historical data.',
+    id: "top-3",
+    category: "Pricing & billing",
+    featured: true,
+    question: "Is there a trial before I subscribe?",
+    answer:
+      "Yes. Paid plans include a 7-day trial so you can assess the workflow before committing to a subscription.",
   },
   {
-    id: 'gs-4',
-    category: 'Getting Started',
-    question: 'What markets does Stock Predictor cover?',
-    answer: 'Currently, Stock Predictor focuses on US equities (stocks) and ETFs listed on NASDAQ and NYSE. We cover over 5,000 securities including large-cap, mid-cap, and small-cap stocks across all major sectors.',
-  },
-
-  // Trading & Signals
-  {
-    id: 'ts-1',
-    category: 'Trading & Signals',
-    question: 'How often does Stock Predictor generate signals?',
-    answer: 'The system generates new signals continuously throughout market hours (9:30 AM - 4:00 PM ET). Signals are updated in real-time as new price data arrives. You\'ll receive notifications for high-conviction signals that meet our quality filters.',
+    id: "top-4",
+    category: "Pricing & billing",
+    featured: true,
+    question: "Can I cancel or change plans later?",
+    answer:
+      "Yes. You can cancel whenever you like or move between plans as your workflow changes. Access remains active through the remainder of your current paid period.",
   },
   {
-    id: 'ts-2',
-    category: 'Trading & Signals',
-    question: 'What does the confidence score mean?',
-    answer: 'The confidence score (0-100%) represents the model\'s certainty about a signal\'s direction. A score of 85% means the ensemble of ML models agrees with 85% confidence that the stock will move in the predicted direction. Higher confidence signals historically have better win rates.',
+    id: "signals-1",
+    category: "Signals & methodology",
+    question: "How often are signals updated?",
+    answer:
+      "Signals are refreshed as new market data arrives. The product is designed to surface the strongest opportunities quickly rather than overwhelm you with constant noise.",
   },
   {
-    id: 'ts-3',
-    category: 'Trading & Signals',
-    question: 'Can I trade on signals immediately?',
-    answer: 'Yes. Each signal includes a recommended entry price and stop-loss level. You can execute trades immediately through the simulator or your broker. However, we recommend waiting for market confirmation, especially during high-volatility periods (when VIX > 25).',
+    id: "signals-2",
+    category: "Signals & methodology",
+    question: "What does the confidence score mean?",
+    answer:
+      "Confidence indicates how strongly the ranking model favours a setup relative to others in the same workflow. It is intended as a prioritisation tool, not a guarantee.",
   },
   {
-    id: 'ts-4',
-    category: 'Trading & Signals',
-    question: 'What\'s the average win rate?',
-    answer: 'Historical backtests show a 62-68% win rate across all signals. However, when filtered through our quick-win filters (volatility, profit-taking, signal strength), win rates improve to 72-78%. Individual results vary based on market conditions and trading discipline.',
-  },
-
-  // Risk Management
-  {
-    id: 'rm-1',
-    category: 'Risk Management',
-    question: 'How does Stock Predictor protect my portfolio?',
-    answer: 'The platform includes multiple layers of protection: (1) Position Sizing using Kelly Criterion, (2) Stop-Loss Enforcement with automatic calculations, (3) Daily Loss Limits preventing trading beyond 2% losses, (4) Concentration Limits avoiding over-concentration, and (5) Volatility Filters skipping trades during high VIX periods.',
+    id: "signals-3",
+    category: "Signals & methodology",
+    question: "Are signals meant to be followed automatically?",
+    answer:
+      "No. Signals are decision support. You should still review the setup, consider your own risk tolerance, and use the simulator or validation tools before committing capital.",
   },
   {
-    id: 'rm-2',
-    category: 'Risk Management',
-    question: 'What\'s the maximum daily loss limit?',
-    answer: 'The default daily loss limit is 2% of your starting capital. This means if you start with $10,000, you stop trading once losses reach $200 for the day. You can adjust this limit in settings, but we recommend keeping it at 2% or lower.',
+    id: "signals-4",
+    category: "Signals & methodology",
+    question: "How does the platform help reduce bad decisions?",
+    answer:
+      "The workflow is built around ranking, watchlist focus, alerts, and validation. That structure is meant to reduce scatter, shorten review time, and encourage more deliberate decisions.",
   },
   {
-    id: 'rm-3',
-    category: 'Risk Management',
-    question: 'What\'s the Sharpe ratio and why does it matter?',
-    answer: 'The Sharpe ratio measures risk-adjusted returns. A Sharpe ratio > 1.0 is considered good, > 2.0 is excellent. Stock Predictor aims for a Sharpe ratio > 1.5, meaning you\'re earning strong returns without excessive volatility. This metric helps you understand if profits come from skill or just taking excessive risk.',
+    id: "platform-1",
+    category: "Platform & access",
+    question: "Is the platform available on mobile?",
+    answer:
+      "Yes. The product is designed to work well on phone screens so you can review signals, plans, and settings without needing a desktop-only workflow.",
   },
   {
-    id: 'rm-4',
-    category: 'Risk Management',
-    question: 'What\'s the maximum drawdown?',
-    answer: 'Maximum drawdown is the largest peak-to-trough decline in your portfolio value. Stock Predictor targets a maximum drawdown of 5% or less. For example, if your portfolio reaches $11,000 (peak), a 5% drawdown would bring it to $10,450 (trough).',
-  },
-
-  // Platform Features
-  {
-    id: 'pf-1',
-    category: 'Platform Features',
-    question: 'What are quick-win filters?',
-    answer: 'Quick-win filters are automated rules that improve signal quality: (1) Volatility Filter skips signals when VIX > 25, (2) Profit-Taking Filter auto-closes winners at +2% or +5%, (3) Signal Strength Filter only trades >75% confidence, (4) Market Hours Filter avoids pre/post-market, (5) Correlation Filter prevents correlated positions, (6) Trade Frequency Limiter caps trades at 10 per day.',
+    id: "platform-2",
+    category: "Platform & access",
+    question: "What is included in the simulator and validation views?",
+    answer:
+      "They help you pressure-test ideas before acting with real capital. The simulator supports practice workflows, while validation helps you review outcomes and build confidence over time.",
   },
   {
-    id: 'pf-2',
-    category: 'Platform Features',
-    question: 'What\'s the difference between paper trading and live trading?',
-    answer: 'Paper Trading uses simulated money to test strategies without risk. All trades execute at real market prices, but no actual money changes hands. Live Trading uses real money with a broker. Stock Predictor generates signals for live trading, but you execute trades through your broker. We recommend 3 months of successful paper trading before going live.',
+    id: "platform-3",
+    category: "Platform & access",
+    question: "Does the platform focus on a specific audience?",
+    answer:
+      "Yes. The language, workflows, and plan structure are tailored to Trading 212-style investors who want a cleaner signal review process rather than a generic trading terminal.",
   },
   {
-    id: 'pf-3',
-    category: 'Platform Features',
-    question: 'Can I export my portfolio data?',
-    answer: 'Yes. You can export your portfolio to JSON or CSV format from the Portfolio page. This is useful for analysis, tax reporting, or backing up your trading history.',
+    id: "billing-1",
+    category: "Pricing & billing",
+    question: "What happens after checkout?",
+    answer:
+      "After secure checkout, your account is upgraded and the relevant product access is reflected in the workspace tied to your sign-in.",
   },
   {
-    id: 'pf-4',
-    category: 'Platform Features',
-    question: 'Is there a leaderboard?',
-    answer: 'Yes. The platform includes a leaderboard showing top-performing portfolios ranked by total return, Sharpe ratio, or win rate. You can compare your performance against other traders and learn from successful strategies.',
-  },
-
-  // Technical & Model Details
-  {
-    id: 'tm-1',
-    category: 'Technical & Model Details',
-    question: 'What machine learning models does Stock Predictor use?',
-    answer: 'Stock Predictor uses an ensemble of three models: (1) LSTM (Long Short-Term Memory) - a deep learning model that captures long-term price patterns, (2) XGBoost - a gradient boosting model that identifies non-linear relationships, (3) Ensemble - combines predictions from both models using weighted voting. Each model is retrained daily with the latest market data.',
+    id: "billing-2",
+    category: "Pricing & billing",
+    question: "Which plan should I choose?",
+    answer:
+      "Starter is for simple daily review, Pro is for active users who want faster alerting and broader coverage, and Elite is for advanced workflows with exports and deeper validation tooling.",
   },
   {
-    id: 'tm-2',
-    category: 'Technical & Model Details',
-    question: 'What technical indicators are used?',
-    answer: 'The platform analyzes five core technical indicators: (1) RSI (Relative Strength Index) for overbought/oversold conditions, (2) MACD for momentum and trend changes, (3) Bollinger Bands for volatility and reversals, (4) Volume Analysis for price confirmation, (5) Moving Averages for trend direction and support/resistance.',
+    id: "trust-1",
+    category: "Trust & responsible use",
+    question: "Does the platform guarantee profits?",
+    answer:
+      "No. The platform is intended to improve review quality and workflow clarity. Market outcomes are uncertain, and users should apply their own judgment and risk controls.",
   },
   {
-    id: 'tm-3',
-    category: 'Technical & Model Details',
-    question: 'How accurate are the models?',
-    answer: 'Backtests show 65-72% directional accuracy on the test set. However, accuracy varies by market condition. During trending markets, accuracy is higher (70-75%). During choppy, sideways markets, accuracy is lower (55-60%). This is why the platform includes confidence scores and risk management.',
-  },
-
-  // Pricing & Subscriptions
-  {
-    id: 'ps-1',
-    category: 'Pricing & Subscriptions',
-    question: 'What\'s included in the free plan?',
-    answer: 'The free plan includes: Access to 50 daily signals (limited), Basic technical analysis, Paper trading simulator, Mobile app access, and Community forum access.',
+    id: "trust-2",
+    category: "Trust & responsible use",
+    question: "How should I use signals responsibly?",
+    answer:
+      "Treat signals as ranked ideas to investigate. Use position sizing, your own risk limits, and validation tools before acting on any opportunity.",
   },
   {
-    id: 'ps-2',
-    category: 'Pricing & Subscriptions',
-    question: 'Can I cancel anytime?',
-    answer: 'Yes. All paid subscriptions can be cancelled anytime with no penalties. Your access continues until the end of your billing period.',
-  },
-  {
-    id: 'ps-3',
-    category: 'Pricing & Subscriptions',
-    question: 'Is there a free trial?',
-    answer: 'Yes. New users get a 7-day free trial of the Pro plan. No credit card required. After the trial ends, you\'ll revert to the free plan unless you choose to upgrade.',
-  },
-  {
-    id: 'ps-4',
-    category: 'Pricing & Subscriptions',
-    question: 'Do you offer refunds?',
-    answer: 'We offer a 30-day money-back guarantee. If you\'re not satisfied with the platform within 30 days of purchase, we\'ll refund your subscription fee in full.',
-  },
-
-  // Account & Security
-  {
-    id: 'as-1',
-    category: 'Account & Security',
-    question: 'Is my data secure?',
-    answer: 'Yes. We use industry-standard security: SSL/TLS encryption for all data in transit, AES-256 encryption for sensitive data at rest, Two-factor authentication (2FA) available for account security, No storage of passwords using secure OAuth authentication, and Regular security audits by third-party security firms.',
-  },
-  {
-    id: 'as-2',
-    category: 'Account & Security',
-    question: 'How do I enable two-factor authentication?',
-    answer: 'Go to Settings → Security and click "Enable 2FA". You\'ll be prompted to scan a QR code with an authenticator app (Google Authenticator, Authy, etc.). This adds an extra security layer to your account.',
-  },
-  {
-    id: 'as-3',
-    category: 'Account & Security',
-    question: 'Can I delete my account?',
-    answer: 'Yes. Go to Settings → Account and click "Delete Account". This permanently removes all your data, portfolio history, and signals. This action cannot be undone.',
-  },
-
-  // Troubleshooting
-  {
-    id: 'tr-1',
-    category: 'Troubleshooting',
-    question: 'Why am I not receiving signals?',
-    answer: 'Check the following: (1) Ensure you\'re subscribed to a plan that includes signals, (2) Check your notification settings - signals might be muted, (3) Verify market hours (signals only generate during 9:30 AM - 4:00 PM ET), (4) Check if daily loss limit has been reached, (5) Verify your watchlist has stocks.',
-  },
-  {
-    id: 'tr-2',
-    category: 'Troubleshooting',
-    question: 'Why is the app slow or unresponsive?',
-    answer: 'Try the following: (1) Clear your browser cache and cookies, (2) Disable browser extensions that might interfere, (3) Try a different browser (Chrome, Firefox, Safari), (4) Restart the app, (5) Check your internet connection speed.',
-  },
-  {
-    id: 'tr-3',
-    category: 'Troubleshooting',
-    question: 'How do I report a bug?',
-    answer: 'Email support@stockpredictor.com with: Description of the issue, Steps to reproduce, Screenshots if applicable, and Your browser and device information. Our team typically responds within 24 hours.',
+    id: "trust-3",
+    category: "Trust & responsible use",
+    question: "Why does the product emphasise validation and simulation?",
+    answer:
+      "Because the product is designed to support better decisions, not impulsive ones. Validation helps you review what is working, and simulation helps you practice without immediate capital risk.",
   },
 ];
 
-const categories = Array.from(new Set(faqItems.map(item => item.category)));
+const categories = [
+  "All questions",
+  ...Array.from(new Set(faqItems.map((item) => item.category))),
+];
 
 export default function FAQ() {
   const [, setLocation] = useLocation();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const { isAuthenticated } = useAuth();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeCategory, setActiveCategory] = useState("All questions");
+  const [openItemIds, setOpenItemIds] = useState<string[]>(faqItems.filter((item) => item.featured).map((item) => item.id));
 
-  const filteredItems = faqItems.filter(item => {
-    const matchesSearch = item.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.answer.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = !selectedCategory || item.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  const filteredItems = useMemo(() => {
+    return faqItems.filter((item) => {
+      const matchesCategory = activeCategory === "All questions" || item.category === activeCategory;
+      const query = searchTerm.trim().toLowerCase();
+      const matchesSearch =
+        query.length === 0 ||
+        item.question.toLowerCase().includes(query) ||
+        item.answer.toLowerCase().includes(query) ||
+        item.category.toLowerCase().includes(query);
 
-  const groupedItems = categories.reduce((acc, category) => {
-    acc[category] = filteredItems.filter(item => item.category === category);
-    return acc;
-  }, {} as Record<string, FAQItem[]>);
+      return matchesCategory && matchesSearch;
+    });
+  }, [activeCategory, searchTerm]);
+
+  const featuredItems = faqItems.filter((item) => item.featured);
+
+  const toggleItem = (id: string) => {
+    setOpenItemIds((current) =>
+      current.includes(id) ? current.filter((itemId) => itemId !== id) : [...current, id],
+    );
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 pt-20 pb-16">
-      <div className="container max-w-4xl mx-auto px-4">
-        {/* Navigation Buttons */}
-        <div className="flex items-center justify-between gap-3 mb-8 pt-2">
-          <button
-            onClick={() => navigateToDashboardMenu(setLocation)}
-            className="flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:text-white transition-colors hover:bg-slate-700 rounded-lg"
-          >
-            <ChevronLeft className="h-4 w-4" />
-            Back to menu
-          </button>
-          <button
-            onClick={() => setLocation(DASHBOARD_HOME_PATH)}
-            className="flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-600 text-white hover:bg-cyan-700 transition-colors text-sm font-medium"
-          >
-            <Home className="h-4 w-4" />
-            Back to dashboard
-          </button>
-        </div>
+    <div className="app-shell min-h-screen overflow-x-hidden pb-20 page-enter">
+      <div className="hero-orb left-[-8rem] top-[-3rem] h-72 w-72 bg-primary/35" />
+      <div className="hero-orb right-[-7rem] top-24 h-80 w-80 bg-accent/25" />
 
-        {/* Header */}
-        <div className="mb-12 space-y-3 text-left">
-          <h1 className="text-4xl font-bold gradient-text md:text-5xl">
-            Frequently Asked Questions
-          </h1>
-          <p className="text-lg text-slate-300 mb-8">
-            Find answers to common questions about Stock Predictor
-          </p>
+      <header className="sticky top-0 z-50 border-b border-border/70 bg-background/70 backdrop-blur-xl">
+        <div className="container flex items-center justify-between gap-2 py-4 px-4 md:px-6 max-w-full">
+          <button
+            onClick={() => setLocation("/")}
+            className="flex min-w-0 flex-1 items-center gap-3 text-left transition-opacity hover:opacity-80"
+          >
+            <div className="flex h-11 w-11 items-center justify-center rounded-lg text-primary">
+              <LineChart className="h-6 w-6" />
+            </div>
+            <div className="hidden min-w-0 sm:block">
+              <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-primary/90">Stock Predictor</p>
+              <p className="truncate text-sm text-muted-foreground">Premium AI signals for Trading 212</p>
+            </div>
+          </button>
 
-          {/* Search */}
-          <div className="relative mb-8">
-            <Input
-              type="text"
-              placeholder="Search FAQ..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-3 pl-12 bg-slate-700 border-slate-600 text-white placeholder-slate-400 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-            />
-            <svg
-              className="absolute left-4 top-3.5 w-5 h-5 text-slate-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
+          <div className="hidden items-center gap-8 text-sm text-muted-foreground lg:flex">
+            <a href="/#features" className="transition hover:text-foreground">Features</a>
+            <a href="/#workflow" className="transition hover:text-foreground">How it works</a>
+            <a href="/#demo" className="transition hover:text-foreground">Platform tour</a>
+            <a href="/pricing" className="transition hover:text-foreground">Pricing</a>
+            <a href="/faq" className="text-foreground">FAQ</a>
           </div>
 
-          {/* Category Filter */}
-          <div className="flex flex-wrap gap-2 justify-center mb-8">
-            <Button
-              variant={selectedCategory === null ? 'default' : 'outline'}
-              onClick={() => setSelectedCategory(null)}
-              className={selectedCategory === null ? 'bg-cyan-500 hover:bg-cyan-600' : 'border-slate-600 text-slate-300 hover:bg-slate-700'}
-            >
-              All Categories
-            </Button>
-            {categories.map(category => (
+          <div className="flex items-center gap-2 md:hidden">
+            <MobileMenuDrawer />
+          </div>
+
+          <div className="hidden items-center gap-2 md:flex">
+            {isAuthenticated ? (
               <Button
-                key={category}
-                variant={selectedCategory === category ? 'default' : 'outline'}
-                onClick={() => setSelectedCategory(category)}
-                className={selectedCategory === category ? 'bg-cyan-500 hover:bg-cyan-600' : 'border-slate-600 text-slate-300 hover:bg-slate-700'}
+                onClick={() => setLocation("/dashboard")}
+                className="pill-button pill-button-primary h-10 px-4 text-xs sm:h-12 sm:px-5 sm:text-sm md:text-base"
               >
-                {category}
+                Open dashboard
+                <ArrowRight className="h-4 w-4" />
               </Button>
-            ))}
+            ) : (
+              <Button asChild className="pill-button pill-button-primary h-10 px-4 text-xs sm:h-12 sm:px-5 sm:text-sm md:text-base">
+                <a href={getLoginUrl()}>
+                  Sign in
+                  <ArrowRight className="h-4 w-4" />
+                </a>
+              </Button>
+            )}
           </div>
         </div>
+      </header>
 
-        {/* FAQ Items */}
-        <div className="space-y-6">
-          {Object.entries(groupedItems).map(([category, items]) => (
-            items.length > 0 && (
-              <div key={category}>
-                <h2 className="text-2xl font-bold text-cyan-400 mb-4">{category}</h2>
-                <div className="space-y-3">
-                  {items.map(item => (
-                    <div
+      <main className="focus:outline-none">
+        <section className="relative overflow-hidden pt-0">
+          <div className="hero-grid absolute inset-0 opacity-60" />
+          <div className="container relative py-10 md:py-16 lg:py-20">
+            <div className="grid items-start gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14">
+              <div className="space-y-6">
+                <div className="eyebrow">
+                  <CircleHelp className="h-4 w-4 text-primary" />
+                  Answers before you subscribe
+                </div>
+                <div className="space-y-4">
+                  <h1 className="display-title max-w-5xl text-balance leading-tight">
+                    Get clear answers on <span className="gradient-text">pricing, workflow, and responsible use.</span>
+                  </h1>
+                  <p className="lead-copy max-w-3xl">
+                    This FAQ is designed to help you understand what the product does, who it is for, how plans differ, and how to use signals with a calmer decision process.
+                  </p>
+                </div>
+                <div className="relative max-w-xl">
+                  <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    value={searchTerm}
+                    onChange={(event) => setSearchTerm(event.target.value)}
+                    placeholder="Search questions, plans, alerts, simulator…"
+                    className="h-12 rounded-full border-border/70 bg-background/55 pl-11"
+                  />
+                </div>
+              </div>
+
+              <div className="premium-card p-6 md:p-7">
+                <p className="text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">Top questions before you start</p>
+                <div className="mt-5 space-y-4">
+                  {featuredItems.map((item) => (
+                    <button
                       key={item.id}
-                      className="bg-slate-700 border border-slate-600 rounded-lg overflow-hidden hover:border-cyan-500 transition-colors"
+                      type="button"
+                      onClick={() => toggleItem(item.id)}
+                      className="w-full rounded-2xl border border-border/70 bg-background/35 px-4 py-4 text-left transition hover:border-primary/30 hover:bg-background/45"
                     >
-                      <button
-                        onClick={() => setExpandedId(expandedId === item.id ? null : item.id)}
-                        className="w-full px-6 py-4 flex items-center justify-between hover:bg-slate-600 transition-colors"
-                      >
-                        <span className="text-left font-semibold text-white">
-                          {item.question}
-                        </span>
-                        <ChevronDown
-                          className={`w-5 h-5 text-cyan-400 flex-shrink-0 transition-transform ${
-                            expandedId === item.id ? 'rotate-180' : ''
-                          }`}
-                        />
-                      </button>
-
-                      {expandedId === item.id && (
-                        <div className="px-6 py-4 bg-slate-800 border-t border-slate-600">
-                          <p className="text-slate-200 leading-relaxed">
-                            {item.answer}
-                          </p>
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">{item.question}</p>
+                          <p className="mt-2 text-sm text-muted-foreground">{item.category}</p>
                         </div>
-                      )}
-                    </div>
+                        <ChevronDown className={`mt-0.5 h-4 w-4 shrink-0 text-primary transition-transform ${openItemIds.includes(item.id) ? "rotate-180" : ""}`} />
+                      </div>
+                      {openItemIds.includes(item.id) ? (
+                        <p className="mt-4 text-sm leading-6 text-muted-foreground">{item.answer}</p>
+                      ) : null}
+                    </button>
                   ))}
                 </div>
               </div>
-            )
-          ))}
+            </div>
+          </div>
+        </section>
 
-          {filteredItems.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-xl text-slate-400">
-                No results found for "{searchTerm}"
-              </p>
-              <p className="text-slate-500 mt-2">
-                Try searching with different keywords
+        <section className="section-shell pt-0 md:pt-4">
+          <div className="container space-y-6">
+            <div className="flex flex-wrap gap-3">
+              {categories.map((category) => (
+                <button
+                  key={category}
+                  type="button"
+                  onClick={() => setActiveCategory(category)}
+                  className={`rounded-full px-4 py-2 text-sm font-medium transition ${activeCategory === category ? "bg-primary text-primary-foreground shadow-[0_10px_30px_rgba(59,130,246,0.28)]" : "border border-border/70 bg-background/45 text-muted-foreground hover:border-primary/25 hover:text-foreground"}`}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+
+            <div className="grid gap-4">
+              {filteredItems.map((item) => (
+                <article key={item.id} className="premium-card overflow-hidden p-0">
+                  <button
+                    type="button"
+                    onClick={() => toggleItem(item.id)}
+                    className="flex w-full items-start justify-between gap-4 px-6 py-5 text-left"
+                  >
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary/85">{item.category}</p>
+                      <h2 className="mt-2 text-lg font-semibold tracking-tight text-foreground md:text-xl">{item.question}</h2>
+                    </div>
+                    <ChevronDown className={`mt-1 h-5 w-5 shrink-0 text-primary transition-transform ${openItemIds.includes(item.id) ? "rotate-180" : ""}`} />
+                  </button>
+                  {openItemIds.includes(item.id) ? (
+                    <div className="border-t border-border/70 px-6 py-5 text-sm leading-7 text-muted-foreground">
+                      {item.answer}
+                    </div>
+                  ) : null}
+                </article>
+              ))}
+            </div>
+
+            {filteredItems.length === 0 ? (
+              <div className="premium-card p-8 text-center">
+                <p className="text-lg font-semibold text-foreground">No matching questions found</p>
+                <p className="mt-2 text-muted-foreground">Try a simpler search term or switch back to all questions.</p>
+              </div>
+            ) : null}
+          </div>
+        </section>
+
+        <section className="section-shell">
+          <div className="container grid gap-6 lg:grid-cols-[0.86fr_1.14fr] lg:items-start">
+            <div className="space-y-4">
+              <div className="eyebrow">
+                <ShieldCheck className="h-4 w-4 text-primary" />
+                Still deciding?
+              </div>
+              <h2>Review the plans or continue into the product when you are ready</h2>
+              <p className="lead-copy">
+                If you already understand the workflow, the next best step is to compare plans or move into the workspace and see the product structure directly.
               </p>
             </div>
-          )}
-        </div>
 
-        {/* Contact Section */}
-        <div className="mt-16 bg-slate-700 border border-slate-600 rounded-lg p-8 text-center">
-          <h3 className="text-2xl font-bold text-white mb-4">
-            Didn't find what you're looking for?
-          </h3>
-          <p className="text-slate-300 mb-6">
-            Our support team is here to help. Reach out to us anytime.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button className="bg-cyan-500 hover:bg-cyan-600 text-white">
-              Contact Support
-            </Button>
-            <Button variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-600">
-              Visit Community Forum
-            </Button>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <button
+                type="button"
+                onClick={() => setLocation("/pricing")}
+                className="premium-card p-6 text-left transition hover:border-primary/25 hover:shadow-[0_18px_40px_rgba(59,130,246,0.14)]"
+              >
+                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/15 text-primary">
+                  <Sparkles className="h-5 w-5" />
+                </div>
+                <h3 className="text-xl font-semibold tracking-tight">Compare plans</h3>
+                <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                  See which tier fits your review speed, market coverage, and validation needs.
+                </p>
+              </button>
+              <button
+                type="button"
+                onClick={() => setLocation(isAuthenticated ? "/dashboard" : "/")}
+                className="premium-card p-6 text-left transition hover:border-primary/25 hover:shadow-[0_18px_40px_rgba(59,130,246,0.14)]"
+              >
+                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/15 text-primary">
+                  <ArrowRight className="h-5 w-5" />
+                </div>
+                <h3 className="text-xl font-semibold tracking-tight">Go to the product</h3>
+                <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                  {isAuthenticated
+                    ? "Return to your dashboard and continue your current workflow."
+                    : "Return to the homepage and enter the workflow when you are ready to start."}
+                </p>
+              </button>
+            </div>
           </div>
-        </div>
-      </div>
+        </section>
+      </main>
     </div>
   );
 }

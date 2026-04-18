@@ -10,6 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { getQuickAddStockSelection } from "@/pages/dashboard.helpers";
 import { trpc } from "@/lib/trpc";
+import { getLoginUrl } from "@/const";
 import { useAuth } from "@/_core/hooks/useAuth";
 import {
   ArrowRight,
@@ -26,7 +27,7 @@ import {
   Settings,
   X,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "wouter";
 
 const quickSearches = ["AAPL", "MSFT", "NVDA", "GOOGL", "TSLA", "AMZN"];
@@ -129,6 +130,77 @@ export default function Dashboard() {
       currency: stock.currency,
     });
   };
+
+  if (!user) {
+    return (
+      <div className="app-shell min-h-screen overflow-x-hidden pb-20 page-enter">
+        <div className="hero-orb left-[-8rem] top-[-3rem] h-72 w-72 bg-primary/35" />
+        <div className="hero-orb right-[-7rem] top-24 h-80 w-80 bg-accent/25" />
+        <div className="container relative flex min-h-screen items-center py-12">
+          <div className="mx-auto grid w-full max-w-6xl gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+            <div className="space-y-5">
+              <div className="eyebrow">
+                <Sparkles className="h-4 w-4 text-primary" />
+                Members-only dashboard
+              </div>
+              <div className="space-y-4">
+                <h1 className="text-balance text-4xl font-semibold tracking-tight md:text-6xl">
+                  Sign in to open your <span className="gradient-text">Trading 212 signal workspace</span>
+                </h1>
+                <p className="max-w-2xl text-base leading-7 text-muted-foreground md:text-lg">
+                  The dashboard is where you review your watchlist, check active buy and sell ideas, open the simulator, and manage alerts. To protect personalised data, this workspace only opens after sign-in.
+                </p>
+              </div>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Button asChild className="pill-button pill-button-primary h-12 px-6">
+                  <a href={getLoginUrl()}>
+                    Sign in to continue
+                    <ArrowRight className="h-4 w-4" />
+                  </a>
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => setLocation("/pricing")}
+                  className="pill-button pill-button-secondary h-12 px-6"
+                >
+                  View plans
+                </Button>
+              </div>
+            </div>
+
+            <div className="premium-card p-6 md:p-7">
+              <p className="text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">What unlocks after sign-in</p>
+              <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                {[
+                  {
+                    title: "Watchlist workspace",
+                    body: "Track your chosen names and move through ideas without losing context.",
+                  },
+                  {
+                    title: "Signal review",
+                    body: "Prioritise buy and sell setups with clearer confidence-led review.",
+                  },
+                  {
+                    title: "Simulator and validation",
+                    body: "Pressure-test ideas before using real capital and review what is working.",
+                  },
+                  {
+                    title: "Alerts and preferences",
+                    body: "Control which setups matter to you and how you want to be notified.",
+                  },
+                ].map((item) => (
+                  <div key={item.title} className="rounded-3xl border border-border/70 bg-background/35 p-5">
+                    <p className="text-base font-semibold text-foreground">{item.title}</p>
+                    <p className="mt-3 text-sm leading-6 text-muted-foreground">{item.body}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <DashboardLayout>
