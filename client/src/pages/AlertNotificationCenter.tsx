@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useLocation } from 'wouter';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,7 @@ type FilterType = 'all' | 'buy' | 'sell';
 type StatusFilter = 'all' | 'pending' | 'sent' | 'dismissed';
 
 export function AlertNotificationCenter() {
+  const [, setLocation] = useLocation();
   const [filterType, setFilterType] = useState<FilterType>('all');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [searchStock, setSearchStock] = useState('');
@@ -275,17 +277,34 @@ export function AlertNotificationCenter() {
                       </div>
                     </div>
 
-                    {alert.status !== 'dismissed' && (
+                    <div className="flex items-center gap-2 shrink-0">
                       <Button
                         size="sm"
-                        variant="ghost"
-                        onClick={() => dismissAlertMutation.mutate({ alertId: alert.id })}
-                        disabled={dismissAlertMutation.isPending}
-                        className="ml-4 shrink-0"
+                        variant="outline"
+                        onClick={() => setLocation(`/stock/${alert.ticker}`)}
+                        className="text-xs"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        View Stock
                       </Button>
-                    )}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setLocation(`/stock/${alert.ticker}?tab=signals`)}
+                        className="text-xs"
+                      >
+                        View Signals
+                      </Button>
+                      {alert.status !== 'dismissed' && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => dismissAlertMutation.mutate({ alertId: alert.id })}
+                          disabled={dismissAlertMutation.isPending}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>

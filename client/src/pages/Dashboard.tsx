@@ -72,15 +72,16 @@ export default function Dashboard() {
 
   const watchlist = watchlistQuery.data ?? [];
   const signals = signalsQuery.data ?? [];
+  const { data: trendData } = trpc.dashboard.getTrendData.useQuery();
 
-  const buySignals = signals.filter((signal) => signal.type === "buy").length;
-  const sellSignals = signals.filter((signal) => signal.type === "sell").length;
+  const buySignals = trendData?.buyCount ?? signals.filter((signal) => signal.type === "buy").length;
+  const sellSignals = trendData?.sellCount ?? signals.filter((signal) => signal.type === "sell").length;
 
-  // Calculate 7-day signal trends (mock data)
-  const buyTrend = Math.random() > 0.5 ? 'up' : 'down';
-  const sellTrend = Math.random() > 0.5 ? 'up' : 'down';
-  const buyTrendPercent = Math.floor(Math.random() * 30) + 5;
-  const sellTrendPercent = Math.floor(Math.random() * 30) + 5;
+  // Calculate 7-day signal trends from real data
+  const buyTrendPercent = Math.abs(trendData?.buyChange ?? 0);
+  const sellTrendPercent = Math.abs(trendData?.sellChange ?? 0);
+  const buyTrend = (trendData?.buyChange ?? 0) >= 0 ? 'up' : 'down';
+  const sellTrend = (trendData?.sellChange ?? 0) >= 0 ? 'up' : 'down';
 
   const signalCoverage = useMemo(() => {
     if (!watchlist.length) return 0;

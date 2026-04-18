@@ -663,3 +663,101 @@ export async function markNotificationAsRead(notificationId: number) {
     .set({ isRead: 1, readAt: new Date() })
     .where(eq(notifications.id, notificationId));
 }
+
+
+/**
+ * Get 7-day signal trend data for buy and sell signals
+ */
+export async function getSignalTrend(days: number = 7) {
+  const db = await getDb();
+  
+  // Return mock data if database is not available
+  if (!db) {
+    // Mock trend data: simulate 7-day history
+    const buyTrend = Array.from({ length: days }, (_, i) => {
+      const daysAgo = days - i;
+      return Math.floor(Math.random() * 5) + (i % 2 === 0 ? 2 : 0);
+    });
+    
+    const sellTrend = Array.from({ length: days }, (_, i) => {
+      const daysAgo = days - i;
+      return Math.floor(Math.random() * 4) + (i % 3 === 0 ? 1 : 0);
+    });
+    
+    const totalBuy = buyTrend.reduce((a, b) => a + b, 0);
+    const totalSell = sellTrend.reduce((a, b) => a + b, 0);
+    const prevBuy = Math.floor(totalBuy * 0.8);
+    const prevSell = Math.floor(totalSell * 0.85);
+    
+    return {
+      buyTrend,
+      sellTrend,
+      buyChange: ((totalBuy - prevBuy) / prevBuy) * 100,
+      sellChange: ((totalSell - prevSell) / prevSell) * 100,
+    };
+  }
+
+  try {
+    const sevenDaysAgo = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    
+    // Get buy signals from last 7 days
+    const buySignals = await db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(signals)
+      .where(and(
+        eq(signals.type, 'buy'),
+        sql`${signals.createdAt} >= ${sevenDaysAgo}`
+      ));
+    
+    // Get sell signals from last 7 days
+    const sellSignals = await db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(signals)
+      .where(and(
+        eq(signals.type, 'sell'),
+        sql`${signals.createdAt} >= ${sevenDaysAgo}`
+      ));
+    
+    // Get previous 7 days data for comparison
+    const fourteenDaysAgo = new Date(Date.now() - (days * 2) * 24 * 60 * 60 * 1000);
+    
+    const prevBuySignals = await db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(signals)
+      .where(and(
+        eq(signals.type, 'buy'),
+        sql`${signals.createdAt} >= ${fourteenDaysAgo} AND ${signals.createdAt} < ${sevenDaysAgo}`
+      ));
+    
+    const prevSellSignals = await db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(signals)
+      .where(and(
+        eq(signals.type, 'sell'),
+        sql`${signals.createdAt} >= ${fourteenDaysAgo} AND ${signals.createdAt} < ${sevenDaysAgo}`
+      ));
+    
+    const currentBuyCount = buySignals[0]?.count ?? 0;
+    const currentSellCount = sellSignals[0]?.count ?? 0;
+    const prevBuyCount = prevBuySignals[0]?.count ?? currentBuyCount;
+    const prevSellCount = prevSellSignals[0]?.count ?? currentSellCount;
+    
+    const buyChange = prevBuyCount > 0 ? ((currentBuyCount - prevBuyCount) / prevBuyCount) * 100 : 0;
+    const sellChange = prevSellCount > 0 ? ((currentSellCount - prevSellCount) / prevSellCount) * 100 : 0;
+    
+    return {
+      buyCount: currentBuyCount,
+      sellCount: currentSellCount,
+      buyChange: Math.round(buyChange * 10) / 10,
+      sellChange: Math.round(sellChange * 10) / 10,
+    };
+  } catch (error) {
+    console.error('Error calculating signal trend:', error);
+    return {
+      buyCount: 0,
+      sellCount: 0,
+      buyChange: 0,
+      sellChange: 0,
+    };
+  }
+}

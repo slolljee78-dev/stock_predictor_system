@@ -333,6 +333,13 @@ export const appRouter = router({
       }),
   }),
 
+  dashboard: router({
+    getTrendData: publicProcedure.query(async () => {
+      const { getSignalTrend } = await import('./db');
+      return getSignalTrend(7);
+    }),
+  }),
+
   backtest: backtestRouter,
   sentiment: sentimentRouter,
   alerts: alertsRouter,

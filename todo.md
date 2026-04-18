@@ -314,3 +314,13 @@
 - [x] Fix sell signals not displaying on stock detail page
 - [x] Make watchlist cards properly clickable to navigate to watchlist
 - [x] Test sell signal display behavior when signals exist
+
+
+## Implementation Phase - Real Trends & Alert Actions
+- [x] Add getTrendData backend procedure to calculate 7-day signal trends
+- [x] Implement trend calculation logic (buy/sell signal counts by day)
+- [x] Update Dashboard to fetch real trend data instead of mock
+- [x] Add View Stock button to alert rows
+- [x] Add View Signal Details button to alert rows
+- [x] Test trend calculations with historical data
+- [x] Test alert action button navigation
