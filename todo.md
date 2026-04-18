@@ -302,3 +302,10 @@
 - [x] Reduce top spacing on landing page (premium banner too far from top)
 - [x] Tighten spacing between "guessing" and "Trade" text on landing page
 - [x] Make watchlist cards clickable to navigate to watchlist page
+
+
+## UX Fixes - Dashboard Cards & Sell Signals
+- [x] Improve card descriptions to be more customer-centric (less technical)
+- [x] Fix sell signals not displaying on stock detail page
+- [x] Make watchlist cards properly clickable to navigate to watchlist
+- [x] Test sell signal display behavior when signals exist

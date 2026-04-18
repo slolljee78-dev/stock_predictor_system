@@ -163,7 +163,7 @@ export default function Dashboard() {
           </div>
         </section>
 
-        <section className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+        <section data-section="watchlist" className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
           <Card className="premium-card border-0 bg-transparent shadow-none">
             <CardHeader className="pb-5">
               <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
@@ -553,8 +553,19 @@ function MetricCard({
   note: string;
   icon: React.ReactNode;
 }) {
+  const handleClick = () => {
+    const watchlistSection = document.querySelector('[data-section="watchlist"]');
+    if (watchlistSection) {
+      watchlistSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      window.scrollTo({ top: 500, behavior: 'smooth' });
+    }
+  };
   return (
-    <div className="metric-card">
+    <button
+      onClick={handleClick}
+      className="metric-card cursor-pointer hover:shadow-lg hover:shadow-primary/20 transition-all duration-200 text-left"
+    >
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className="metric-label">{label}</p>
@@ -565,7 +576,7 @@ function MetricCard({
         </div>
       </div>
       <p className="mt-3 text-sm text-muted-foreground">{note}</p>
-    </div>
+    </button>
   );
 }
 

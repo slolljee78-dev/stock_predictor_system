@@ -221,9 +221,9 @@ export default function Home() {
                         </div>
                         <Badge className="rounded-full bg-emerald-500/15 text-emerald-300 border-emerald-400/20 text-sm md:text-xs px-3 py-2 md:px-2 md:py-1">+18.4%</Badge>
                       </div>
-                      <p className="text-xs md:text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">AI signal density</p>
-                      <p className="mt-3 text-3xl md:text-3xl font-semibold tracking-tight">14 fresh setups</p>
-                      <p className="mt-3 text-sm text-muted-foreground">Morning momentum and reversal candidates ranked by confidence.</p>
+                      <p className="text-xs md:text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">Today's Ideas</p>
+                      <p className="mt-3 text-3xl md:text-3xl font-semibold tracking-tight">14 trading opportunities</p>
+                      <p className="mt-3 text-sm text-muted-foreground">Ranked by confidence so you know which setups to focus on first.</p>
                     </button>
 
                     <button
@@ -236,9 +236,9 @@ export default function Home() {
                         </div>
                         <Badge className="rounded-full bg-primary/15 text-primary border-primary/30 text-sm md:text-xs px-3 py-2 md:px-2 md:py-1">Risk controlled</Badge>
                       </div>
-                      <p className="text-xs md:text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">Portfolio discipline</p>
-                      <p className="mt-3 text-3xl md:text-3xl font-semibold tracking-tight">92% coverage</p>
-                      <p className="mt-3 text-sm text-muted-foreground">Watchlist alerts, simulator testing, and stock detail pages connected in one flow.</p>
+                      <p className="text-xs md:text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">Your Watchlist</p>
+                      <p className="mt-3 text-3xl md:text-3xl font-semibold tracking-tight">6 stocks tracked</p>
+                      <p className="mt-3 text-sm text-muted-foreground">Get alerts when your stocks show strong buy or sell signals.</p>
                     </button>
                   </div>
 
