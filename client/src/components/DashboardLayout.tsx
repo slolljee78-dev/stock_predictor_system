@@ -34,6 +34,8 @@ import {
   Sparkles,
   TrendingUp,
   Activity,
+  Target,
+  Settings,
 } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { useLocation } from "wouter";
@@ -72,6 +74,18 @@ const menuItems = [
     label: "Validation",
     path: "/validation/dashboard",
     description: "Track live validation progress",
+  },
+  {
+    icon: Target,
+    label: "Signal Accuracy",
+    path: "/signal-accuracy",
+    description: "Win rates, P&L, and performance metrics",
+  },
+  {
+    icon: Settings,
+    label: "Alert Preferences",
+    path: "/alert-preferences",
+    description: "Customize alert thresholds and channels",
   },
 ];
 
