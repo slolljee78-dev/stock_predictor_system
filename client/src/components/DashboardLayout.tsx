@@ -296,14 +296,14 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
       </Sidebar>
 
       <SidebarInset className="bg-transparent">
-        <div className="sticky top-0 z-40 -mt-2 px-2 pt-0 md:mt-0 md:px-4 md:pt-0 bg-background/95 backdrop-blur-sm border-b border-border/50">
-          <div className="dashboard-frame flex min-h-[72px] items-center justify-between gap-2 px-3 py-2 md:min-h-14 md:px-6 md:py-2">
+        <div className="sticky top-0 z-40 -mt-6 px-2 pt-0 md:mt-0 md:px-4 md:pt-0 bg-background/92 backdrop-blur-xl border-b border-border/40">
+          <div className="dashboard-frame flex min-h-[84px] items-center justify-between gap-2 px-3 py-2.5 md:min-h-14 md:px-6 md:py-2">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="flex items-center gap-2 rounded-2xl border border-primary/40 bg-primary/10 px-2 py-1.5 shadow-md shadow-primary/10">
-                <SidebarTrigger title="Open menu" className="h-10 w-10 rounded-xl border-2 border-primary bg-primary/25 hover:bg-primary/35 flex items-center justify-center text-primary shadow-md hover:shadow-lg transition-all" />
+              <div className="flex items-center gap-2 rounded-[1.35rem] border border-primary/30 bg-[linear-gradient(135deg,rgba(36,99,235,0.16),rgba(14,165,233,0.08))] px-2.5 py-2 shadow-[0_14px_32px_rgba(37,99,235,0.18)] backdrop-blur">
+                <SidebarTrigger title="Open menu" className="h-11 w-11 rounded-[1rem] border border-primary/35 bg-background/70 hover:bg-primary/12 flex items-center justify-center text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_10px_22px_rgba(15,23,42,0.28)] transition-all" />
                 <div className="hidden sm:block">
-                  <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary/90">Menu</p>
-                  <p className="text-xs text-muted-foreground">Open workspace</p>
+                  <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-primary/90">Workspace</p>
+                  <p className="text-xs text-muted-foreground">Open navigation</p>
                 </div>
               </div>
               <div className="min-w-0 flex-1">
@@ -315,7 +315,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                     </Badge>
                   )}
                 </div>
-                <p className="line-clamp-2 text-xs leading-snug text-muted-foreground md:truncate md:text-sm">{activeMenuItem.description}</p>
+                <p className="line-clamp-2 text-[13px] leading-snug text-muted-foreground md:truncate md:text-sm">{activeMenuItem.description}</p>
               </div>
             </div>
 
@@ -332,7 +332,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
           </div>
         </div>
 
-        <main className="container pt-2 pb-3 md:py-6 lg:py-8">
+        <main className="container pt-0.5 pb-3 md:py-6 lg:py-8">
           {children}
         </main>
       </SidebarInset>

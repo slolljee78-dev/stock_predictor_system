@@ -188,7 +188,7 @@ function Sidebar({
           data-sidebar="sidebar"
           data-slot="sidebar"
           data-mobile="true"
-          className="bg-sidebar text-sidebar-foreground w-(--sidebar-width) p-0 [&>button]:hidden"
+          className="w-(--sidebar-width) border-r border-white/8 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.12),transparent_32%),linear-gradient(180deg,rgba(4,10,24,0.98),rgba(2,6,18,0.98))] text-sidebar-foreground p-0 shadow-[0_32px_80px_rgba(2,6,23,0.65)] backdrop-blur-2xl [&>button]:hidden"
           style={
             {
               "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
@@ -200,7 +200,7 @@ function Sidebar({
             <SheetTitle>Sidebar</SheetTitle>
             <SheetDescription>Displays the mobile sidebar.</SheetDescription>
           </SheetHeader>
-          <div className="flex h-full w-full flex-col">{children}</div>
+          <div className="flex h-full w-full flex-col border-r border-primary/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),transparent_18%)]">{children}</div>
         </SheetContent>
       </Sheet>
     );
