@@ -27,13 +27,18 @@ describe("PublicSiteHeader", () => {
     authState.isAuthenticated = false;
   });
 
-  it("shows the visitor sign-in CTA on public pages", async () => {
+  it("shows the visitor sign-in CTA on public pages and keeps desktop nav links visually consistent", async () => {
     const { PublicSiteHeader } = await import("../client/src/components/PublicSiteHeader.tsx");
 
     render(React.createElement(PublicSiteHeader, { currentPath: "/pricing" }));
 
     expect(screen.getByRole("link", { name: /sign in/i }).getAttribute("href")).toBe("/mock-login");
-    expect(screen.getAllByText("Pricing").length).toBeGreaterThan(0);
+
+    const pricingLink = screen.getByRole("link", { name: "Pricing" });
+    const faqLink = screen.getByRole("link", { name: "FAQ" });
+
+    expect(pricingLink.className).toContain("font-semibold");
+    expect(faqLink.className).toContain("font-semibold");
   });
 
   it("shows the member dashboard CTA when the user is authenticated", async () => {

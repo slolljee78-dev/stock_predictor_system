@@ -1,3 +1,4 @@
+import React from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -152,7 +153,7 @@ export default function DashboardLayout({
   }
 
   return (
-    <SidebarProvider defaultOpen>
+    <SidebarProvider defaultOpen={false}>
       <DashboardLayoutContent>{children}</DashboardLayoutContent>
     </SidebarProvider>
   );

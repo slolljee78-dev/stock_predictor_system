@@ -38,12 +38,12 @@ export function PublicSiteHeader({ currentPath }: PublicSiteHeaderProps) {
           </div>
         </button>
 
-        <nav className="hidden items-center gap-8 text-sm text-muted-foreground lg:flex">
+        <nav className="hidden items-center gap-8 text-sm lg:flex">
           {PUBLIC_HEADER_LINKS.map((link) => (
             <a
               key={link.label}
               href={link.href}
-              className={`transition ${isPublicHeaderLinkActive(link, currentPath) ? "text-foreground" : "hover:text-foreground"}`}
+              className={`font-semibold transition-colors ${isPublicHeaderLinkActive(link, currentPath) ? "text-foreground" : "text-foreground/88 hover:text-foreground"}`}
             >
               {link.label}
             </a>

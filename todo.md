@@ -517,4 +517,10 @@
 ## Public Copy Refresh
 - [x] Rewrite the walkthrough and product-flow descriptions in more customer-friendly language
 - [x] Verify the updated public copy in the app
-- [ ] Save checkpoint after completing the public copy refresh
+- [x] Save checkpoint after completing the public copy refresh
+
+## Desktop Navigation Polish Fixes
+- [x] Make the desktop Pricing and FAQ header links match the same visual weight as Features, How it works, and Platform tour
+- [x] Fix the desktop Open dashboard action so it opens the dashboard view directly instead of immediately opening the navigation menu
+- [x] Add focused verification for the desktop navigation polish fixes
+- [ ] Save checkpoint after completing the desktop navigation polish fixes
