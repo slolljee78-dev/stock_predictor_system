@@ -539,3 +539,23 @@
 - [x] Add focused regression coverage for the live-price loading fix
 - [x] Run focused verification for the live-price loading fix
 - [x] Save checkpoint after completing the simulator live-price loading fix
+
+
+## Real-time Price Updates Enhancement
+- [x] Implement configurable polling intervals for live price updates (default 15 seconds instead of 60)
+- [x] Add WebSocket-based price streaming as alternative to polling
+- [x] Create price update subscription service with auto-refresh during active trading
+- [x] Add visual indicators for price freshness (timestamp display)
+- [x] Implement graceful fallback when real-time updates fail
+- [x] Add focused regression tests for real-time price update behavior
+- [x] Run verification for real-time price updates
+
+## Ticker Support Validation and UI Indicators
+- [x] Create ticker validation service to check Alpha Vantage support
+- [x] Add unsupported ticker detection with clear error messaging
+- [x] Build UI indicator component showing ticker support status
+- [x] Implement pre-trade validation that prevents execution for unsupported tickers
+- [x] Add helpful messaging suggesting alternative tickers or exchanges
+- [x] Create documentation of supported exchanges and ticker formats
+- [x] Add focused regression tests for ticker validation
+- [x] Run verification for ticker support indicators

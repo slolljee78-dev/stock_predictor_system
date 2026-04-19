@@ -24,6 +24,8 @@ import {
   type SimulatorPortfolio,
   type TradingSimulatorState,
 } from "@/lib/tradingSimulatorState";
+import { useRealtimePriceUpdates } from "@/hooks/useRealtimePriceUpdates";
+import { TickerSupportIndicator, PriceFreshnessIndicator } from "@/components/TickerSupportIndicator";
 
 const getStorage = () => (typeof window !== "undefined" ? window.localStorage : undefined);
 
@@ -93,18 +95,20 @@ export default function TradingSimulator() {
     }
   );
 
-  const livePriceQuery = trpc.liveMarket.getPrice.useQuery(
-    { ticker: normalizedTicker },
-    {
-      enabled: normalizedTicker.length > 0,
-      retry: false,
-      refetchOnWindowFocus: false,
-      staleTime: 45000,
-    }
-  );
+  // Real-time price updates with 15-second polling for responsive updates
+  const priceUpdates = useRealtimePriceUpdates(normalizedTicker, {
+    pollInterval: 15000, // 15 seconds for more responsive updates during active trading
+    enableAutoRefresh: true,
+  });
 
-  const livePriceData = isLivePriceResponse(livePriceQuery.data) ? livePriceQuery.data : null;
-  const livePriceUnavailable = normalizedTicker.length > 0 && !livePriceQuery.isLoading && !livePriceData;
+  const livePriceData = priceUpdates.price
+    ? {
+        ticker: normalizedTicker,
+        price: priceUpdates.price,
+        timestamp: priceUpdates.timestamp || new Date().toISOString(),
+      }
+    : null;
+  const livePriceUnavailable = normalizedTicker.length > 0 && !priceUpdates.isLoading && !priceUpdates.price;
 
   useEffect(() => {
     saveTradingSimulatorState(simulatorState, getStorage());
@@ -356,7 +360,7 @@ export default function TradingSimulator() {
       return "Enter a ticker and the latest live price will load automatically when available.";
     }
 
-    if (livePriceQuery.isLoading) {
+    if (priceUpdates.isLoading) {
       return `Checking the latest live price for ${normalizedTicker}...`;
     }
 
@@ -365,7 +369,7 @@ export default function TradingSimulator() {
     }
 
     return `Live price is unavailable for ${normalizedTicker} right now. Enter a manual fallback price to continue.`;
-  }, [livePriceData, livePriceQuery.isLoading, normalizedTicker]);
+  }, [livePriceData, priceUpdates.isLoading, normalizedTicker]);
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8 page-enter">

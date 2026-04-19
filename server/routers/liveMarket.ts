@@ -12,6 +12,13 @@ import {
   fetchStockPriceWithCache,
   clearPriceCache,
 } from "../liveMarketData";
+import {
+  validateTicker,
+  validateMultipleTickers,
+  getSuggestionsForTicker,
+  getSupportedExchanges,
+  clearValidationCache,
+} from "../tickerValidation";
 
 export const liveMarketRouter = router({
   // Get current price for a single stock
@@ -72,5 +79,40 @@ export const liveMarketRouter = router({
   refreshCache: publicProcedure.input(z.object({ ticker: z.string().optional() })).mutation(({ input }) => {
     clearPriceCache(input.ticker);
     return { success: true, message: `Cache cleared${input.ticker ? ` for ${input.ticker}` : " for all tickers"}` };
+  }),
+
+  // Validate if a ticker is supported
+  validateTicker: publicProcedure.input(z.object({ ticker: z.string() })).query(async ({ input }) => {
+    const validation = await validateTicker(input.ticker);
+    return validation;
+  }),
+
+  // Validate multiple tickers
+  validateMultipleTickers: publicProcedure
+    .input(z.object({ tickers: z.array(z.string()) }))
+    .query(async ({ input }) => {
+      const validations = await validateMultipleTickers(input.tickers);
+      return {
+        validations,
+        supported: validations.filter((v) => v.isSupported),
+        unsupported: validations.filter((v) => !v.isSupported),
+      };
+    }),
+
+  // Get suggestions for a ticker
+  getTickerSuggestions: publicProcedure.input(z.object({ ticker: z.string() })).query(({ input }) => {
+    const suggestions = getSuggestionsForTicker(input.ticker);
+    return suggestions;
+  }),
+
+  // Get supported exchanges
+  getSupportedExchanges: publicProcedure.query(() => {
+    return getSupportedExchanges();
+  }),
+
+  // Clear ticker validation cache
+  clearValidationCache: publicProcedure.input(z.object({ ticker: z.string().optional() })).mutation(({ input }) => {
+    clearValidationCache(input.ticker);
+    return { success: true, message: `Validation cache cleared${input.ticker ? ` for ${input.ticker}` : " for all tickers"}` };
   }),
 });
