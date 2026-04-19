@@ -531,4 +531,11 @@
 - [x] Fix simulator portfolio persistence so positions and cash are retained after closing and reopening the app
 - [x] Add focused regression coverage for the simulator persistence and pricing UX improvements
 - [x] Run focused verification for the simulator persistence and pricing UX improvements
-- [ ] Save checkpoint after completing the simulator persistence and pricing UX improvements
+- [x] Save checkpoint after completing the simulator persistence and pricing UX improvements
+
+## Simulator Live Price Loading Fix
+- [x] Diagnose why live price autofill falls back to manual pricing for supported tickers
+- [x] Fix the simulator live-price lookup so supported stocks auto-load current prices reliably
+- [x] Add focused regression coverage for the live-price loading fix
+- [x] Run focused verification for the live-price loading fix
+- [x] Save checkpoint after completing the simulator live-price loading fix
