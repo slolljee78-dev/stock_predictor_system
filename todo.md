@@ -559,3 +559,24 @@
 - [x] Create documentation of supported exchanges and ticker formats
 - [x] Add focused regression tests for ticker validation
 - [x] Run verification for ticker support indicators
+
+
+## Portfolio-level Price Refresh
+- [x] Create portfolio price refresh service to update all positions simultaneously
+- [x] Add "Refresh All Prices" button to the simulator UI
+- [x] Implement batch price fetching with rate limiting
+- [x] Add loading states and success/error feedback
+- [x] Create visual indicators for refresh status
+- [x] Add focused tests for portfolio refresh functionality
+- [x] Run verification for portfolio refresh
+
+## Price Alerts with Browser Notifications
+- [x] Create price alert schema and database tables
+- [x] Build price alert management service with CRUD operations
+- [x] Implement browser notification API integration
+- [x] Create price alert UI component for setting alerts
+- [x] Add alert history and management page
+- [x] Implement background price monitoring for active alerts
+- [x] Create notification templates for price alerts
+- [x] Add focused tests for price alert functionality
+- [x] Run verification for price alerts

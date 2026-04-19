@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, decimal } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -406,3 +406,60 @@ export const alertPreferences = mysqlTable("alertPreferences", {
 
 export type AlertPreferences = typeof alertPreferences.$inferSelect;
 export type InsertAlertPreferences = typeof alertPreferences.$inferInsert;
+
+
+/**
+ * Price Alerts - user-defined price targets for notifications
+ * Allows users to set alerts when a stock reaches a specific price
+ */
+export const priceAlerts = mysqlTable("priceAlerts", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  stockId: int("stockId").notNull().references(() => stocks.id, { onDelete: "cascade" }),
+  /** Target price for the alert */
+  targetPrice: varchar("targetPrice", { length: 20 }).notNull(),
+  /** Alert type: above or below target price */
+  alertType: mysqlEnum("alertType", ["above", "below"]).notNull(),
+  /** Alert status: active, triggered, dismissed, deleted */
+  status: mysqlEnum("status", ["active", "triggered", "dismissed", "deleted"]).notNull().default("active"),
+  /** Whether to notify via browser notification */
+  enableBrowserNotification: int("enableBrowserNotification").notNull().default(1),
+  /** Whether to notify via email */
+  enableEmailNotification: int("enableEmailNotification").notNull().default(0),
+  /** Number of times this alert has been triggered */
+  triggerCount: int("triggerCount").notNull().default(0),
+  /** Last price when alert was triggered */
+  lastTriggeredPrice: varchar("lastTriggeredPrice", { length: 20 }),
+  /** Timestamp when alert was last triggered */
+  lastTriggeredAt: timestamp("lastTriggeredAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type PriceAlert = typeof priceAlerts.$inferSelect;
+export type InsertPriceAlert = typeof priceAlerts.$inferInsert;
+
+/**
+ * Price Alert History - tracks when price alerts are triggered
+ * Used for audit trail and analytics
+ */
+export const priceAlertHistory = mysqlTable("priceAlertHistory", {
+  id: int("id").autoincrement().primaryKey(),
+  priceAlertId: int("priceAlertId").notNull().references(() => priceAlerts.id, { onDelete: "cascade" }),
+  userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  stockId: int("stockId").notNull().references(() => stocks.id, { onDelete: "cascade" }),
+  /** Price at the time of trigger */
+  triggerPrice: varchar("triggerPrice", { length: 20 }).notNull(),
+  /** Target price that was set */
+  targetPrice: varchar("targetPrice", { length: 20 }).notNull(),
+  /** Alert type that triggered */
+  alertType: mysqlEnum("alertType", ["above", "below"]).notNull(),
+  /** Notification channels that were used */
+  notificationChannels: varchar("notificationChannels", { length: 100 }).notNull(), // JSON array
+  /** Whether notification was successfully sent */
+  notificationSent: int("notificationSent").notNull().default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type PriceAlertHistory = typeof priceAlertHistory.$inferSelect;
+export type InsertPriceAlertHistory = typeof priceAlertHistory.$inferInsert;
