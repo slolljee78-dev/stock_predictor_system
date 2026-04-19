@@ -13,6 +13,7 @@ import { pushNotificationsRouter } from "./routers/pushNotifications";
 import { realtimeSignalsRouter } from './routers/realtimeSignals';
 import { signalNotificationsRouter } from './routers/signalNotifications';
 import { priceAlertsRouter } from "./routers/priceAlerts";
+import { alertMonitoringRouter } from "./routers/alertMonitoring";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -29,6 +30,7 @@ export const appRouter = router({
   }),
   automation: automationRouter,
   priceAlerts: priceAlertsRouter,
+  alertMonitoring: alertMonitoringRouter,
 
   stocks: router({
     search: publicProcedure

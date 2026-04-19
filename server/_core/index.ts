@@ -9,6 +9,7 @@ import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { startBackgroundJobs } from "../backgroundJobs";
 import stripeCheckoutRouter from "../stripeCheckout";
+import { initializeAlertMonitoring, shutdownAlertMonitoring } from "../alertMonitoringService";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -66,6 +67,9 @@ async function startServer() {
     
     // Start background jobs (both development and production)
     startBackgroundJobs();
+    
+    // Initialize alert monitoring service
+    initializeAlertMonitoring();
   });
 }
 
@@ -74,10 +78,12 @@ startServer().catch(console.error);
 // Handle graceful shutdown
 process.on('SIGTERM', () => {
   console.log('[Server] SIGTERM received, shutting down gracefully...');
+  shutdownAlertMonitoring();
   process.exit(0);
 });
 
 process.on('SIGINT', () => {
   console.log('[Server] SIGINT received, shutting down gracefully...');
+  shutdownAlertMonitoring();
   process.exit(0);
 });
