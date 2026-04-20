@@ -639,3 +639,9 @@
 - [ ] Monitor GSC for indexing issues (MANUAL STEP)
 - [ ] Set up Google Analytics goals (MANUAL STEP)
 - [ ] Create content calendar for blog posts
+
+
+## Bug Fixes - User Reported Issues
+- [x] Fix buy/sell signals still showing mock data (AAPL sell, NVDA buy) - verify database migration and restart monitoring
+- [x] Add back button to Plans page header for consistent navigation
+- [x] Make Next Steps cards clickable to navigate to relevant pages (signals, simulator, alerts)

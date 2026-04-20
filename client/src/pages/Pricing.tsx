@@ -204,6 +204,18 @@ export default function Pricing() {
 
       <PublicSiteHeader currentPath="/pricing" />
 
+      <div className="border-b border-border/70 bg-background/50">
+        <div className="container flex items-center gap-3 px-4 py-3 md:px-6">
+          <button
+            onClick={() => setLocation("/")}
+            className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ChevronRight className="h-4 w-4 rotate-180" />
+            Back
+          </button>
+        </div>
+      </div>
+
       <main className="focus:outline-none">
         <section className="relative overflow-hidden pt-0">
           <div className="hero-grid absolute inset-0 opacity-60" />

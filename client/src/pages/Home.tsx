@@ -53,16 +53,19 @@ const workflowSteps = [
     step: "01",
     title: "Create a watchlist that suits you",
     body: "Add the stocks you want to follow and keep everything you care about in one simple, easy-to-scan view.",
+    action: "/dashboard",
   },
   {
     step: "02",
     title: "Check your strongest opportunities",
     body: "See the clearest buy and sell opportunities first, then open each stock for the extra detail you need before making a move.",
+    action: "/signals",
   },
   {
     step: "03",
     title: "Test ideas before you trade",
     body: "Use the simulator and validation tools to practise, compare outcomes, and feel more confident before risking real money.",
+    action: "/simulator",
   },
 ];
 
@@ -319,7 +322,11 @@ export default function Home() {
 
             <div className="grid gap-4">
               {workflowSteps.map((step) => (
-                <div key={step.step} className="premium-card p-6 md:p-7">
+                <button
+                  key={step.step}
+                  onClick={() => step.action && setLocation(step.action)}
+                  className="premium-card p-6 md:p-7 cursor-pointer hover:shadow-lg hover:shadow-primary/20 transition-all text-left"
+                >
                   <div className="flex flex-col gap-5 md:flex-row md:items-start">
                     <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground text-lg font-bold shadow-lg shadow-primary/20">
                       {step.step}
@@ -329,7 +336,7 @@ export default function Home() {
                       <p className="mt-3 text-base text-muted-foreground">{step.body}</p>
                     </div>
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           </div>
