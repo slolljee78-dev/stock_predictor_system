@@ -608,3 +608,15 @@
 - [x] Implement responsive design for mobile/tablet
 - [x] Add unit tests for panel components
 - [x] Run verification for alert notification UI
+
+
+## Buy/Sell Signal Generation Bug Fix
+- [x] Investigate why AAPL sell signal and NVDA buy signal show on dashboard but not on detail page
+- [x] Check signal database queries and filtering logic
+- [x] Debug why only 2 stocks (AAPL, NVDA) are generating signals
+- [x] Verify signal generation job is running for all stocks
+- [x] Fix data consistency between dashboard and detail pages
+- [x] Implement signal retrieval tests
+- [x] Verify signals generate for at least 20+ stocks
+- [x] Test buy/sell page signal display
+- [x] Run comprehensive signal generation verification

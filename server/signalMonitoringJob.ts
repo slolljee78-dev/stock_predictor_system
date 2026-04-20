@@ -11,6 +11,8 @@ import {
   updateAndNotifySentiment,
 } from './notificationDelivery';
 import { getDb } from './db';
+import { watchlists, stocks, users } from '../drizzle/schema';
+import { eq } from 'drizzle-orm';
 
 export interface MonitoringConfig {
   interval: number; // milliseconds
@@ -79,23 +81,38 @@ export async function runSignalMonitoring(config: MonitoringConfig): Promise<voi
   try {
     console.log('[Signal Monitor] Starting monitoring cycle');
 
-    // Get all active users with watchlists
-    // Mock user data for now (in production, query from database)
-    const users = [
-      { id: 1, email: 'user@example.com' },
-    ];
+    // Get database connection
+    const db = await getDb();
+    if (!db) {
+      console.warn('[Signal Monitor] Database not available, skipping cycle');
+      return;
+    }
+
+    // Get all users with watchlists
+    const usersWithWatchlists = await db
+      .selectDistinct({ userId: watchlists.userId })
+      .from(watchlists);
 
     let totalSignalsGenerated = 0;
     let totalNotificationsSent = 0;
 
-    for (const user of users) {
+    for (const userRecord of usersWithWatchlists) {
       try {
-        // Get user's watchlist (mock data for now)
-        const watchlist = [
-          { ticker: 'AAPL' },
-          { ticker: 'GOOGL' },
-          { ticker: 'MSFT' },
-        ].slice(0, config.maxStocksPerRun);
+        // Get user details
+        const userDetails = await db.select().from(users).where(eq(users.id, userRecord.userId)).limit(1);
+        if (!userDetails || userDetails.length === 0) continue;
+
+        const user = userDetails[0];
+
+        // Get user's watchlist from database
+        const watchlistRecords = await db
+          .select({ ticker: stocks.ticker })
+          .from(watchlists)
+          .innerJoin(stocks, eq(watchlists.stockId, stocks.id))
+          .where(eq(watchlists.userId, userRecord.userId))
+          .limit(config.maxStocksPerRun);
+
+        const watchlist = watchlistRecords;
 
         if (watchlist.length === 0) continue;
 
@@ -188,7 +205,7 @@ export async function runSignalMonitoring(config: MonitoringConfig): Promise<voi
           }
         }
       } catch (error) {
-        console.error(`[Signal Monitor] Error processing user ${user.id}:`, error);
+        console.error(`[Signal Monitor] Error processing user ${userRecord.userId}:`, error);
       }
     }
 

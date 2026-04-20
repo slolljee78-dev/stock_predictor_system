@@ -377,20 +377,9 @@ export async function updateWatchlistPreferences(
 export async function getSignalsForStock(stockId: number, limit: number = 50) {
   const db = await getDb();
   
-  // Return mock data if database is not available
   if (!db) {
-    const mockSignals: Record<string, any[]> = {
-      '-1': [
-        { signalId: 1, stockId: -1, ticker: 'AAPL', type: 'buy', confidenceScore: 0.85, priceAtSignal: 150.25, createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000) },
-        { signalId: 4, stockId: -1, ticker: 'AAPL', type: 'sell', confidenceScore: 0.68, priceAtSignal: 152.50, createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000) }
-      ],
-      '-3': [{ signalId: 2, stockId: -3, ticker: 'NVDA', type: 'sell', confidenceScore: 0.78, priceAtSignal: 875.50, createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000) }],
-      '-4': [
-        { signalId: 3, stockId: -4, ticker: 'GOOGL', type: 'buy', confidenceScore: 0.72, priceAtSignal: 140.75, createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000) },
-        { signalId: 5, stockId: -4, ticker: 'GOOGL', type: 'sell', confidenceScore: 0.65, priceAtSignal: 142.30, createdAt: new Date(Date.now() - 30 * 60 * 1000) }
-      ],
-    };
-    return mockSignals[String(stockId)] || [];
+    console.warn('[DB] Database not available for signal retrieval');
+    return [];
   }
 
   return db
@@ -407,28 +396,9 @@ export async function getSignalsForStock(stockId: number, limit: number = 50) {
 export async function getActiveSignalsForUser(userId: number) {
   const db = await getDb();
   
-  // Return mock data if database is not available
   if (!db) {
-    return [
-      {
-        signalId: 1,
-        stockId: -1,
-        ticker: 'AAPL',
-        type: 'buy' as const,
-        confidenceScore: 0.85,
-        priceAtSignal: 150.25,
-        createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
-      },
-      {
-        signalId: 2,
-        stockId: -3,
-        ticker: 'NVDA',
-        type: 'sell' as const,
-        confidenceScore: 0.78,
-        priceAtSignal: 875.50,
-        createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000),
-      },
-    ];
+    console.warn('[DB] Database not available for signal retrieval');
+    return [];
   }
 
   try {
