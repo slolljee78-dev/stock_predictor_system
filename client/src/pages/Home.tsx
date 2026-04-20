@@ -97,14 +97,14 @@ export default function Home() {
               <div className="space-y-8">
                 <div className="eyebrow">
                   <Sparkles className="h-4 w-4 text-primary" />
-                  Premium trading intelligence for retail investors
+                  Premium AI Trading Signals for Retail Investors
                 </div>
 
                 <div className="space-y-6">
                   <div className="space-y-3">
                     <p className="text-sm font-bold uppercase tracking-[0.24em] text-primary/85">Stock Predictor</p>
                     <h1 className="display-title max-w-5xl text-balance leading-tight">
-                      Stop guessing.<br className="hidden sm:block" /> <span className="gradient-text">Trade with a clearer signal stack.</span>
+                      Stop guessing.<br className="hidden sm:block" /> <span className="gradient-text">Trade with AI-Powered Stock Predictions.</span>
                     </h1>
                   </div>
 

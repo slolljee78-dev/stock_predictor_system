@@ -620,3 +620,22 @@
 - [x] Verify signals generate for at least 20+ stocks
 - [x] Test buy/sell page signal display
 - [x] Run comprehensive signal generation verification
+
+
+## Google SEO Setup and Optimization
+- [x] Add meta tags to homepage (title, description, robots)
+- [x] Create and upload sitemap.xml to /client/public/
+- [x] Create and upload robots.txt to /client/public/
+- [ ] Add schema markup (Organization, WebApplication, BreadcrumbList)
+- [ ] Verify domain in Google Search Console (MANUAL STEP)
+- [ ] Submit sitemap in Google Search Console (MANUAL STEP)
+- [ ] Set up Google Analytics 4 (MANUAL STEP)
+- [x] Optimize page titles and meta descriptions
+- [ ] Create keyword-optimized landing pages (/signals, /simulator, /analysis, /how-it-works)
+- [ ] Implement internal linking strategy
+- [ ] Optimize images with alt text
+- [ ] Check and improve Core Web Vitals
+- [ ] Test mobile-friendliness
+- [ ] Monitor GSC for indexing issues (MANUAL STEP)
+- [ ] Set up Google Analytics goals (MANUAL STEP)
+- [ ] Create content calendar for blog posts
