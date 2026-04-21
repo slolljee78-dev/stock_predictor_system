@@ -56,9 +56,9 @@ export function startBackgroundJobs() {
   // Start real-time signal monitoring job
   console.log('[Background Jobs] Initializing signal monitoring...');
   startSignalMonitoring({
-    interval: 60 * 60 * 1000, // 1 hour - respect Alpha Vantage free tier limit of 25 requests/day
+    interval: 5 * 60 * 1000, // 5 minutes
     confidenceThreshold: 60,
-    maxStocksPerRun: 10, // 2 API calls per stock = 20 calls/hour max
+    maxStocksPerRun: 50,
     notifyOnSignal: true,
     updateSentiment: true,
   });
@@ -76,7 +76,7 @@ export function startBackgroundJobs() {
     if (isMarketHours) {
       await generateSignalsForWatchlists();
     }
-  }, 60 * 60 * 1000); // 1 hour
+  }, 5 * 60 * 1000); // 5 minutes
 
   // Cleanup on process exit
   process.on('exit', () => {

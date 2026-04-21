@@ -7,14 +7,7 @@ import { ENV } from './_core/env';
 
 const API_KEY = ENV.alphaVantageApiKey;
 const BASE_URL = 'https://www.alphavantage.co/query';
-const RATE_LIMIT_DELAY = 2000; // 2 seconds between API calls (Alpha Vantage free tier: 1 request/second minimum)
-
-// Debug: Log API key status on module load
-if (!API_KEY || API_KEY === '') {
-  console.warn('[Market Data] WARNING: Alpha Vantage API key is not configured. Set ALPHA_VANTAGE_API_KEY environment variable.');
-} else {
-  console.log('[Market Data] API key configured (length: ' + API_KEY.length + ')');
-}
+const RATE_LIMIT_DELAY = 12000; // 12 seconds between API calls
 
 let lastApiCallTime = 0;
 
@@ -107,6 +100,7 @@ export async function fetchDailyData(ticker: string, limit: number = 100): Promi
     const params = new URLSearchParams({
       function: 'TIME_SERIES_DAILY',
       symbol: ticker,
+      outputsize: 'full',
       apikey: API_KEY,
     });
 
@@ -114,15 +108,7 @@ export async function fetchDailyData(ticker: string, limit: number = 100): Promi
     const data = await response.json();
 
     if (!data['Time Series (Daily)']) {
-      if (data['Error Message']) {
-        console.warn(`[Market Data] API Error for ${ticker}: ${data['Error Message']}`);
-      } else if (data['Information']) {
-        console.warn(`[Market Data] API Info for ${ticker}: ${data['Information']}`);
-      } else if (data['Note']) {
-        console.warn(`[Market Data] API Note for ${ticker}: ${data['Note']}`);
-      } else {
-        console.warn(`[Market Data] No daily data for ${ticker}. Response keys: ${Object.keys(data).join(', ')}`);
-      }
+      console.warn(`[Market Data] No daily data for ${ticker}`);
       return [];
     }
 
@@ -334,16 +320,15 @@ export function calculateIndicators(priceData: PriceData[]): TechnicalIndicators
  */
 export async function fetchMarketDataWithIndicators(ticker: string): Promise<MarketDataPoint | null> {
   try {
-    // Fetch daily data only (includes current price in the most recent entry)
-    // This reduces API calls from 2 per stock to 1 per stock
-    const dailyData = await fetchDailyData(ticker, 100);
+    // Fetch current price and daily data
+    const [currentPrice, dailyData] = await Promise.all([
+      fetchCurrentPrice(ticker),
+      fetchDailyData(ticker, 100),
+    ]);
 
-    if (dailyData.length === 0) {
+    if (!currentPrice || dailyData.length === 0) {
       return null;
     }
-
-    // Use the most recent daily data as current price
-    const currentPrice = dailyData[dailyData.length - 1];
 
     // Calculate indicators
     const indicators = calculateIndicators(dailyData);
@@ -355,7 +340,7 @@ export async function fetchMarketDataWithIndicators(ticker: string): Promise<Mar
 
     return {
       ticker,
-      timestamp: Date.now(),
+      timestamp: currentPrice.timestamp,
       price: currentPrice,
       indicators,
       change,
