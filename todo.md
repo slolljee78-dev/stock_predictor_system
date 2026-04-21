@@ -671,3 +671,7 @@
 - [x] Add trust badges above CTA
 - [x] Implement all sections in Home.tsx
 - [ ] Create checkpoint
+
+## Critical Bug Fixes
+- [x] Fix stock detail banner positioning - banner covers back button on mobile (added z-index layering)
+- [x] Fix stuck buy/sell signals - signals not updating, showing stale cached data (API key configuration + rate limiting optimization)
