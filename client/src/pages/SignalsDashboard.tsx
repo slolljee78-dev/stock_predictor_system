@@ -3,11 +3,9 @@ import { trpc } from '@/lib/trpc';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Slider } from '@/components/ui/slider';
-import { TrendingUp, TrendingDown, AlertCircle, RefreshCw, ArrowLeft, Home } from 'lucide-react';
+import { TrendingUp, TrendingDown, AlertCircle, RefreshCw, ArrowLeft, Home, Filter } from 'lucide-react';
 import { SignalDetailsModal } from '@/components/SignalDetailsModal';
+import { SignalFilters, SignalFilterOptions, DEFAULT_FILTERS } from '@/components/SignalFilters';
 import { useLocation } from 'wouter';
 import { DASHBOARD_HOME_PATH, navigateToDashboardMenu } from '@/lib/navigation';
 import { getSignalFilterFromSearch } from '@/lib/dashboardNavigation';
@@ -24,21 +22,36 @@ interface SignalWithMetrics {
   timestamp: number;
 }
 
+const STORAGE_KEY = 'signal_filters';
+
 export default function SignalsDashboard() {
   const [, setLocation] = useLocation();
-  const [selectedSignalType, setSelectedSignalType] = useState<'all' | 'buy' | 'sell'>(() => getSignalFilterFromSearch(window.location.search));
-  const [minConfidence, setMinConfidence] = useState(60);
-  const [sortBy, setSortBy] = useState<'confidence' | 'price' | 'time'>('confidence');
+  const [showFilters, setShowFilters] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [signals, setSignals] = useState<SignalWithMetrics[]>([]);
   const [selectedSignal, setSelectedSignal] = useState<SignalWithMetrics | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // Load filters from localStorage or use defaults
+  const [filters, setFilters] = useState<SignalFilterOptions>(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      return stored ? JSON.parse(stored) : DEFAULT_FILTERS;
+    } catch {
+      return DEFAULT_FILTERS;
+    }
+  });
+
+  // Save filters to localStorage when they change
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(filters));
+  }, [filters]);
 
   // Fetch market overview with signals
   const { data: overviewData, isLoading, refetch } = trpc.realtimeSignals.getMarketOverview.useQuery(
     {
       tickers: ['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN', 'NVDA', 'META', 'NFLX', 'ADBE', 'CRM'],
-      minConfidence: minConfidence,
+      minConfidence: filters.minConfidence,
     },
     {
       refetchInterval: autoRefresh ? 30000 : false, // Refresh every 30 seconds if enabled
@@ -64,23 +77,60 @@ export default function SignalsDashboard() {
     }
   }, [overviewData]);
 
-  // Filter signals
+  // Filter signals based on all filter criteria
   const filteredSignals = signals.filter(signal => {
-    if (selectedSignalType !== 'all' && signal.signalType !== selectedSignalType) {
+    // Signal type filter
+    if (filters.signalType !== 'all' && signal.signalType !== filters.signalType) {
       return false;
     }
-    return signal.confidence >= minConfidence;
+
+    // Confidence filter
+    if (signal.confidence < filters.minConfidence) {
+      return false;
+    }
+
+    // RSI filter
+    if (signal.rsi !== null) {
+      if (signal.rsi < filters.rsiMin || signal.rsi > filters.rsiMax) {
+        return false;
+      }
+    }
+
+    // MACD filter
+    if (filters.macdFilter !== 'all' && signal.macd !== null) {
+      const isMacdPositive = signal.macd > 0;
+      if (filters.macdFilter === 'positive' && !isMacdPositive) {
+        return false;
+      }
+      if (filters.macdFilter === 'negative' && isMacdPositive) {
+        return false;
+      }
+    }
+
+    // Price change filter
+    if (signal.changePercent < filters.priceChangeMin || signal.changePercent > filters.priceChangeMax) {
+      return false;
+    }
+
+    return true;
   });
 
-  // Sort signals
+  // Sort signals based on selected sort option
   const sortedSignals = [...filteredSignals].sort((a, b) => {
-    switch (sortBy) {
+    switch (filters.sortBy) {
       case 'confidence':
         return b.confidence - a.confidence;
       case 'price':
         return b.price - a.price;
       case 'time':
         return b.timestamp - a.timestamp;
+      case 'rsi':
+        // Sort by RSI extremes (closest to 0 or 100)
+        const aRsiDist = a.rsi ? Math.min(a.rsi, 100 - a.rsi) : 50;
+        const bRsiDist = b.rsi ? Math.min(b.rsi, 100 - b.rsi) : 50;
+        return aRsiDist - bRsiDist;
+      case 'change':
+        return Math.abs(b.changePercent) - Math.abs(a.changePercent);
       default:
         return 0;
     }
@@ -159,81 +209,45 @@ export default function SignalsDashboard() {
           </Card>
         </div>
 
-        {/* Controls */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>Filters & Settings</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {/* Signal Type Filter */}
-              <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">Signal Type</label>
-                <Select value={selectedSignalType} onValueChange={(value: any) => setSelectedSignalType(value)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Signals</SelectItem>
-                    <SelectItem value="buy">Buy Only</SelectItem>
-                    <SelectItem value="sell">Sell Only</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+        {/* Filters Toggle and Display */}
+        <div className="flex gap-2 mb-4">
+          <Button
+            variant={showFilters ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setShowFilters(!showFilters)}
+            className="gap-2"
+          >
+            <Filter className="w-4 h-4" />
+            Advanced Filters
+          </Button>
+          <Button
+            variant={autoRefresh ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setAutoRefresh(!autoRefresh)}
+          >
+            {autoRefresh ? 'Auto Refresh: ON' : 'Auto Refresh: OFF'}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refetch()}
+            disabled={isLoading}
+            className="px-3"
+          >
+            <RefreshCw className="w-4 h-4" />
+          </Button>
+        </div>
 
-              {/* Confidence Threshold */}
-              <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">
-                  Min Confidence: {minConfidence}%
-                </label>
-                <Slider
-                  value={[minConfidence]}
-                  onValueChange={(value) => setMinConfidence(value[0])}
-                  min={0}
-                  max={100}
-                  step={5}
-                  className="w-full"
-                />
-              </div>
+        {/* Advanced Filters Panel */}
+        {showFilters && (
+          <SignalFilters
+            filters={filters}
+            onFiltersChange={setFilters}
+            onClose={() => setShowFilters(false)}
+          />
+        )}
 
-              {/* Sort By */}
-              <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">Sort By</label>
-                <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="confidence">Confidence</SelectItem>
-                    <SelectItem value="price">Price</SelectItem>
-                    <SelectItem value="time">Time</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Auto Refresh & Refresh Button */}
-              <div className="flex gap-2 items-end">
-                <Button
-                  variant={autoRefresh ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setAutoRefresh(!autoRefresh)}
-                  className="flex-1"
-                >
-                  {autoRefresh ? 'Auto Refresh: ON' : 'Auto Refresh: OFF'}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => refetch()}
-                  disabled={isLoading}
-                  className="px-3"
-                >
-                  <RefreshCw className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {showFilters && <div className="mb-4" />}
 
         {/* Signals List */}
         <Card>

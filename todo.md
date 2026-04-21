@@ -645,3 +645,14 @@
 - [x] Fix buy/sell signals still showing mock data (AAPL sell, NVDA buy) - verify database migration and restart monitoring
 - [x] Add back button to Plans page header for consistent navigation
 - [x] Make Next Steps cards clickable to navigate to relevant pages (signals, simulator, alerts)
+
+## Phase 28: Advanced Signal Filtering UI
+- [x] Create enhanced filter component with multiple filter options (SignalFilters.tsx)
+- [x] Add RSI range filter (30-70 range with slider)
+- [x] Add MACD filter (positive/negative/all)
+- [x] Add price change percentage filter (range slider)
+- [x] Add saved filter presets (high-confidence, oversold, overbought)
+- [x] Integrate filters into SignalsDashboard page
+- [x] Add filter persistence to localStorage
+- [x] Create tests for filtering functionality
+- [ ] Create checkpoint
