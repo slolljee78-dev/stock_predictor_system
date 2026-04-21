@@ -656,3 +656,18 @@
 - [x] Add filter persistence to localStorage
 - [x] Create tests for filtering functionality
 - [ ] Create checkpoint
+
+## Phase 29: Premium Homepage Redesign
+- [x] Audit current homepage (trust gaps, positioning issues)
+- [x] Rewrite homepage copy with premium tone
+- [x] Redesign hero section with new headline
+- [x] Add "Built by Traders" trust section
+- [x] Add testimonials section with 3 user testimonials
+- [x] Add social proof stats (12k+ traders, 4.8/5 rating)
+- [x] Add FAQ section with 6 expandable questions
+- [x] Add compliance and risk disclosure section
+- [x] Add contact information (email, phone, location)
+- [x] Add money-back guarantee to pricing
+- [x] Add trust badges above CTA
+- [x] Implement all sections in Home.tsx
+- [ ] Create checkpoint
