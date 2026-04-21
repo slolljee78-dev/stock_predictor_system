@@ -100,7 +100,6 @@ export async function fetchDailyData(ticker: string, limit: number = 100): Promi
     const params = new URLSearchParams({
       function: 'TIME_SERIES_DAILY',
       symbol: ticker,
-      outputsize: 'full',
       apikey: API_KEY,
     });
 
@@ -108,7 +107,12 @@ export async function fetchDailyData(ticker: string, limit: number = 100): Promi
     const data = await response.json();
 
     if (!data['Time Series (Daily)']) {
-      console.warn(`[Market Data] No daily data for ${ticker}`);
+      // Check for rate limit or error messages
+      if (data['Error Message'] || data['Information'] || data['Note']) {
+        console.warn(`[Market Data] API rate limit or error for ${ticker}: ${data['Error Message'] || data['Information'] || data['Note']}`);
+      } else {
+        console.warn(`[Market Data] No daily data for ${ticker}`);
+      }
       return [];
     }
 

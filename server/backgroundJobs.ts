@@ -56,9 +56,9 @@ export function startBackgroundJobs() {
   // Start real-time signal monitoring job
   console.log('[Background Jobs] Initializing signal monitoring...');
   startSignalMonitoring({
-    interval: 5 * 60 * 1000, // 5 minutes
+    interval: 60 * 60 * 1000, // 1 hour (to respect Alpha Vantage free tier: 25 requests/day)
     confidenceThreshold: 60,
-    maxStocksPerRun: 50,
+    maxStocksPerRun: 10, // 10 stocks per run = ~10 API calls/hour = ~240 calls/day max (well under 25 limit)
     notifyOnSignal: true,
     updateSentiment: true,
   });
