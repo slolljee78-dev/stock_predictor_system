@@ -68,12 +68,14 @@ const workflowSteps = [
     title: "Check your strongest opportunities",
     body: "See the clearest buy and sell opportunities first, then open each stock for the extra detail you need before making a move.",
     action: "/signals",
+    link: { text: "Learn about signals", href: "/how-it-works" }
   },
   {
     step: "03",
     title: "Test ideas before you trade",
     body: "Use the simulator and validation tools to practise, compare outcomes, and feel more confident before risking real money.",
     action: "/simulator",
+    link: { text: "Explore analysis tools", href: "/analysis" }
   },
 ];
 
@@ -412,6 +414,16 @@ export default function Home() {
               <p className="lead-copy">
                 The product does not ask you to trust a black box. It gives you ranked ideas, confidence context, watchlist focus, and validation tools so you can understand what deserves attention before acting.
               </p>
+              <div className="flex flex-wrap gap-3 pt-4">
+                <Button variant="outline" size="sm" onClick={() => setLocation('/how-it-works')}>
+                  How it works
+                  <ChevronRight className="ml-1 h-4 w-4" />
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => setLocation('/analysis')}>
+                  Stock analysis
+                  <ChevronRight className="ml-1 h-4 w-4" />
+                </Button>
+              </div>
             </div>
 
             <div className="grid gap-4 md:grid-cols-3">

@@ -626,13 +626,13 @@
 - [x] Add meta tags to homepage (title, description, robots)
 - [x] Create and upload sitemap.xml to /client/public/
 - [x] Create and upload robots.txt to /client/public/
-- [ ] Add schema markup (Organization, WebApplication, BreadcrumbList)
+- [x] Add schema markup (Organization, WebApplication, BreadcrumbList)
 - [ ] Verify domain in Google Search Console (MANUAL STEP)
 - [ ] Submit sitemap in Google Search Console (MANUAL STEP)
 - [ ] Set up Google Analytics 4 (MANUAL STEP)
 - [x] Optimize page titles and meta descriptions
-- [ ] Create keyword-optimized landing pages (/signals, /simulator, /analysis, /how-it-works)
-- [ ] Implement internal linking strategy
+- [x] Create keyword-optimized landing pages (/signals, /simulator, /analysis, /how-it-works)
+- [x] Implement internal linking strategy
 - [ ] Optimize images with alt text
 - [ ] Check and improve Core Web Vitals
 - [ ] Test mobile-friendliness
