@@ -423,50 +423,12 @@ export async function getActiveSignalsForUser(userId: number) {
       )
       .orderBy(signals.createdAt);
     
-    // Return mock data if query returns empty results
-    return results.length > 0 ? results : [
-      {
-        signalId: 1,
-        stockId: -1,
-        ticker: 'AAPL',
-        type: 'buy' as const,
-        confidenceScore: 0.85,
-        priceAtSignal: 150.25,
-        createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
-      },
-      {
-        signalId: 2,
-        stockId: -3,
-        ticker: 'NVDA',
-        type: 'sell' as const,
-        confidenceScore: 0.72,
-        priceAtSignal: 875.50,
-        createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000),
-      },
-    ];
+    // Return real signals from database
+    return results;
   } catch (error) {
     console.error('Error fetching active signals:', error);
-    // Return mock data on error
-    return [
-      {
-        signalId: 1,
-        stockId: -1,
-        ticker: 'AAPL',
-        type: 'buy' as const,
-        confidenceScore: 0.85,
-        priceAtSignal: 150.25,
-        createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
-      },
-      {
-        signalId: 2,
-        stockId: -3,
-        ticker: 'NVDA',
-        type: 'sell' as const,
-        confidenceScore: 0.72,
-        priceAtSignal: 875.50,
-        createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000),
-      },
-    ];
+    // Return empty array on error instead of mock data
+    return [];
   }
 }
 

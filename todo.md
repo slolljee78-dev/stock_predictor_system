@@ -655,7 +655,7 @@
 - [x] Integrate filters into SignalsDashboard page
 - [x] Add filter persistence to localStorage
 - [x] Create tests for filtering functionality
-- [ ] Create checkpoint
+- [x] Create checkpoint
 
 ## Phase 29: Premium Homepage Redesign
 - [x] Audit current homepage (trust gaps, positioning issues)
@@ -670,4 +670,12 @@
 - [x] Add money-back guarantee to pricing
 - [x] Add trust badges above CTA
 - [x] Implement all sections in Home.tsx
-- [ ] Create checkpoint
+- [x] Create checkpoint
+
+## Phase 30: Critical Signal Bug Fixes
+- [x] Fix stock detail banner positioning - z-index layering prevents overlap
+- [x] Add signal persistence to monitoring job - signals now saved to database
+- [x] Remove mock signal fallback - dashboard shows only real signals
+- [x] Configure Alpha Vantage API key - signals can now be generated
+- [x] Optimize rate limiting - 1-hour intervals, 10 stocks/run respects free tier
+- [x] Create checkpoint

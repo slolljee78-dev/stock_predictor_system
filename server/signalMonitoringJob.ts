@@ -10,7 +10,7 @@ import {
   sendSellSignalNotification,
   updateAndNotifySentiment,
 } from './notificationDelivery';
-import { getDb } from './db';
+import { getDb, createSignal } from './db';
 import { watchlists, stocks, users } from '../drizzle/schema';
 import { eq } from 'drizzle-orm';
 
@@ -134,6 +134,35 @@ export async function runSignalMonitoring(config: MonitoringConfig): Promise<voi
             }
 
             totalSignalsGenerated++;
+
+            // Find the stock ID for this ticker
+            const stockRecords = await db
+              .select({ id: stocks.id })
+              .from(stocks)
+              .where(eq(stocks.ticker, ticker))
+              .limit(1);
+
+            if (stockRecords.length === 0) {
+              console.warn(`[Signal Monitor] Stock not found for ticker ${ticker}`);
+              continue;
+            }
+
+            const stockId = stockRecords[0].id;
+
+            // Persist signal to database
+            try {
+              await createSignal(
+                stockId,
+                signal.signalType as 'buy' | 'sell',
+                signal.confidence,
+                signal.price,
+                signal.technicalData,
+                `Signal generated at ${new Date().toISOString()}`
+              );
+              console.log(`[Signal Monitor] Signal persisted for ${ticker}: ${signal.signalType} (confidence: ${signal.confidence})`);
+            } catch (dbError) {
+              console.error(`[Signal Monitor] Failed to persist signal for ${ticker}:`, dbError);
+            }
 
             // Send notifications if enabled
             if (config.notifyOnSignal) {
