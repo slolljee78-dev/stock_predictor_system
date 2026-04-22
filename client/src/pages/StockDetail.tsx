@@ -139,7 +139,7 @@ export default function StockDetail() {
   return (
     <DashboardLayout>
       <div className="space-y-8 lg:space-y-10">
-        <section className="dashboard-frame px-6 py-7 md:px-8 md:py-9">
+        <section className="dashboard-frame px-6 py-0 md:px-8 md:py-2">
           <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
             <div className="space-y-4 pt-2">
               <Button variant="ghost" onClick={() => setLocation("/dashboard")} className="-ml-2 rounded-full px-4 text-muted-foreground hover:text-foreground relative z-50">

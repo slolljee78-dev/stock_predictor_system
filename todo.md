@@ -679,3 +679,8 @@
 - [x] Configure Alpha Vantage API key - signals can now be generated
 - [x] Optimize rate limiting - 1-hour intervals, 10 stocks/run respects free tier
 - [x] Create checkpoint
+
+## Phase 31: UI Polish - Overview Banner Positioning
+- [x] Fix Overview banner top margin/padding on all pages - should be closer to header
+- [x] Check DashboardLayout, StockDetail, SignalsDashboard for banner positioning
+- [x] Reduce top spacing on Overview banner section (Dashboard: py-3→py-0, StockDetail: py-7→py-0)
