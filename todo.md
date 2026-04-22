@@ -636,9 +636,9 @@
 - [x] Optimize images with alt text (added aria-labels to interactive icons in DashboardLayout)
 - [x] Check and improve Core Web Vitals (added preconnect/dns-prefetch, deferred scripts)
 - [x] Test mobile-friendliness (verified responsive design implementation)
-- [ ] Monitor GSC for indexing issues (MANUAL STEP)
-- [ ] Set up Google Analytics goals (MANUAL STEP)
-- [ ] Create content calendar for blog posts
+- [ ] Monitor GSC for indexing issues (MANUAL STEP - see manual_seo_actions.md)
+- [ ] Set up Google Analytics goals (MANUAL STEP - see manual_seo_actions.md)
+- [x] Create content calendar for blog posts (see content_calendar_template.md)
 
 
 ## Bug Fixes - User Reported Issues
