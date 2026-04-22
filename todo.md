@@ -634,8 +634,8 @@
 - [x] Create keyword-optimized landing pages (/signals, /simulator, /analysis, /how-it-works)
 - [x] Implement internal linking strategy
 - [x] Optimize images with alt text (added aria-labels to interactive icons in DashboardLayout)
-- [ ] Check and improve Core Web Vitals
-- [ ] Test mobile-friendliness
+- [x] Check and improve Core Web Vitals (added preconnect/dns-prefetch, deferred scripts)
+- [x] Test mobile-friendliness (verified responsive design implementation)
 - [ ] Monitor GSC for indexing issues (MANUAL STEP)
 - [ ] Set up Google Analytics goals (MANUAL STEP)
 - [ ] Create content calendar for blog posts
