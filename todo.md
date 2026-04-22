@@ -633,7 +633,7 @@
 - [x] Optimize page titles and meta descriptions
 - [x] Create keyword-optimized landing pages (/signals, /simulator, /analysis, /how-it-works)
 - [x] Implement internal linking strategy
-- [ ] Optimize images with alt text
+- [x] Optimize images with alt text (added aria-labels to interactive icons in DashboardLayout)
 - [ ] Check and improve Core Web Vitals
 - [ ] Test mobile-friendliness
 - [ ] Monitor GSC for indexing issues (MANUAL STEP)

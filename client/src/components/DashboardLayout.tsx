@@ -203,8 +203,8 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
           <div className="dashboard-frame h-full overflow-hidden">
             <SidebarHeader className="border-b border-border/70 px-4 py-3">
               <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/25">
-                  <TrendingUp className="h-5 w-5" />
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/25" title="Stock Predictor Logo">
+                  <TrendingUp className="h-5 w-5" aria-label="Stock Predictor" />
                 </div>
                 <div className="min-w-0 group-data-[collapsible=icon]:hidden">
                   <p className="text-xs font-bold uppercase tracking-[0.22em] text-primary/85">Stock Predictor</p>
@@ -237,7 +237,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                               onClick={() => setLocation(item.path)}
                               className="h-auto min-h-[72px] items-start rounded-2xl px-3 py-3 md:min-h-auto md:py-3 data-[active=true]:bg-primary data-[active=true]:text-primary-foreground data-[active=true]:shadow-lg data-[active=true]:shadow-primary/20 hover:bg-secondary/80"
                             >
-                              <item.icon className="h-5 w-5 md:h-4 md:w-4 shrink-0" />
+                              <item.icon className="h-5 w-5 md:h-4 md:w-4 shrink-0" aria-label={item.label} />
                               <div className="min-w-0 group-data-[collapsible=icon]:hidden">
                                 <p className="text-sm font-semibold leading-tight md:text-sm">{item.label}</p>
                                 <p className="line-clamp-2 text-xs leading-snug opacity-75">{item.description}</p>
@@ -259,7 +259,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
               <div className="mt-4 hidden px-1 group-data-[collapsible=icon]:hidden md:block">
                 <div className="rounded-3xl border border-border/70 bg-background/40 p-4">
                   <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                    <Sparkles className="h-4 w-4 text-primary" />
+                    <Sparkles className="h-4 w-4 text-primary" aria-label="Guided workflow feature" />
                     Guided workflow
                   </div>
                   <p className="mt-2 text-sm text-muted-foreground">
@@ -272,7 +272,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
             <SidebarFooter className="border-t border-border/70 px-3 py-3">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex w-full items-center gap-3 rounded-2xl border border-border/70 bg-background/40 px-3 py-3 text-left transition hover:bg-secondary/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                  <button className="flex w-full items-center gap-3 rounded-2xl border border-border/70 bg-background/40 px-3 py-3 text-left transition hover:bg-secondary/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="User menu">
                     <Avatar className="h-10 w-10 border border-border/80">
                       <AvatarFallback className="bg-primary/15 text-primary font-bold">
                         {user?.name?.charAt(0).toUpperCase() || "U"}
@@ -323,7 +323,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
             <div className="flex shrink-0 items-center gap-1 md:gap-2">
               {!isMobile && (
                 <div className="hidden lg:flex items-center gap-2 rounded-full border border-border/70 bg-background/40 px-3 py-2 text-sm text-muted-foreground">
-                  <BellRing className="h-4 w-4 text-primary" />
+                  <BellRing className="h-4 w-4 text-primary" aria-label="Alerts" />
                   Alerts and system updates
                 </div>
               )}
