@@ -7,9 +7,38 @@ import { ENV } from './_core/env';
 
 const API_KEY = ENV.alphaVantageApiKey;
 const BASE_URL = 'https://www.alphavantage.co/query';
-const RATE_LIMIT_DELAY = 12000; // 12 seconds between API calls
+const RATE_LIMIT_DELAY = 3000; // 3 seconds between API calls (safe for free tier)
+const DAILY_QUOTA = 25; // Free tier limit
 
 let lastApiCallTime = 0;
+let apiCallsToday = 0;
+let lastQuotaResetDate = new Date().toDateString();
+
+/**
+ * Check if daily quota has been exceeded
+ */
+function checkAndResetQuota(): void {
+  const today = new Date().toDateString();
+  if (today !== lastQuotaResetDate) {
+    apiCallsToday = 0;
+    lastQuotaResetDate = today;
+  }
+}
+
+/**
+ * Check if we can make an API call
+ */
+function canMakeApiCall(): boolean {
+  checkAndResetQuota();
+  return apiCallsToday < DAILY_QUOTA;
+}
+
+/**
+ * Increment API call counter
+ */
+function incrementApiCallCounter(): void {
+  apiCallsToday++;
+}
 
 /**
  * Wait for rate limit to pass
@@ -95,7 +124,14 @@ export async function fetchCurrentPrice(ticker: string): Promise<PriceData | nul
  */
 export async function fetchDailyData(ticker: string, limit: number = 100): Promise<PriceData[]> {
   try {
+    // Check if we've exceeded daily quota
+    if (!canMakeApiCall()) {
+      console.warn(`[Market Data] Daily API quota exceeded for ${ticker}. Calls used: ${apiCallsToday}/${DAILY_QUOTA}`);
+      return [];
+    }
+
     await waitForRateLimit();
+    incrementApiCallCounter();
 
     const params = new URLSearchParams({
       function: 'TIME_SERIES_DAILY',

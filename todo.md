@@ -684,3 +684,13 @@
 - [x] Fix Overview banner top margin/padding on all pages - should be closer to header
 - [x] Check DashboardLayout, StockDetail, SignalsDashboard for banner positioning
 - [x] Reduce top spacing on Overview banner section (Dashboard: py-3→py-0, StockDetail: py-7→py-0)
+
+
+## Phase 32: Signal Generation - Alpha Vantage Rate Limiting
+- [x] Reduce API call delay from 12s to 3s
+- [x] Add daily quota tracking (25 requests/day limit)
+- [x] Implement automatic quota reset at midnight UTC
+- [x] Add quota checking before API calls
+- [ ] **RECOMMENDATION: Upgrade to Alpha Vantage Premium** - Remove all rate limits ($20-80/month)
+- [ ] **ALTERNATIVE: Implement caching layer** - Cache market data for 1 hour to reduce API calls
+- [ ] **ALTERNATIVE: Use different data provider** - Consider IEX Cloud, Finnhub, or Polygon.io for better free tier
