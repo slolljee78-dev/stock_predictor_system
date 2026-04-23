@@ -121,15 +121,18 @@ export async function runSignalMonitoring(config: MonitoringConfig): Promise<voi
 
         // Fetch market data for all stocks
         const marketDataMap = await fetchMultipleMarketData(tickers);
+        console.log(`[Signal Monitor] Fetched market data for ${marketDataMap.size} stocks`);
 
         // Generate signals and send notifications
         for (const [ticker, marketData] of Array.from(marketDataMap.entries())) {
           try {
             // Generate signal
             const signal = generateRealtimeSignal(marketData);
+            console.log(`[Signal Monitor] Generated signal for ${ticker}: ${signal.signalType} (confidence: ${signal.confidence})`);
 
             // Check if signal is strong enough
             if (!validateSignalStrength(signal, config.confidenceThreshold)) {
+              console.log(`[Signal Monitor] Signal for ${ticker} rejected: confidence ${signal.confidence} < threshold ${config.confidenceThreshold}`);
               continue;
             }
 

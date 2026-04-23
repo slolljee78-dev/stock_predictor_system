@@ -47,12 +47,9 @@ export default function SignalsDashboard() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(filters));
   }, [filters]);
 
-  // Fetch market overview with signals
-  const { data: overviewData, isLoading, refetch } = trpc.realtimeSignals.getMarketOverview.useQuery(
-    {
-      tickers: ['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN', 'NVDA', 'META', 'NFLX', 'ADBE', 'CRM'],
-      minConfidence: filters.minConfidence,
-    },
+  // Fetch user's signals from database
+  const { data: userSignals, isLoading, refetch } = trpc.signals.getForUser.useQuery(
+    undefined,
     {
       refetchInterval: autoRefresh ? 30000 : false, // Refresh every 30 seconds if enabled
     }
@@ -60,22 +57,22 @@ export default function SignalsDashboard() {
 
   // Update signals when data changes
   useEffect(() => {
-    if (overviewData?.overview) {
-      const processedSignals = overviewData.overview.map(item => ({
+    if (userSignals) {
+      const processedSignals = userSignals.map(item => ({
         ticker: item.ticker,
-        signalType: item.signal as 'buy' | 'sell' | 'hold',
-        confidence: item.confidence,
-        price: item.price,
-        change: item.change,
-        changePercent: item.changePercent,
-        rsi: item.rsi,
-        macd: (item as any).macd || null,
-        timestamp: item.timestamp,
+        signalType: item.type as 'buy' | 'sell' | 'hold',
+        confidence: item.confidenceScore,
+        price: item.priceAtSignal,
+        change: 0,
+        changePercent: 0,
+        rsi: null,
+        macd: null,
+        timestamp: item.createdAt instanceof Date ? item.createdAt.getTime() : item.createdAt,
       }));
 
       setSignals(processedSignals);
     }
-  }, [overviewData]);
+  }, [userSignals]);
 
   // Filter signals based on all filter criteria
   const filteredSignals = signals.filter(signal => {

@@ -204,14 +204,14 @@ export default function Pricing() {
 
       <PublicSiteHeader currentPath="/pricing" />
 
-      <div className="border-b border-border/70 bg-background/50">
-        <div className="container flex items-center gap-3 px-4 py-3 md:px-6">
+        <div className="border-b border-border/70 bg-background/50">
+        <div className="container flex items-center justify-between gap-3 px-4 py-3 md:px-6">
           <button
             onClick={() => setLocation("/")}
-            className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            className="flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:text-white transition-colors hover:bg-slate-700 rounded-lg"
           >
             <ChevronRight className="h-4 w-4 rotate-180" />
-            Back
+            Back to menu
           </button>
         </div>
       </div>
