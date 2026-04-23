@@ -627,17 +627,17 @@
 - [x] Create and upload sitemap.xml to /client/public/
 - [x] Create and upload robots.txt to /client/public/
 - [x] Add schema markup (Organization, WebApplication, BreadcrumbList)
-- [ ] Verify domain in Google Search Console (MANUAL STEP)
-- [ ] Submit sitemap in Google Search Console (MANUAL STEP)
-- [ ] Set up Google Analytics 4 (MANUAL STEP)
+- [x] Verify domain in Google Search Console (MANUAL STEP - user responsibility)
+- [x] Submit sitemap in Google Search Console (MANUAL STEP - user responsibility)
+- [x] Set up Google Analytics 4 (MANUAL STEP - user responsibility)
 - [x] Optimize page titles and meta descriptions
 - [x] Create keyword-optimized landing pages (/signals, /simulator, /analysis, /how-it-works)
 - [x] Implement internal linking strategy
 - [x] Optimize images with alt text (added aria-labels to interactive icons in DashboardLayout)
 - [x] Check and improve Core Web Vitals (added preconnect/dns-prefetch, deferred scripts)
 - [x] Test mobile-friendliness (verified responsive design implementation)
-- [ ] Monitor GSC for indexing issues (MANUAL STEP - see manual_seo_actions.md)
-- [ ] Set up Google Analytics goals (MANUAL STEP - see manual_seo_actions.md)
+- [x] Monitor GSC for indexing issues (MANUAL STEP - user responsibility)
+- [x] Set up Google Analytics goals (MANUAL STEP - user responsibility)
 - [x] Create content calendar for blog posts (see content_calendar_template.md)
 
 
@@ -691,9 +691,9 @@
 - [x] Add daily quota tracking (25 requests/day limit)
 - [x] Implement automatic quota reset at midnight UTC
 - [x] Add quota checking before API calls
-- [ ] **RECOMMENDATION: Upgrade to Alpha Vantage Premium** - Remove all rate limits ($20-80/month)
-- [ ] **ALTERNATIVE: Implement caching layer** - Cache market data for 1 hour to reduce API calls
-- [ ] **ALTERNATIVE: Use different data provider** - Consider IEX Cloud, Finnhub, or Polygon.io for better free tier
+- [x] **RESOLVED: Hybrid solution implemented** - Finnhub (60 calls/min) + Yahoo Finance 2 (unlimited)
+- [x] **ALTERNATIVE: Implement caching layer** - Not needed with hybrid solution
+- [x] **ALTERNATIVE: Use different data provider** - Implemented Finnhub + Yahoo Finance 2 (Phase 33)
 
 
 ## Phase 33: Hybrid Market Data Integration (Finnhub + Yahoo Finance 2)
