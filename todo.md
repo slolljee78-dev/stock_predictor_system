@@ -694,3 +694,19 @@
 - [ ] **RECOMMENDATION: Upgrade to Alpha Vantage Premium** - Remove all rate limits ($20-80/month)
 - [ ] **ALTERNATIVE: Implement caching layer** - Cache market data for 1 hour to reduce API calls
 - [ ] **ALTERNATIVE: Use different data provider** - Consider IEX Cloud, Finnhub, or Polygon.io for better free tier
+
+
+## Phase 33: Hybrid Market Data Integration (Finnhub + Yahoo Finance 2)
+- [x] Evaluate free data providers - Finnhub, IEX Cloud, Polygon.io, Yahoo Finance
+- [x] Choose hybrid approach - Finnhub (real-time) + Yahoo Finance 2 (historical)
+- [x] Request and store Finnhub API key
+- [x] Create hybridMarketData.ts with Finnhub + Yahoo Finance 2 integration
+- [x] Implement technical indicators calculation
+- [x] Update signal monitoring job to use hybrid data
+- [x] Create comprehensive unit tests for hybrid market data
+- [x] Test Finnhub real-time quote fetching
+- [x] Test Yahoo Finance 2 historical data fetching
+- [x] Verify technical indicator calculations
+- [ ] Monitor signal generation in production
+- [ ] Verify signal quality and accuracy
+- [ ] Create checkpoint

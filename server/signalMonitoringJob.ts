@@ -3,7 +3,7 @@
  * Scheduled background job that monitors stocks and generates real-time signals
  */
 
-import { fetchMarketDataWithIndicators, fetchMultipleMarketData } from './realtimeMarketData';
+import { fetchMarketDataWithIndicators, fetchMultipleMarketData } from './hybridMarketData';
 import { generateRealtimeSignal, validateSignalStrength } from './realtimeSignalGenerator';
 import {
   sendBuySignalNotification,
