@@ -6,8 +6,9 @@
  */
 
 import { ENV } from './_core/env';
-const YahooFinance = require('yahoo-finance2').default;
-const yahooFinance = new YahooFinance();
+import YahooFinanceModule from 'yahoo-finance2';
+
+const yahooFinance = new YahooFinanceModule();
 
 const FINNHUB_API_KEY = ENV.finnhubApiKey;
 const FINNHUB_BASE_URL = 'https://finnhub.io/api/v1';
