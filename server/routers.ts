@@ -160,6 +160,11 @@ export const appRouter = router({
       const results = await import('./db').then(db => db.getActiveSignalsForUser(ctx.user.id));
       return results;
     }),
+
+    statuses: protectedProcedure.query(async ({ ctx }) => {
+      const { getWatchlistStatuses } = await import('./watchlistStatuses');
+      return getWatchlistStatuses(ctx.user.id);
+    }),
   }),
 
   liveMarket: liveMarketRouter,

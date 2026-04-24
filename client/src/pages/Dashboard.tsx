@@ -67,6 +67,11 @@ export default function Dashboard() {
     enabled: !!user,
   });
 
+  const watchlistStatusesQuery = trpc.signals.statuses.useQuery(undefined, {
+    enabled: !!user,
+    staleTime: 60_000,
+  });
+
   const searchStocksQuery = trpc.stocks.search.useQuery(searchQuery, {
     enabled: searchQuery.trim().length > 0,
   });
@@ -75,6 +80,7 @@ export default function Dashboard() {
     onSuccess: async () => {
       await Promise.all([
         utils.watchlist.list.invalidate(),
+        utils.signals.statuses.invalidate(),
         utils.signals.getForUser.invalidate(),
       ]);
       setAddingStockId(null);
@@ -89,6 +95,11 @@ export default function Dashboard() {
 
   const watchlist = watchlistQuery.data ?? [];
   const signals = signalsQuery.data ?? [];
+  const watchlistStatuses = watchlistStatusesQuery.data ?? [];
+  const watchlistStatusMap = useMemo(
+    () => Object.fromEntries(watchlistStatuses.map((status: (typeof watchlistStatuses)[number]) => [status.ticker, status])),
+    [watchlistStatuses],
+  );
   const dailyTrendData = useMemo(() => getDailyStockSignalSummary(signals, 7), [signals]);
   const latestSignalsByTicker = useMemo(() => getLatestSignalsByTicker(signals), [signals]);
   const { buyCount: buySignals, sellCount: sellSignals } = useMemo(
@@ -533,6 +544,26 @@ export default function Dashboard() {
               <div className="space-y-2">
                 {watchlist.map((stock) => {
                   const latestSignal = latestSignalsByTicker[stock.ticker];
+                  const liveStatus = watchlistStatusMap[stock.ticker];
+                  const statusLabel = latestSignal?.type === "buy"
+                    ? "Buy"
+                    : latestSignal?.type === "sell"
+                      ? "Sell"
+                      : liveStatus?.badge ?? "No active setup";
+                  const statusDetail = latestSignal
+                    ? liveStatus?.detail ?? `This stock currently has an active ${latestSignal.type} setup.`
+                    : liveStatus?.detail ?? "We are still monitoring this stock for a stronger setup.";
+                  const statusTone = latestSignal?.type ?? liveStatus?.state ?? "no_active_setup";
+                  const statusClass =
+                    statusTone === "buy"
+                      ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
+                      : statusTone === "sell"
+                        ? "bg-rose-500/15 text-rose-400 border-rose-500/30"
+                        : statusTone === "low_confidence"
+                          ? "bg-amber-500/15 text-amber-300 border-amber-500/30"
+                          : statusTone === "data_unavailable"
+                            ? "bg-slate-500/15 text-slate-300 border-slate-500/30"
+                            : "bg-muted text-muted-foreground border-muted";
 
                   return (
                     <button
@@ -544,25 +575,16 @@ export default function Dashboard() {
                         <div className="min-w-0 flex-1">
                           <p className="font-semibold text-foreground group-hover:text-primary transition-colors">{stock.ticker}</p>
                           <p className="text-xs text-muted-foreground truncate">{stock.name}</p>
+                          <p className="mt-1 text-[11px] leading-5 text-muted-foreground line-clamp-2 max-w-[34ch]">
+                            {statusDetail}
+                          </p>
                         </div>
                         <div className="flex items-center gap-2 flex-shrink-0">
-                          {latestSignal?.type === "buy" && (
-                            <Badge variant="secondary" className="bg-emerald-500/15 text-emerald-400 border-emerald-500/30">
-                              <TrendingUp className="h-3 w-3 mr-1" />
-                              Buy
-                            </Badge>
-                          )}
-                          {latestSignal?.type === "sell" && (
-                            <Badge variant="secondary" className="bg-rose-500/15 text-rose-400 border-rose-500/30">
-                              <TrendingDown className="h-3 w-3 mr-1" />
-                              Sell
-                            </Badge>
-                          )}
-                          {!latestSignal && (
-                            <Badge variant="secondary" className="bg-muted text-muted-foreground border-muted">
-                              No signals
-                            </Badge>
-                          )}
+                          <Badge variant="secondary" className={statusClass}>
+                            {statusTone === "buy" ? <TrendingUp className="h-3 w-3 mr-1" /> : null}
+                            {statusTone === "sell" ? <TrendingDown className="h-3 w-3 mr-1" /> : null}
+                            {statusLabel}
+                          </Badge>
                         </div>
                       </div>
                     </button>

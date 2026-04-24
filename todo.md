@@ -739,3 +739,5 @@
 - [x] Add a dynamic upgrade recommendation badge beside the pricing snapshot based on watchlist size and signal volume
 - [x] Investigate why only two watchlist stocks currently show actionable buy or sell signals
 - [x] Replace the dashboard signal trend graphic with a clearer mobile-friendly visualization
+- [x] Show clearer non-actionable statuses for watchlist stocks, including Hold, Low confidence, and No active setup
+- [x] Explain why each watchlist stock is not currently a buy or sell signal in the dashboard
