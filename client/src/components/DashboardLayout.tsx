@@ -333,7 +333,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
           </div>
         </div>
 
-        <main className="container -mt-2 pt-0 pb-3 md:mt-0 md:py-6 lg:py-8">
+        <main className="container -mt-2 pt-0 pb-3 md:mt-0 md:pt-0 md:pb-6 lg:pt-0 lg:pb-8">
           {children}
         </main>
       </SidebarInset>
