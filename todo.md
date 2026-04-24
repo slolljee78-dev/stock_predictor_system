@@ -728,3 +728,6 @@
 - [x] Fix the remaining dashboard top spacing shown on the live overview page
 - [x] Fix the plans page back button so it matches the dashboard menu pages on the live site
 - [x] Verify both remaining UI fixes in the running app before delivery
+- [x] Preserve the user's previous dashboard section when returning from the plans page
+- [x] Create a more compact mobile dashboard header with reduced vertical space
+- [x] Add a live signal summary card to the plans page that reflects current signal counts and coverage

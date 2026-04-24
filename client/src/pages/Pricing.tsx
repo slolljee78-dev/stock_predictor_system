@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { PublicSiteHeader } from "@/components/PublicSiteHeader";
 import { getLoginUrl } from "@/const";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { trpc } from "@/lib/trpc";
 import {
   ArrowLeft,
   ArrowRight,
@@ -18,7 +19,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
-import { DASHBOARD_HOME_PATH, navigateToDashboardMenu } from "@/lib/navigation";
+import { navigateToDashboardMenu, navigateToDashboardReturn } from "@/lib/navigation";
 
 const PRICING_TIERS: Array<{
   name: string;
@@ -157,6 +158,13 @@ export default function Pricing() {
   const [selectedTier, setSelectedTier] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
+  const watchlistQuery = trpc.watchlist.list.useQuery(undefined, {
+    enabled: !!user,
+  });
+  const signalsQuery = trpc.signals.getForUser.useQuery(undefined, {
+    enabled: !!user,
+  });
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("payment") === "cancelled") {
@@ -165,6 +173,13 @@ export default function Pricing() {
   }, []);
 
   const isAuthenticated = !!user;
+  const watchlist = watchlistQuery.data ?? [];
+  const signals = signalsQuery.data ?? [];
+  const buySignals = signals.filter((signal) => signal.type === "buy").length;
+  const sellSignals = signals.filter((signal) => signal.type === "sell").length;
+  const signalCoverage = watchlist.length
+    ? Math.min(100, Math.round((signals.length / watchlist.length) * 100))
+    : 0;
 
   const handleSubscribe = async (tier: string) => {
     if (!isAuthenticated) {
@@ -219,7 +234,7 @@ export default function Pricing() {
                 <span>Back to menu</span>
               </button>
               <button
-                onClick={() => setLocation(DASHBOARD_HOME_PATH)}
+                onClick={() => navigateToDashboardReturn(setLocation)}
                 className="flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-600 text-white hover:bg-cyan-700 transition-colors text-sm font-medium"
               >
                 <Home className="h-4 w-4" />
@@ -274,9 +289,10 @@ export default function Pricing() {
                 </div>
               </div>
 
-              <div className="premium-card p-6 md:p-7">
-                <p className="text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">What all plans include</p>
-                <div className="mt-5 grid gap-4 sm:grid-cols-2">
+              <div className="space-y-5">
+                <div className="premium-card p-6 md:p-7">
+                  <p className="text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">What all plans include</p>
+                  <div className="mt-5 grid gap-4 sm:grid-cols-2">
                   {[
                     {
                       icon: Sparkles,
@@ -310,6 +326,59 @@ export default function Pricing() {
                       </div>
                     );
                   })}
+                  </div>
+                </div>
+
+                <div className="premium-card p-6 md:p-7">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">Your live signal snapshot</p>
+                      <h2 className="mt-2 text-xl font-semibold text-foreground">See what your current workflow would unlock at each tier</h2>
+                    </div>
+                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/15 text-primary">
+                      <LineChart className="h-5 w-5" />
+                    </div>
+                  </div>
+
+                  {isAuthenticated ? (
+                    <div className="mt-5 space-y-4">
+                      <div className="grid gap-3 sm:grid-cols-3">
+                        <div className="rounded-2xl border border-border/70 bg-background/35 p-4">
+                          <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Watchlist</p>
+                          <p className="mt-3 text-3xl font-semibold text-foreground">{watchlist.length}</p>
+                          <p className="mt-2 text-sm text-muted-foreground">Tracked names in your current workspace</p>
+                        </div>
+                        <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-4">
+                          <p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-200/80">Buy signals</p>
+                          <p className="mt-3 text-3xl font-semibold text-emerald-300">{buySignals}</p>
+                          <p className="mt-2 text-sm text-emerald-100/70">Live long opportunities available now</p>
+                        </div>
+                        <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 p-4">
+                          <p className="text-xs font-bold uppercase tracking-[0.16em] text-rose-200/80">Sell signals</p>
+                          <p className="mt-3 text-3xl font-semibold text-rose-300">{sellSignals}</p>
+                          <p className="mt-2 text-sm text-rose-100/70">Active downside alerts in your watchlist</p>
+                        </div>
+                      </div>
+                      <div className="rounded-2xl border border-border/70 bg-background/35 p-4">
+                        <div className="flex items-center justify-between gap-3">
+                          <div>
+                            <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Coverage</p>
+                            <p className="mt-2 text-lg font-semibold text-foreground">{signalCoverage}% of your watchlist currently has active signals</p>
+                          </div>
+                          <div className="rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">
+                            {signals.length} live signals
+                          </div>
+                        </div>
+                        <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                          Use this live snapshot to decide whether you need broader coverage, faster alerts, or deeper validation tools as your workflow grows.
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="mt-5 rounded-2xl border border-dashed border-border/70 bg-background/25 p-5 text-sm leading-6 text-muted-foreground">
+                      Sign in to compare these plans against your own watchlist size, active buy and sell signals, and current signal coverage.
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

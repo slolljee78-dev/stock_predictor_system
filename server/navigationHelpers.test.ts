@@ -2,8 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   DASHBOARD_MENU_PATH,
   consumeDashboardMenuRequest,
+  consumeDashboardSectionReturn,
+  getRememberedDashboardSection,
   navigateToDashboardMenu,
+  navigateToDashboardReturn,
+  rememberDashboardSection,
   requestDashboardMenu,
+  requestDashboardSectionReturn,
   scrollRouteToTop,
 } from "../client/src/lib/navigation";
 
@@ -59,6 +64,26 @@ describe("navigation helpers", () => {
 
     expect(navigate).toHaveBeenCalledWith("/dashboard");
     expect(consumeDashboardMenuRequest()).toBe(true);
+  });
+
+  it("remembers the last dashboard section and reuses it for return navigation", () => {
+    rememberDashboardSection("watchlist");
+
+    expect(getRememberedDashboardSection()).toBe("watchlist");
+
+    requestDashboardSectionReturn();
+
+    expect(consumeDashboardSectionReturn()).toBe("watchlist");
+    expect(consumeDashboardSectionReturn()).toBeNull();
+  });
+
+  it("navigates back to the dashboard and primes a one-time scroll target", () => {
+    const navigate = vi.fn();
+
+    navigateToDashboardReturn(navigate, "next-steps");
+
+    expect(navigate).toHaveBeenCalledWith("/dashboard");
+    expect(consumeDashboardSectionReturn()).toBe("next-steps");
   });
 
   it("resets scroll position to the top-left corner", () => {

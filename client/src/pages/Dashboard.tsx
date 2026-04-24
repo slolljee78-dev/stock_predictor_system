@@ -19,6 +19,10 @@ import {
   scrollToDashboardSection,
 } from "@/lib/dashboardNavigation";
 import {
+  consumeDashboardSectionReturn,
+  rememberDashboardSection,
+} from "@/lib/navigation";
+import {
   ArrowRight,
   BellRing,
   BrainCircuit,
@@ -97,6 +101,59 @@ export default function Dashboard() {
     const covered = signals.filter((signal) => watchlistTickers.has(signal.ticker)).length;
     return Math.min(100, Math.round((covered / watchlist.length) * 100));
   }, [signals, watchlist]);
+
+  useEffect(() => {
+    if (!user) {
+      return;
+    }
+
+    const requestedSection = consumeDashboardSectionReturn();
+    if (!requestedSection) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      if (scrollToDashboardSection(requestedSection)) {
+        rememberDashboardSection(requestedSection);
+      }
+    }, 180);
+
+    return () => window.clearTimeout(timer);
+  }, [user]);
+
+  useEffect(() => {
+    if (!user || typeof window === "undefined" || typeof document === "undefined") {
+      return;
+    }
+
+    const sections = Array.from(document.querySelectorAll<HTMLElement>("[data-section]"));
+    if (!sections.length || typeof IntersectionObserver === "undefined") {
+      rememberDashboardSection("overview");
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visibleEntries = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+
+        const activeSection = visibleEntries[0]?.target.getAttribute("data-section");
+        if (activeSection) {
+          rememberDashboardSection(activeSection);
+        }
+      },
+      {
+        threshold: [0.25, 0.45, 0.7],
+        rootMargin: "-18% 0px -45% 0px",
+      }
+    );
+
+    sections.forEach((section) => observer.observe(section));
+    rememberDashboardSection(sections[0]?.getAttribute("data-section") || "overview");
+
+    return () => observer.disconnect();
+  }, [user, watchlist.length, signals.length, !!dailyTrendData?.length]);
 
   // Only scroll when user explicitly opens the add stock panel
   useEffect(() => {
@@ -212,7 +269,7 @@ export default function Dashboard() {
   return (
     <DashboardLayout>
       <div className="space-y-8 lg:space-y-10">
-        <section className="dashboard-frame relative overflow-hidden px-4 py-0 sm:px-6 sm:py-0 md:px-8 md:py-0">
+        <section data-section="overview" className="dashboard-frame relative overflow-hidden px-4 py-0 sm:px-6 sm:py-0 md:px-8 md:py-0">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(84,151,255,0.20),transparent_30%),radial-gradient(circle_at_bottom_left,rgba(88,212,255,0.10),transparent_22%)]" />
           <div className="relative grid gap-6 xl:grid-cols-[1.1fr_0.9fr] xl:items-end">
             <div className="space-y-3">
@@ -261,7 +318,7 @@ export default function Dashboard() {
         </section>
 
         {dailyTrendData && dailyTrendData.length > 0 && (
-          <section className="dashboard-frame relative overflow-hidden px-4 py-3 sm:px-6 sm:py-4 md:px-8 md:py-5">
+          <section data-section="trend" className="dashboard-frame relative overflow-hidden px-4 py-3 sm:px-6 sm:py-4 md:px-8 md:py-5">
             <Card className="border-0 bg-transparent shadow-none">
               <CardHeader className="px-0 pt-0">
                 <CardTitle>Signal Trend</CardTitle>
@@ -461,7 +518,7 @@ export default function Dashboard() {
           </div>
         </section>
 
-        <section className="dashboard-frame relative overflow-hidden px-4 py-3 sm:px-6 sm:py-4 md:px-8 md:py-5">
+        <section data-section="next-steps" className="dashboard-frame relative overflow-hidden px-4 py-3 sm:px-6 sm:py-4 md:px-8 md:py-5">
           <div className="space-y-4">
             <h2 className="text-2xl font-semibold tracking-tight">Next steps</h2>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
