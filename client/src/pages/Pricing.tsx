@@ -4,10 +4,12 @@ import { PublicSiteHeader } from "@/components/PublicSiteHeader";
 import { getLoginUrl } from "@/const";
 import { useAuth } from "@/_core/hooks/useAuth";
 import {
+  ArrowLeft,
   ArrowRight,
   Check,
   ChevronRight,
   Crown,
+  Home,
   LineChart,
   ShieldCheck,
   Sparkles,
@@ -16,6 +18,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
+import { DASHBOARD_HOME_PATH, navigateToDashboardMenu } from "@/lib/navigation";
 
 const PRICING_TIERS: Array<{
   name: string;
@@ -206,13 +209,32 @@ export default function Pricing() {
 
         <div className="border-b border-border/70 bg-background/50">
         <div className="container flex items-center justify-between gap-3 px-4 py-3 md:px-6">
-          <button
-            onClick={() => setLocation("/")}
-            className="flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:text-white transition-colors hover:bg-slate-700 rounded-lg"
-          >
-            <ChevronRight className="h-4 w-4 rotate-180" />
-            Back to menu
-          </button>
+          {isAuthenticated ? (
+            <>
+              <button
+                onClick={() => navigateToDashboardMenu(setLocation)}
+                className="flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:text-white transition-colors hover:bg-slate-700 rounded-lg"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span>Back to menu</span>
+              </button>
+              <button
+                onClick={() => setLocation(DASHBOARD_HOME_PATH)}
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-600 text-white hover:bg-cyan-700 transition-colors text-sm font-medium"
+              >
+                <Home className="h-4 w-4" />
+                <span>Back to dashboard</span>
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => setLocation("/")}
+              className="flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:text-white transition-colors hover:bg-slate-700 rounded-lg"
+            >
+              <ChevronRight className="h-4 w-4 rotate-180" />
+              <span>Back to home</span>
+            </button>
+          )}
         </div>
       </div>
 

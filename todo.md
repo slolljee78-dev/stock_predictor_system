@@ -724,3 +724,7 @@
 - [x] Fix signals page to display sell signals from database
 - [x] Fix plans page back button styling and navigation
 - [x] Verify all TypeScript compilation succeeds
+
+- [x] Fix the remaining dashboard top spacing shown on the live overview page
+- [x] Fix the plans page back button so it matches the dashboard menu pages on the live site
+- [x] Verify both remaining UI fixes in the running app before delivery
