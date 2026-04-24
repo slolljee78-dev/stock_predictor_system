@@ -19,6 +19,11 @@ import {
   scrollToDashboardSection,
 } from "@/lib/dashboardNavigation";
 import {
+  getDailyStockSignalSummary,
+  getLatestSignalsByTicker,
+  getUniqueActionableCounts,
+} from "@/lib/dashboardSignalSummary";
+import {
   consumeDashboardSectionReturn,
   rememberDashboardSection,
 } from "@/lib/navigation";
@@ -84,11 +89,12 @@ export default function Dashboard() {
 
   const watchlist = watchlistQuery.data ?? [];
   const signals = signalsQuery.data ?? [];
-  const { data: trendData } = trpc.dashboard.getTrendData.useQuery();
-  const { data: dailyTrendData } = trpc.dashboard.getTrendDataByDay.useQuery();
-
-  const buySignals = trendData?.buyCount ?? signals.filter((signal) => signal.type === "buy").length;
-  const sellSignals = trendData?.sellCount ?? signals.filter((signal) => signal.type === "sell").length;
+  const dailyTrendData = useMemo(() => getDailyStockSignalSummary(signals, 7), [signals]);
+  const latestSignalsByTicker = useMemo(() => getLatestSignalsByTicker(signals), [signals]);
+  const { buyCount: buySignals, sellCount: sellSignals } = useMemo(
+    () => getUniqueActionableCounts(signals),
+    [signals],
+  );
 
   // Safely extract trend data
   const buyTrend = 'up' as const;
@@ -99,9 +105,11 @@ export default function Dashboard() {
   const signalCoverage = useMemo(() => {
     if (!watchlist.length) return 0;
     const watchlistTickers = new Set(watchlist.map((item) => item.ticker));
-    const covered = signals.filter((signal) => watchlistTickers.has(signal.ticker)).length;
-    return Math.min(100, Math.round((covered / watchlist.length) * 100));
-  }, [signals, watchlist]);
+    const coveredTickers = new Set(
+      Object.keys(latestSignalsByTicker).filter((ticker) => watchlistTickers.has(ticker)),
+    );
+    return Math.min(100, Math.round((coveredTickers.size / watchlist.length) * 100));
+  }, [latestSignalsByTicker, watchlist]);
 
   useEffect(() => {
     if (!user) {
@@ -159,7 +167,7 @@ export default function Dashboard() {
     setActiveSection(initialSection);
 
     return () => observer.disconnect();
-  }, [user, watchlist.length, signals.length, !!dailyTrendData?.length]);
+  }, [user, watchlist.length, signals.length, dailyTrendData.length]);
 
   // Only scroll when user explicitly opens the add stock panel
   useEffect(() => {
@@ -304,7 +312,7 @@ export default function Dashboard() {
               <MetricCard
                 label="Buy ideas"
                 value={String(buySignals)}
-                note="High-conviction longs"
+                note="Stocks with current buy setups"
                 icon={<TrendingUp className="h-5 w-5 text-emerald-400" />}
                 trend={buyTrend}
                 trendPercent={buyTrendPercent}
@@ -313,7 +321,7 @@ export default function Dashboard() {
               <MetricCard
                 label="Sell signals"
                 value={String(sellSignals)}
-                note="Risk and weakness alerts"
+                note="Stocks with current sell setups"
                 icon={<TrendingDown className="h-5 w-5 text-rose-400" />}
                 trend={sellTrend}
                 trendPercent={sellTrendPercent}
@@ -355,27 +363,43 @@ export default function Dashboard() {
             <Card className="border-0 bg-transparent shadow-none">
               <CardHeader className="px-0 pt-0">
                 <CardTitle>Signal Trend</CardTitle>
-                <CardDescription>7-day buy and sell signal distribution</CardDescription>
+                <CardDescription>7-day stock activity across your watchlist</CardDescription>
               </CardHeader>
               <CardContent className="px-0">
-                <div className="grid gap-4 sm:grid-cols-7">
-                  {dailyTrendData.map((day, idx) => (
-                    <div key={idx} className="text-center">
-                      <p className="text-xs text-muted-foreground mb-2 font-medium">{day.date}</p>
-                      <div className="flex items-end justify-center gap-1 h-12">
-                        <div
-                          className="flex-1 rounded-t bg-emerald-500/80 hover:bg-emerald-500 transition-colors"
-                          style={{ height: `${Math.max(4, (day.buyCount / 5) * 100)}%` }}
-                          title={`${day.buyCount} buy signals`}
-                        />
-                        <div
-                          className="flex-1 rounded-t bg-rose-500/80 hover:bg-rose-500 transition-colors"
-                          style={{ height: `${Math.max(4, (day.sellCount / 5) * 100)}%` }}
-                          title={`${day.sellCount} sell signals`}
-                        />
+                <div className="space-y-3">
+                  {dailyTrendData.map((day) => {
+                    const total = day.buyCount + day.sellCount;
+                    const buyWidth = total > 0 ? `${(day.buyCount / total) * 100}%` : "0%";
+                    const sellWidth = total > 0 ? `${(day.sellCount / total) * 100}%` : "0%";
+
+                    return (
+                      <div key={day.date} className="rounded-2xl border border-border/60 bg-background/35 p-3">
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="text-xs font-medium text-muted-foreground">{day.date}</p>
+                          <div className="flex items-center gap-2 text-[11px] font-medium">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-1 text-emerald-300">
+                              <TrendingUp className="h-3 w-3" />
+                              {day.buyCount}
+                            </span>
+                            <span className="inline-flex items-center gap-1 rounded-full bg-rose-500/10 px-2 py-1 text-rose-300">
+                              <TrendingDown className="h-3 w-3" />
+                              {day.sellCount}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="mt-3 flex h-3 overflow-hidden rounded-full bg-muted/30">
+                          <div className="bg-emerald-400/85 transition-all" style={{ width: buyWidth }} />
+                          <div className="bg-rose-400/85 transition-all" style={{ width: sellWidth }} />
+                          {total === 0 && <div className="w-full bg-muted/20" />}
+                        </div>
+                        <p className="mt-2 text-[11px] text-muted-foreground">
+                          {total === 0
+                            ? "No actionable stock signals recorded"
+                            : `${total} watchlist stock${total === 1 ? "" : "s"} triggered signals`}
+                        </p>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>
@@ -508,9 +532,7 @@ export default function Dashboard() {
             ) : (
               <div className="space-y-2">
                 {watchlist.map((stock) => {
-                  const stockSignals = signals.filter((s) => s.ticker === stock.ticker);
-                  const buyCount = stockSignals.filter((s) => s.type === "buy").length;
-                  const sellCount = stockSignals.filter((s) => s.type === "sell").length;
+                  const latestSignal = latestSignalsByTicker[stock.ticker];
 
                   return (
                     <button
@@ -524,19 +546,19 @@ export default function Dashboard() {
                           <p className="text-xs text-muted-foreground truncate">{stock.name}</p>
                         </div>
                         <div className="flex items-center gap-2 flex-shrink-0">
-                          {buyCount > 0 && (
+                          {latestSignal?.type === "buy" && (
                             <Badge variant="secondary" className="bg-emerald-500/15 text-emerald-400 border-emerald-500/30">
                               <TrendingUp className="h-3 w-3 mr-1" />
-                              {buyCount}
+                              Buy
                             </Badge>
                           )}
-                          {sellCount > 0 && (
+                          {latestSignal?.type === "sell" && (
                             <Badge variant="secondary" className="bg-rose-500/15 text-rose-400 border-rose-500/30">
                               <TrendingDown className="h-3 w-3 mr-1" />
-                              {sellCount}
+                              Sell
                             </Badge>
                           )}
-                          {buyCount === 0 && sellCount === 0 && (
+                          {!latestSignal && (
                             <Badge variant="secondary" className="bg-muted text-muted-foreground border-muted">
                               No signals
                             </Badge>

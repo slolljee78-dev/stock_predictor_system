@@ -737,3 +737,5 @@
 - [x] Add one-tap filter chips on the signals page for Buy, Sell, and High Confidence
 - [x] Add active-state highlighting to dashboard shortcuts while the user scrolls
 - [x] Add a dynamic upgrade recommendation badge beside the pricing snapshot based on watchlist size and signal volume
+- [x] Investigate why only two watchlist stocks currently show actionable buy or sell signals
+- [x] Replace the dashboard signal trend graphic with a clearer mobile-friendly visualization
