@@ -1,0 +1,11 @@
+Pricing page validation:
+- Authenticated back-navigation controls are present.
+- Live signal snapshot is visible.
+- Per-plan feature badges render for Starter, Pro, and Elite.
+- Snapshot currently shows watchlist count 6, buy signals 0, sell signals 40, and 100% coverage.
+
+Signals page validation:
+- Sticky mini-summary bar renders directly below the page heading.
+- Sticky bar shows buy, sell, average confidence, and showing counts.
+- Current display shows buy 0, sell 40, avg confidence 27%, showing 0/40.
+- Existing filter state currently results in 0 matching visible signals.

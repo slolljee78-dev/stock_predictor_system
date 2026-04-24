@@ -731,3 +731,6 @@
 - [x] Preserve the user's previous dashboard section when returning from the plans page
 - [x] Create a more compact mobile dashboard header with reduced vertical space
 - [x] Add a live signal summary card to the plans page that reflects current signal counts and coverage
+- [x] Add a sticky mini-summary bar on the signals page
+- [x] Add tap-to-jump shortcuts between dashboard sections
+- [x] Add per-plan feature badges beside the live pricing snapshot metrics

@@ -373,6 +373,45 @@ export default function Pricing() {
                           Use this live snapshot to decide whether you need broader coverage, faster alerts, or deeper validation tools as your workflow grows.
                         </p>
                       </div>
+
+                      <div className="rounded-2xl border border-border/70 bg-background/35 p-4">
+                        <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">How each plan helps this snapshot</p>
+                        <div className="mt-4 grid gap-3 md:grid-cols-3">
+                          <div className="rounded-2xl border border-border/70 bg-background/45 p-4">
+                            <div className="flex items-center justify-between gap-2">
+                              <p className="font-semibold text-foreground">Starter</p>
+                              <Badge variant="secondary" className="rounded-full px-2.5 py-1">Daily review</Badge>
+                            </div>
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              <Badge variant="outline" className="rounded-full border-border/70">Best for up to 50 stocks</Badge>
+                              <Badge variant="outline" className="rounded-full border-border/70">Daily signal digest</Badge>
+                              <Badge variant="outline" className="rounded-full border-border/70">Weekly summary email</Badge>
+                            </div>
+                          </div>
+                          <div className="rounded-2xl border border-primary/30 bg-primary/10 p-4">
+                            <div className="flex items-center justify-between gap-2">
+                              <p className="font-semibold text-foreground">Pro</p>
+                              <Badge className="rounded-full bg-primary text-primary-foreground">Best for active alerts</Badge>
+                            </div>
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              <Badge variant="secondary" className="rounded-full">Full Trading 212 coverage</Badge>
+                              <Badge variant="secondary" className="rounded-full">Real-time alerting</Badge>
+                              <Badge variant="secondary" className="rounded-full">Validation workflow</Badge>
+                            </div>
+                          </div>
+                          <div className="rounded-2xl border border-accent/30 bg-accent/10 p-4">
+                            <div className="flex items-center justify-between gap-2">
+                              <p className="font-semibold text-foreground">Elite</p>
+                              <Badge className="rounded-full bg-accent text-accent-foreground">Power workflow</Badge>
+                            </div>
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              <Badge variant="secondary" className="rounded-full">Advanced validation</Badge>
+                              <Badge variant="secondary" className="rounded-full">Exports and API</Badge>
+                              <Badge variant="secondary" className="rounded-full">Multi-workspace tools</Badge>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   ) : (
                     <div className="mt-5 rounded-2xl border border-dashed border-border/70 bg-background/25 p-5 text-sm leading-6 text-muted-foreground">

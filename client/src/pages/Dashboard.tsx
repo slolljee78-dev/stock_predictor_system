@@ -315,6 +315,27 @@ export default function Dashboard() {
               />
             </div>
           </div>
+
+          <div className="relative mt-5 flex flex-wrap gap-2">
+            {[
+              { label: "Overview", section: "overview" },
+              { label: "Trend", section: "trend" },
+              { label: "Watchlist", section: "watchlist" },
+              { label: "Next steps", section: "next-steps" },
+            ].map((item) => (
+              <button
+                key={item.section}
+                type="button"
+                onClick={() => {
+                  rememberDashboardSection(item.section);
+                  scrollToDashboardSection(item.section);
+                }}
+                className="rounded-full border border-border/70 bg-background/45 px-3 py-2 text-xs font-semibold tracking-[0.08em] text-muted-foreground transition hover:border-primary/50 hover:bg-primary/10 hover:text-foreground"
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
         </section>
 
         {dailyTrendData && dailyTrendData.length > 0 && (
