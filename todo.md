@@ -734,3 +734,6 @@
 - [x] Add a sticky mini-summary bar on the signals page
 - [x] Add tap-to-jump shortcuts between dashboard sections
 - [x] Add per-plan feature badges beside the live pricing snapshot metrics
+- [x] Add one-tap filter chips on the signals page for Buy, Sell, and High Confidence
+- [x] Add active-state highlighting to dashboard shortcuts while the user scrolls
+- [x] Add a dynamic upgrade recommendation badge beside the pricing snapshot based on watchlist size and signal volume

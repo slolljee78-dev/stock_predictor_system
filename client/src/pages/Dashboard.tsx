@@ -51,6 +51,7 @@ export default function Dashboard() {
   const [isAddStockOpen, setIsAddStockOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [addingStockId, setAddingStockId] = useState<number | null>(null);
+  const [activeSection, setActiveSection] = useState("overview");
   const addStockPanelRef = useRef<HTMLDivElement | null>(null);
 
   const watchlistQuery = trpc.watchlist.list.useQuery(undefined, {
@@ -115,6 +116,7 @@ export default function Dashboard() {
     const timer = window.setTimeout(() => {
       if (scrollToDashboardSection(requestedSection)) {
         rememberDashboardSection(requestedSection);
+        setActiveSection(requestedSection);
       }
     }, 180);
 
@@ -129,6 +131,7 @@ export default function Dashboard() {
     const sections = Array.from(document.querySelectorAll<HTMLElement>("[data-section]"));
     if (!sections.length || typeof IntersectionObserver === "undefined") {
       rememberDashboardSection("overview");
+      setActiveSection("overview");
       return;
     }
 
@@ -141,6 +144,7 @@ export default function Dashboard() {
         const activeSection = visibleEntries[0]?.target.getAttribute("data-section");
         if (activeSection) {
           rememberDashboardSection(activeSection);
+          setActiveSection(activeSection);
         }
       },
       {
@@ -150,7 +154,9 @@ export default function Dashboard() {
     );
 
     sections.forEach((section) => observer.observe(section));
-    rememberDashboardSection(sections[0]?.getAttribute("data-section") || "overview");
+    const initialSection = sections[0]?.getAttribute("data-section") || "overview";
+    rememberDashboardSection(initialSection);
+    setActiveSection(initialSection);
 
     return () => observer.disconnect();
   }, [user, watchlist.length, signals.length, !!dailyTrendData?.length]);
@@ -322,19 +328,25 @@ export default function Dashboard() {
               { label: "Trend", section: "trend" },
               { label: "Watchlist", section: "watchlist" },
               { label: "Next steps", section: "next-steps" },
-            ].map((item) => (
-              <button
-                key={item.section}
-                type="button"
-                onClick={() => {
-                  rememberDashboardSection(item.section);
-                  scrollToDashboardSection(item.section);
-                }}
-                className="rounded-full border border-border/70 bg-background/45 px-3 py-2 text-xs font-semibold tracking-[0.08em] text-muted-foreground transition hover:border-primary/50 hover:bg-primary/10 hover:text-foreground"
-              >
-                {item.label}
-              </button>
-            ))}
+            ].map((item) => {
+              const isActive = activeSection === item.section;
+              return (
+                <button
+                  key={item.section}
+                  type="button"
+                  onClick={() => {
+                    rememberDashboardSection(item.section);
+                    setActiveSection(item.section);
+                    scrollToDashboardSection(item.section);
+                  }}
+                  className={isActive
+                    ? "rounded-full border border-primary/40 bg-primary/15 px-3 py-2 text-xs font-semibold tracking-[0.08em] text-primary shadow-[0_0_0_1px_rgba(59,130,246,0.08)] transition"
+                    : "rounded-full border border-border/70 bg-background/45 px-3 py-2 text-xs font-semibold tracking-[0.08em] text-muted-foreground transition hover:border-primary/50 hover:bg-primary/10 hover:text-foreground"}
+                >
+                  {item.label}
+                </button>
+              );
+            })}
           </div>
         </section>
 

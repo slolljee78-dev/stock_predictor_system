@@ -4,6 +4,7 @@ import { PublicSiteHeader } from "@/components/PublicSiteHeader";
 import { getLoginUrl } from "@/const";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
+import { getPricingRecommendation } from "@/lib/pricingRecommendation";
 import {
   ArrowLeft,
   ArrowRight,
@@ -180,6 +181,7 @@ export default function Pricing() {
   const signalCoverage = watchlist.length
     ? Math.min(100, Math.round((signals.length / watchlist.length) * 100))
     : 0;
+  const recommendedTier = getPricingRecommendation(watchlist.length, signals.length);
 
   const handleSubscribe = async (tier: string) => {
     if (!isAuthenticated) {
@@ -372,6 +374,16 @@ export default function Pricing() {
                         <p className="mt-3 text-sm leading-6 text-muted-foreground">
                           Use this live snapshot to decide whether you need broader coverage, faster alerts, or deeper validation tools as your workflow grows.
                         </p>
+                        <div className="mt-4 rounded-2xl border border-primary/25 bg-primary/10 p-4">
+                          <div className="flex flex-wrap items-center justify-between gap-3">
+                            <div>
+                              <p className="text-xs font-bold uppercase tracking-[0.16em] text-primary/80">Recommended plan</p>
+                              <p className="mt-2 text-lg font-semibold text-foreground">{recommendedTier.tier}</p>
+                            </div>
+                            <Badge className="rounded-full bg-primary text-primary-foreground">{recommendedTier.badge}</Badge>
+                          </div>
+                          <p className="mt-3 text-sm leading-6 text-muted-foreground">{recommendedTier.reason}</p>
+                        </div>
                       </div>
 
                       <div className="rounded-2xl border border-border/70 bg-background/35 p-4">

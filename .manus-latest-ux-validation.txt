@@ -9,3 +9,9 @@ Signals page validation:
 - Sticky bar shows buy, sell, average confidence, and showing counts.
 - Current display shows buy 0, sell 40, avg confidence 27%, showing 0/40.
 - Existing filter state currently results in 0 matching visible signals.
+
+Additional validation for the latest UX enhancements:
+- The signals page now displays one-tap filter chips for All signals, Buy, Sell, and High confidence above the advanced filters.
+- The sticky mini-summary bar remains visible and currently shows buy 0, sell 46, average confidence 27%, and showing 0/46.
+- The dashboard preview shows the shortcut row for Overview, Trend, Watchlist, and Next steps.
+- The Overview shortcut is styled as the active state on initial load, confirming active-section highlighting is rendering.

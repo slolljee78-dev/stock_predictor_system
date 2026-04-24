@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { TrendingUp, TrendingDown, AlertCircle, RefreshCw, ArrowLeft, Home, Filter } from 'lucide-react';
 import { SignalDetailsModal } from '@/components/SignalDetailsModal';
 import { SignalFilters, SignalFilterOptions, DEFAULT_FILTERS } from '@/components/SignalFilters';
+import { applyQuickFilter, getQuickFilterValue } from '@/lib/signalQuickFilters';
 import { useLocation } from 'wouter';
 import { DASHBOARD_HOME_PATH, navigateToDashboardMenu } from '@/lib/navigation';
 import { getSignalFilterFromSearch } from '@/lib/dashboardNavigation';
@@ -137,6 +138,7 @@ export default function SignalsDashboard() {
   const buySignals = signals.filter(s => s.signalType === 'buy').length;
   const sellSignals = signals.filter(s => s.signalType === 'sell').length;
   const avgConfidence = signals.length > 0 ? Math.round(signals.reduce((sum, s) => sum + s.confidence, 0) / signals.length) : 0;
+  const quickFilterValue = getQuickFilterValue(filters);
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
@@ -235,8 +237,31 @@ export default function SignalsDashboard() {
           </Card>
         </div>
 
+        <div className="flex flex-wrap gap-2">
+          {[
+            { label: 'All signals', value: 'all' as const },
+            { label: 'Buy', value: 'buy' as const },
+            { label: 'Sell', value: 'sell' as const },
+            { label: 'High confidence', value: 'high-confidence' as const },
+          ].map((chip) => {
+            const isActive = quickFilterValue === chip.value;
+            return (
+              <Button
+                key={chip.value}
+                type="button"
+                variant={isActive ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setFilters((current) => applyQuickFilter(current, chip.value))}
+                className={isActive ? 'rounded-full' : 'rounded-full border-border/70 bg-background/40'}
+              >
+                {chip.label}
+              </Button>
+            );
+          })}
+        </div>
+
         {/* Filters Toggle and Display */}
-        <div className="flex gap-2 mb-4">
+        <div className="flex flex-wrap gap-2 mb-4">
           <Button
             variant={showFilters ? 'default' : 'outline'}
             size="sm"
