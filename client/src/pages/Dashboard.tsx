@@ -28,6 +28,10 @@ import {
   rememberDashboardSection,
 } from "@/lib/navigation";
 import {
+  getWatchlistRefreshLabel,
+  isWatchlistRefreshing,
+} from "@/lib/watchlistRefresh";
+import {
   ArrowRight,
   BellRing,
   BrainCircuit,
@@ -39,6 +43,7 @@ import {
   Star,
   TrendingDown,
   TrendingUp,
+  RefreshCw,
   Settings,
   X,
 } from "lucide-react";
@@ -96,6 +101,11 @@ export default function Dashboard() {
   const watchlist = watchlistQuery.data ?? [];
   const signals = signalsQuery.data ?? [];
   const watchlistStatuses = watchlistStatusesQuery.data ?? [];
+  const isRefreshingWatchlist = isWatchlistRefreshing([
+    watchlistQuery.isFetching,
+    watchlistStatusesQuery.isFetching,
+    signalsQuery.isFetching,
+  ]);
   const watchlistStatusMap = useMemo(
     () => Object.fromEntries(watchlistStatuses.map((status: (typeof watchlistStatuses)[number]) => [status.ticker, status])),
     [watchlistStatuses],
@@ -199,6 +209,14 @@ export default function Dashboard() {
     setSearchQuery("");
     setAddingStockId(null);
     setIsAddStockOpen(true);
+  };
+
+  const handleRefreshWatchlist = async () => {
+    await Promise.all([
+      watchlistQuery.refetch(),
+      watchlistStatusesQuery.refetch(),
+      signalsQuery.refetch(),
+    ]);
   };
 
   const handleAddStock = async (stock: {
@@ -419,10 +437,23 @@ export default function Dashboard() {
 
         <section data-section="watchlist" className="dashboard-frame relative overflow-hidden px-4 py-3 sm:px-6 sm:py-4 md:px-8 md:py-5">
           <div className="space-y-4">
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <h2 className="text-2xl font-semibold tracking-tight">Your Watchlist</h2>
-                <p className="text-sm text-muted-foreground mt-1">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-2xl font-semibold tracking-tight">Your Watchlist</h2>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleRefreshWatchlist}
+                    disabled={isRefreshingWatchlist}
+                    className="h-8 rounded-full border-border/70 bg-background/40 px-3 text-xs text-muted-foreground hover:bg-background/70 hover:text-foreground"
+                  >
+                    <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${isRefreshingWatchlist ? "animate-spin" : ""}`} />
+                    {getWatchlistRefreshLabel(isRefreshingWatchlist)}
+                  </Button>
+                </div>
+                <p className="mt-1 text-sm text-muted-foreground">
                   {watchlist.length === 0
                     ? "Start by adding stocks you want to track"
                     : `${signalCoverage}% of your watchlist has active signals`}
@@ -431,7 +462,7 @@ export default function Dashboard() {
               <Button
                 onClick={handleOpenAddStock}
                 size="sm"
-                className="gap-2 pill-button pill-button-primary"
+                className="gap-2 pill-button pill-button-primary self-start"
               >
                 <Plus className="h-4 w-4" />
                 Add stock

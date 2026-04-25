@@ -741,3 +741,4 @@
 - [x] Replace the dashboard signal trend graphic with a clearer mobile-friendly visualization
 - [x] Show clearer non-actionable statuses for watchlist stocks, including Hold, Low confidence, and No active setup
 - [x] Explain why each watchlist stock is not currently a buy or sell signal in the dashboard
+- [x] Add a manual refresh button to the dashboard watchlist so users can fetch the latest status explanations on demand
