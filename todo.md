@@ -742,3 +742,7 @@
 - [x] Show clearer non-actionable statuses for watchlist stocks, including Hold, Low confidence, and No active setup
 - [x] Explain why each watchlist stock is not currently a buy or sell signal in the dashboard
 - [x] Add a manual refresh button to the dashboard watchlist so users can fetch the latest status explanations on demand
+- [x] Implement refresh rate limiting with 8-second cooldown to prevent API abuse
+- [x] Add countdown display showing remaining cooldown time (Refresh in Xs)
+- [x] Write comprehensive tests for rate limiter logic (20 tests passing)
+- [x] Verify rate limiter works in browser with proper button state transitions

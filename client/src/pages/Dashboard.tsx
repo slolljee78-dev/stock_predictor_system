@@ -32,6 +32,12 @@ import {
   isWatchlistRefreshing,
 } from "@/lib/watchlistRefresh";
 import {
+  canRefresh,
+  getRefreshButtonLabel,
+  getRefreshState,
+  isRefreshButtonDisabled,
+} from "@/lib/refreshRateLimiter";
+import {
   ArrowRight,
   BellRing,
   BrainCircuit,
@@ -62,6 +68,8 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [addingStockId, setAddingStockId] = useState<number | null>(null);
   const [activeSection, setActiveSection] = useState("overview");
+  const [lastRefreshTime, setLastRefreshTime] = useState<number | null>(null);
+  const [cooldownRemaining, setCooldownRemaining] = useState(0);
   const addStockPanelRef = useRef<HTMLDivElement | null>(null);
 
   const watchlistQuery = trpc.watchlist.list.useQuery(undefined, {
@@ -106,6 +114,14 @@ export default function Dashboard() {
     watchlistStatusesQuery.isFetching,
     signalsQuery.isFetching,
   ]);
+  const refreshState = getRefreshState(lastRefreshTime);
+  const canRefreshNow = canRefresh(lastRefreshTime);
+  const isRefreshDisabled = isRefreshButtonDisabled(isRefreshingWatchlist, refreshState.isOnCooldown);
+  const refreshButtonLabel = getRefreshButtonLabel(
+    isRefreshingWatchlist,
+    refreshState.isOnCooldown,
+    refreshState.cooldownRemaining
+  );
   const watchlistStatusMap = useMemo(
     () => Object.fromEntries(watchlistStatuses.map((status: (typeof watchlistStatuses)[number]) => [status.ticker, status])),
     [watchlistStatuses],
@@ -205,6 +221,23 @@ export default function Dashboard() {
     return () => clearTimeout(timer);
   }, [isAddStockOpen]);
 
+  // Update cooldown countdown every second
+  useEffect(() => {
+    if (!refreshState.isOnCooldown) {
+      setCooldownRemaining(0);
+      return;
+    }
+
+    setCooldownRemaining(refreshState.cooldownRemaining);
+
+    const interval = setInterval(() => {
+      const newState = getRefreshState(lastRefreshTime);
+      setCooldownRemaining(newState.cooldownRemaining);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [refreshState.isOnCooldown, lastRefreshTime]);
+
   const handleOpenAddStock = () => {
     setSearchQuery("");
     setAddingStockId(null);
@@ -212,6 +245,12 @@ export default function Dashboard() {
   };
 
   const handleRefreshWatchlist = async () => {
+    if (!canRefreshNow) {
+      return;
+    }
+
+    setLastRefreshTime(Date.now());
+
     await Promise.all([
       watchlistQuery.refetch(),
       watchlistStatusesQuery.refetch(),
@@ -446,11 +485,12 @@ export default function Dashboard() {
                     variant="outline"
                     size="sm"
                     onClick={handleRefreshWatchlist}
-                    disabled={isRefreshingWatchlist}
-                    className="h-8 rounded-full border-border/70 bg-background/40 px-3 text-xs text-muted-foreground hover:bg-background/70 hover:text-foreground"
+                    disabled={isRefreshDisabled}
+                    className="h-8 rounded-full border-border/70 bg-background/40 px-3 text-xs text-muted-foreground hover:bg-background/70 hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+                    title={refreshState.isOnCooldown ? `Refresh available in ${refreshState.cooldownRemaining}s` : "Refresh watchlist data"}
                   >
                     <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${isRefreshingWatchlist ? "animate-spin" : ""}`} />
-                    {getWatchlistRefreshLabel(isRefreshingWatchlist)}
+                    {refreshButtonLabel}
                   </Button>
                 </div>
                 <p className="mt-1 text-sm text-muted-foreground">
