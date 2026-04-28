@@ -10,6 +10,8 @@ export interface AutoExecutedTrade {
   priceSource: "live" | "fallback";
   confidence: number;
   reasoning: string;
+  origin?: "manual" | "auto";
+  riskProfile?: "conservative" | "balanced" | "aggressive";
 }
 
 function formatExecutionTime(value: string) {
@@ -29,7 +31,12 @@ function createSimulatorTrade(id: number, trade: AutoExecutedTrade): SimulatorTr
     quantity: trade.quantity,
     price: trade.executedPrice,
     date: formatExecutionTime(trade.executionTime),
+    executedAt: trade.executionTime,
     priceSource: trade.priceSource,
+    origin: trade.origin ?? "auto",
+    confidence: trade.confidence,
+    reasoning: trade.reasoning,
+    riskProfile: trade.riskProfile,
   };
 }
 

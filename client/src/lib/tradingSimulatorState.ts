@@ -16,7 +16,12 @@ export interface SimulatorTrade {
   quantity: number;
   price: number;
   date: string;
+  executedAt?: string;
   priceSource: TradePriceSource;
+  origin?: "manual" | "auto";
+  confidence?: number;
+  reasoning?: string;
+  riskProfile?: "conservative" | "balanced" | "aggressive";
 }
 
 export interface SimulatorPortfolio {
@@ -73,7 +78,9 @@ const DEFAULT_PORTFOLIOS: SimulatorPortfolio[] = [
         quantity: 10,
         price: 180.5,
         date: "2026-04-11 09:30",
+        executedAt: "2026-04-11T09:30:00.000Z",
         priceSource: "live",
+        origin: "manual",
       },
       {
         id: 2,
@@ -82,7 +89,9 @@ const DEFAULT_PORTFOLIOS: SimulatorPortfolio[] = [
         quantity: 5,
         price: 890,
         date: "2026-04-11 10:15",
+        executedAt: "2026-04-11T10:15:00.000Z",
         priceSource: "live",
+        origin: "manual",
       },
     ],
   },
@@ -123,30 +132,60 @@ function isPosition(value: unknown): value is SimulatorPosition {
     typeof (value as SimulatorPosition).unrealizedPnLPercent === "number";
 }
 
-function isTrade(value: unknown): value is SimulatorTrade {
-  return typeof value === "object" && value !== null &&
-    typeof (value as SimulatorTrade).id === "number" &&
-    typeof (value as SimulatorTrade).ticker === "string" &&
-    ((value as SimulatorTrade).type === "buy" || (value as SimulatorTrade).type === "sell") &&
-    typeof (value as SimulatorTrade).quantity === "number" &&
-    typeof (value as SimulatorTrade).price === "number" &&
-    typeof (value as SimulatorTrade).date === "string" &&
-    (((value as SimulatorTrade).priceSource === "live") || ((value as SimulatorTrade).priceSource === "fallback"));
+function normalizeTrade(value: unknown): SimulatorTrade | null {
+  if (typeof value !== "object" || value === null) {
+    return null;
+  }
+
+  const trade = value as Partial<SimulatorTrade>;
+  if (
+    typeof trade.id !== "number" ||
+    typeof trade.ticker !== "string" ||
+    (trade.type !== "buy" && trade.type !== "sell") ||
+    typeof trade.quantity !== "number" ||
+    typeof trade.price !== "number" ||
+    typeof trade.date !== "string" ||
+    (trade.priceSource !== "live" && trade.priceSource !== "fallback")
+  ) {
+    return null;
+  }
+
+  return {
+    id: trade.id,
+    ticker: trade.ticker,
+    type: trade.type,
+    quantity: trade.quantity,
+    price: trade.price,
+    date: trade.date,
+    executedAt: typeof trade.executedAt === "string" ? trade.executedAt : undefined,
+    priceSource: trade.priceSource,
+    origin: trade.origin === "auto" ? "auto" : "manual",
+    confidence: typeof trade.confidence === "number" ? trade.confidence : undefined,
+    reasoning: typeof trade.reasoning === "string" ? trade.reasoning : undefined,
+    riskProfile:
+      trade.riskProfile === "conservative" || trade.riskProfile === "balanced" || trade.riskProfile === "aggressive"
+        ? trade.riskProfile
+        : undefined,
+  };
 }
 
 function isPortfolio(value: unknown): value is SimulatorPortfolio {
-  return typeof value === "object" && value !== null &&
-    typeof (value as SimulatorPortfolio).id === "number" &&
-    typeof (value as SimulatorPortfolio).name === "string" &&
-    typeof (value as SimulatorPortfolio).initialCapital === "number" &&
-    typeof (value as SimulatorPortfolio).currentValue === "number" &&
-    typeof (value as SimulatorPortfolio).cash === "number" &&
-    typeof (value as SimulatorPortfolio).totalReturn === "number" &&
-    typeof (value as SimulatorPortfolio).totalReturnPercent === "number" &&
-    Array.isArray((value as SimulatorPortfolio).positions) &&
-    (value as SimulatorPortfolio).positions.every(isPosition) &&
-    Array.isArray((value as SimulatorPortfolio).trades) &&
-    (value as SimulatorPortfolio).trades.every(isTrade);
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+
+  const portfolio = value as SimulatorPortfolio;
+  return typeof portfolio.id === "number" &&
+    typeof portfolio.name === "string" &&
+    typeof portfolio.initialCapital === "number" &&
+    typeof portfolio.currentValue === "number" &&
+    typeof portfolio.cash === "number" &&
+    typeof portfolio.totalReturn === "number" &&
+    typeof portfolio.totalReturnPercent === "number" &&
+    Array.isArray(portfolio.positions) &&
+    portfolio.positions.every(isPosition) &&
+    Array.isArray(portfolio.trades) &&
+    portfolio.trades.every((trade) => normalizeTrade(trade) !== null);
 }
 
 export function normalizeTradingSimulatorState(value: unknown): TradingSimulatorState {
@@ -157,7 +196,17 @@ export function normalizeTradingSimulatorState(value: unknown): TradingSimulator
   }
 
   const candidate = value as Partial<TradingSimulatorState>;
-  const portfolios = Array.isArray(candidate.portfolios) ? candidate.portfolios.filter(isPortfolio) : [];
+  const portfolios = Array.isArray(candidate.portfolios)
+    ? candidate.portfolios
+        .filter(isPortfolio)
+        .map((portfolio) => ({
+          ...portfolio,
+          positions: portfolio.positions.map((position) => ({ ...position })),
+          trades: portfolio.trades
+            .map((trade) => normalizeTrade(trade))
+            .filter((trade): trade is SimulatorTrade => trade !== null),
+        }))
+    : [];
 
   if (portfolios.length === 0) {
     return fallback;

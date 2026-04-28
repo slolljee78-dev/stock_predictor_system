@@ -762,3 +762,8 @@
 - [x] Build simulator controls for starting, stopping, and reviewing automated virtual trading sessions
 - [x] Add tests covering automated trade generation, random stock selection, and simulator state updates
 
+- [x] Add risk profiles for the simulator auto-trader so users can switch between conservative, balanced, and aggressive settings
+- [x] Add an auto-trade performance summary showing win rate, realised versus unrealised P&L, best and worst trades, and average holding time
+- [x] Add trade-history filters so users can separate manual trades from automated trades in the simulator
+- [x] Add tests covering risk profile selection, performance summary calculations, and trade-history filtering
+

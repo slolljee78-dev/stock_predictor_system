@@ -18,6 +18,12 @@ import { trpc } from "@/lib/trpc";
 import { DASHBOARD_HOME_PATH, navigateToDashboardMenu } from "@/lib/navigation";
 import { applyAutoExecutedTrades, type AutoExecutedTrade } from "@/lib/simulatorAutoTrading";
 import {
+  calculateSimulatorPerformanceSummary,
+  filterTradesByOrigin,
+  formatHoldingTime,
+  type TradeHistoryFilter,
+} from "@/lib/simulatorInsights";
+import {
   createEmptyPortfolio,
   getSelectedPortfolio,
   getTradePriceSourceLabel,
@@ -73,6 +79,7 @@ export default function TradingSimulator() {
   });
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [hasManualPriceOverride, setHasManualPriceOverride] = useState(false);
+  const [tradeHistoryFilter, setTradeHistoryFilter] = useState<TradeHistoryFilter>("all");
   const [, setLocation] = useLocation();
 
   const selectedPortfolio = useMemo(() => getSelectedPortfolio(simulatorState), [simulatorState]);
@@ -80,6 +87,8 @@ export default function TradingSimulator() {
   const trades = selectedPortfolio.trades;
   const normalizedTicker = tradeForm.ticker.trim().toUpperCase();
   const exposure = useMemo(() => selectedPortfolio.currentValue - selectedPortfolio.cash, [selectedPortfolio]);
+  const performanceSummary = useMemo(() => calculateSimulatorPerformanceSummary(selectedPortfolio), [selectedPortfolio]);
+  const filteredTrades = useMemo(() => filterTradesByOrigin(trades, tradeHistoryFilter), [tradeHistoryFilter, trades]);
 
   const executeLiveTradeWithMarketPrice = trpc.simulator.executeLiveTradeWithMarketPrice.useMutation();
   const calculateLivePortfolioValue = trpc.simulator.calculateLivePortfolioValue.useQuery(
@@ -222,14 +231,17 @@ export default function TradingSimulator() {
       }
 
       const priceSource = result.priceSource === "fallback" ? "fallback" : "live";
+      const executedAt = new Date().toISOString();
       const newTrade = {
         id: trades.length > 0 ? Math.max(...trades.map((trade) => trade.id)) + 1 : 1,
         ticker: result.ticker,
         type,
         quantity: result.quantity,
         price: result.executedPrice,
-        date: new Date().toLocaleString(),
+        date: new Date(executedAt).toLocaleString(),
+        executedAt,
         priceSource,
+        origin: "manual" as const,
       } as const;
 
       setSimulatorState((current) => ({
@@ -512,6 +524,42 @@ export default function TradingSimulator() {
           </CardContent>
         </Card>
 
+        <Card className="premium-card border-0 bg-transparent shadow-none">
+          <CardHeader>
+            <CardTitle className="text-xl font-semibold tracking-tight">Auto-trade performance summary</CardTitle>
+            <CardDescription>
+              Review how manual and automated trades are contributing to realised outcomes, open exposure, and holding discipline.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-4 md:grid-cols-5">
+            <div className="metric-card">
+              <p className="metric-label">Win Rate</p>
+              <p className={`metric-value ${performanceSummary.winRate >= 50 ? "text-emerald-400" : "text-amber-300"}`}>{performanceSummary.winRate.toFixed(1)}%</p>
+              <p className="text-xs text-muted-foreground mt-2">{performanceSummary.winningTrades} winning closes out of {performanceSummary.closedTrades}</p>
+            </div>
+            <div className="metric-card">
+              <p className="metric-label">Realised P&amp;L</p>
+              <p className={`metric-value ${performanceSummary.realizedPnL >= 0 ? "text-emerald-400" : "text-rose-400"}`}>{formatCurrency(performanceSummary.realizedPnL)}</p>
+              <p className="text-xs text-muted-foreground mt-2">Closed trade outcomes only</p>
+            </div>
+            <div className="metric-card">
+              <p className="metric-label">Unrealised P&amp;L</p>
+              <p className={`metric-value ${performanceSummary.unrealizedPnL >= 0 ? "text-emerald-400" : "text-rose-400"}`}>{formatCurrency(performanceSummary.unrealizedPnL)}</p>
+              <p className="text-xs text-muted-foreground mt-2">Open position mark-to-market</p>
+            </div>
+            <div className="metric-card">
+              <p className="metric-label">Best / Worst</p>
+              <p className="metric-value text-lg leading-tight">{performanceSummary.bestTrade ? `${performanceSummary.bestTrade.ticker} ${formatCurrency(performanceSummary.bestTrade.realizedPnL)}` : "No closed trades"}</p>
+              <p className="text-xs text-muted-foreground mt-2">{performanceSummary.worstTrade ? `${performanceSummary.worstTrade.ticker} ${formatCurrency(performanceSummary.worstTrade.realizedPnL)}` : "Worst trade appears after the first close."}</p>
+            </div>
+            <div className="metric-card">
+              <p className="metric-label">Average Hold</p>
+              <p className="metric-value text-lg leading-tight">{formatHoldingTime(performanceSummary.averageHoldingMinutes)}</p>
+              <p className="text-xs text-muted-foreground mt-2">Manual trades: {performanceSummary.manualTrades} · Auto trades: {performanceSummary.autoTrades}</p>
+            </div>
+          </CardContent>
+        </Card>
+
         <div className="grid gap-6 lg:grid-cols-3">
           <Card className="premium-card border-0 bg-transparent shadow-none lg:col-span-2">
             <CardHeader>
@@ -634,11 +682,29 @@ export default function TradingSimulator() {
             <div className="flex items-center justify-between gap-3">
               <div>
                 <CardTitle className="text-xl font-semibold tracking-tight">Trade History</CardTitle>
-                <CardDescription>{trades.length} total trades in this portfolio</CardDescription>
+                <CardDescription>{filteredTrades.length} shown of {trades.length} total trades in this portfolio</CardDescription>
               </div>
-              <Button variant="outline" size="sm" onClick={resetPortfolio}>
-                Reset Portfolio
-              </Button>
+              <div className="flex flex-wrap items-center gap-2">
+                {([
+                  ["all", "All trades"],
+                  ["manual", "Manual only"],
+                  ["auto", "Auto only"],
+                ] as const).map(([value, label]) => (
+                  <Button
+                    key={value}
+                    type="button"
+                    size="sm"
+                    variant={tradeHistoryFilter === value ? "default" : "outline"}
+                    onClick={() => setTradeHistoryFilter(value)}
+                    className="rounded-full"
+                  >
+                    {label}
+                  </Button>
+                ))}
+                <Button variant="outline" size="sm" onClick={resetPortfolio}>
+                  Reset Portfolio
+                </Button>
+              </div>
             </div>
           </CardHeader>
           <CardContent>
@@ -650,20 +716,31 @@ export default function TradingSimulator() {
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="history" className="space-y-3">
-                {trades.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No trades yet.</p>
+                {filteredTrades.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No trades match the current filter yet.</p>
                 ) : (
                   <div className="space-y-2">
-                    {trades.map((trade) => (
+                    {filteredTrades.map((trade) => (
                       <div key={trade.id} className="flex items-center justify-between p-3 rounded-lg bg-secondary/30 gap-4">
                         <div className="flex items-center gap-4 min-w-0">
                           <Badge variant={trade.type === "buy" ? "default" : "secondary"}>
                             {trade.type.toUpperCase()}
                           </Badge>
                           <div className="min-w-0">
-                            <p className="font-semibold">{trade.ticker}</p>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <p className="font-semibold">{trade.ticker}</p>
+                              <Badge variant="outline" className="text-[10px] uppercase tracking-[0.2em]">
+                                {trade.origin === "auto" ? "Auto" : "Manual"}
+                              </Badge>
+                              {trade.riskProfile ? (
+                                <Badge variant="secondary" className="text-[10px] uppercase tracking-[0.2em]">
+                                  {trade.riskProfile}
+                                </Badge>
+                              ) : null}
+                            </div>
                             <p className="text-sm text-muted-foreground">{trade.date}</p>
-                            <p className="text-xs text-muted-foreground">{getTradePriceSourceLabel(trade.priceSource)}</p>
+                            <p className="text-xs text-muted-foreground">{getTradePriceSourceLabel(trade.priceSource)}{typeof trade.confidence === "number" ? ` · ${trade.confidence}% confidence` : ""}</p>
+                            {trade.reasoning ? <p className="text-xs text-muted-foreground truncate max-w-[28rem]">{trade.reasoning}</p> : null}
                           </div>
                         </div>
                         <div className="text-right shrink-0">

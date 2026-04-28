@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import type { AutoExecutedTrade } from "@/lib/simulatorAutoTrading";
+import { getRiskProfile, SIMULATOR_RISK_PROFILES, type SimulatorRiskProfileId } from "@/lib/simulatorInsights";
 import { trpc } from "@/lib/trpc";
 import type { SimulatorPortfolio } from "@/lib/tradingSimulatorState";
 
@@ -49,6 +50,7 @@ interface SimulatorAutoTraderProps {
 }
 
 const DEFAULT_INTERVAL_SECONDS = 60;
+const DEFAULT_RISK_PROFILE: SimulatorRiskProfileId = "balanced";
 
 function formatLastRun(value: string | null) {
   if (!value) {
@@ -68,6 +70,7 @@ export function SimulatorAutoTrader({ portfolio, onApplyTrades }: SimulatorAutoT
   const autoRoundMutation = trpc.simulator.runAutoTradingRound.useMutation();
 
   const [autoEnabled, setAutoEnabled] = useState(false);
+  const [riskProfileId, setRiskProfileId] = useState<SimulatorRiskProfileId>(DEFAULT_RISK_PROFILE);
   const [universeSize, setUniverseSize] = useState(12);
   const [minConfidence, setMinConfidence] = useState(70);
   const [maxTradesPerRound, setMaxTradesPerRound] = useState(2);
@@ -77,6 +80,16 @@ export function SimulatorAutoTrader({ portfolio, onApplyTrades }: SimulatorAutoT
   const [scanOffset, setScanOffset] = useState(0);
   const [lastRunAt, setLastRunAt] = useState<string | null>(null);
   const [lastRound, setLastRound] = useState<AutoTradingRoundResponse | null>(null);
+
+  const activeRiskProfile = getRiskProfile(riskProfileId);
+
+  useEffect(() => {
+    const profile = getRiskProfile(riskProfileId);
+    setMinConfidence(profile.minConfidence);
+    setMaxTradesPerRound(profile.maxTradesPerRound);
+    setPositionSizePercent(profile.positionSizePercent);
+    setIntervalSeconds(profile.intervalSeconds);
+  }, [riskProfileId]);
 
   const positionSnapshot = useMemo(
     () => portfolio.positions.map((position) => ({
@@ -113,7 +126,14 @@ export function SimulatorAutoTrader({ portfolio, onApplyTrades }: SimulatorAutoT
       : `Auto trader scanned ${response.scannedCount} stocks and found no trade that met the current confidence and sizing rules.`;
 
     if (response.executedTrades.length > 0) {
-      onApplyTrades(response.executedTrades, summaryMessage);
+      onApplyTrades(
+        response.executedTrades.map((trade) => ({
+          ...trade,
+          origin: "auto",
+          riskProfile: riskProfileId,
+        })),
+        summaryMessage,
+      );
     }
   };
 
@@ -188,7 +208,27 @@ export function SimulatorAutoTrader({ portfolio, onApplyTrades }: SimulatorAutoT
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="grid gap-3 md:grid-cols-4">
+        <div className="space-y-3">
+          <div>
+            <label className="text-sm font-medium">Risk profile</label>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {Object.values(SIMULATOR_RISK_PROFILES).map((profile) => (
+                <Button
+                  key={profile.id}
+                  type="button"
+                  variant={profile.id === riskProfileId ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setRiskProfileId(profile.id)}
+                  className="rounded-full"
+                >
+                  {profile.label}
+                </Button>
+              ))}
+            </div>
+            <p className="mt-2 text-sm text-muted-foreground">{activeRiskProfile.description}</p>
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-4">
           <div>
             <label className="text-sm font-medium">Random basket size</label>
             <Input
@@ -233,6 +273,8 @@ export function SimulatorAutoTrader({ portfolio, onApplyTrades }: SimulatorAutoT
               onChange={(event) => setPositionSizePercent(Number(event.target.value) || 20)}
             />
           </div>
+        </div>
+
         </div>
 
         <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
