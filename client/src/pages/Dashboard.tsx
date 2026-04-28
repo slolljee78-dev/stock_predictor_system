@@ -28,6 +28,12 @@ import {
   getResolvedWatchlistPresentation,
 } from "@/lib/dashboardWatchlistSignals";
 import {
+  DASHBOARD_AUTO_REFRESH_INTERVAL_MS,
+  formatLastUpdated,
+  getLatestRefreshTimestamp,
+  shouldEnableAutoRefresh,
+} from "@/lib/dashboardRefreshMeta";
+import {
   consumeDashboardSectionReturn,
   rememberDashboardSection,
 } from "@/lib/navigation";
@@ -73,6 +79,7 @@ export default function Dashboard() {
   const [activeSection, setActiveSection] = useState("overview");
   const [lastRefreshTime, setLastRefreshTime] = useState<number | null>(null);
   const [cooldownRemaining, setCooldownRemaining] = useState(0);
+  const [refreshLabelNow, setRefreshLabelNow] = useState(() => Date.now());
   const addStockPanelRef = useRef<HTMLDivElement | null>(null);
 
   const watchlistQuery = trpc.watchlist.list.useQuery(undefined, {
@@ -81,11 +88,19 @@ export default function Dashboard() {
 
   const signalsQuery = trpc.signals.getForUser.useQuery(undefined, {
     enabled: !!user,
+    refetchInterval: shouldEnableAutoRefresh(!!user, watchlistQuery.data?.length ?? 0)
+      ? DASHBOARD_AUTO_REFRESH_INTERVAL_MS
+      : false,
+    refetchIntervalInBackground: false,
   });
 
   const watchlistStatusesQuery = trpc.signals.statuses.useQuery(undefined, {
     enabled: !!user,
     staleTime: 60_000,
+    refetchInterval: shouldEnableAutoRefresh(!!user, watchlistQuery.data?.length ?? 0)
+      ? DASHBOARD_AUTO_REFRESH_INTERVAL_MS
+      : false,
+    refetchIntervalInBackground: false,
   });
 
   const searchStocksQuery = trpc.stocks.search.useQuery(searchQuery, {
@@ -128,6 +143,18 @@ export default function Dashboard() {
   const watchlistStatusMap = useMemo(
     () => Object.fromEntries(watchlistStatuses.map((status: (typeof watchlistStatuses)[number]) => [status.ticker, status])),
     [watchlistStatuses],
+  );
+  const latestLiveUpdate = useMemo(
+    () => getLatestRefreshTimestamp([
+      watchlistQuery.dataUpdatedAt,
+      watchlistStatusesQuery.dataUpdatedAt,
+      signalsQuery.dataUpdatedAt,
+    ]),
+    [watchlistQuery.dataUpdatedAt, watchlistStatusesQuery.dataUpdatedAt, signalsQuery.dataUpdatedAt],
+  );
+  const lastUpdatedLabel = useMemo(
+    () => formatLastUpdated(latestLiveUpdate, refreshLabelNow),
+    [latestLiveUpdate, refreshLabelNow],
   );
   const dailyTrendData = useMemo(() => getDailyStockSignalSummary(signals, 7), [signals]);
   const latestSignalsByTicker = useMemo(() => getLatestSignalsByTicker(signals), [signals]);
@@ -236,6 +263,14 @@ export default function Dashboard() {
 
     return () => clearInterval(interval);
   }, [refreshState.isOnCooldown, lastRefreshTime]);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setRefreshLabelNow(Date.now());
+    }, 1000);
+
+    return () => window.clearInterval(interval);
+  }, []);
 
   const handleOpenAddStock = () => {
     setSearchQuery("");
@@ -492,11 +527,17 @@ export default function Dashboard() {
                     {refreshButtonLabel}
                   </Button>
                 </div>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {watchlist.length === 0
-                    ? "Start by adding stocks you want to track"
-                    : `${signalCoverage}% of your watchlist has active signals`}
-                </p>
+                <div className="mt-1 flex flex-col gap-1 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
+                  <p className="text-sm text-muted-foreground">
+                    {watchlist.length === 0
+                      ? "Start by adding stocks you want to track"
+                      : `${signalCoverage}% of your watchlist has active signals`}
+                  </p>
+                  <p className="inline-flex items-center gap-1 text-xs text-muted-foreground/90">
+                    <Clock3 className="h-3.5 w-3.5" />
+                    {lastUpdatedLabel}
+                  </p>
+                </div>
               </div>
               <Button
                 onClick={handleOpenAddStock}

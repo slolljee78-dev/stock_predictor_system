@@ -752,3 +752,8 @@
 - [x] Make each watchlist badge prefer the current live status over older persisted signal records when the two disagree
 - [x] Add regression tests covering mismatches between stored signals and live watchlist statuses
 
+- [x] Add a visible last-updated timestamp next to the dashboard watchlist refresh controls
+- [x] Add automatic background refresh for dashboard watchlist signals while the page is open
+- [x] Keep the manual refresh button as an on-demand override alongside automatic refresh
+- [x] Add tests covering timestamp display and automatic refresh behavior
+
