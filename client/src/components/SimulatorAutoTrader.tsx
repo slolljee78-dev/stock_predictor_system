@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { Bot, Pause, Play, RefreshCw, Shuffle, Sparkles } from "lucide-react";
+import { Bot, Pause, Play, RefreshCw, Shuffle, Sparkles, Lock } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { canUseAutoTrading, getAutoTradingUpgradeMessage } from "@/lib/subscriptionAccess";
 import {
   Card,
   CardContent,
@@ -15,6 +17,7 @@ import type { AutoExecutedTrade } from "@/lib/simulatorAutoTrading";
 import { getRiskProfile, SIMULATOR_RISK_PROFILES, type SimulatorRiskProfileId } from "@/lib/simulatorInsights";
 import { trpc } from "@/lib/trpc";
 import type { SimulatorPortfolio } from "@/lib/tradingSimulatorState";
+import { useLocation } from "wouter";
 
 interface UniverseStock {
   ticker: string;
@@ -66,6 +69,10 @@ function formatLastRun(value: string | null) {
 }
 
 export function SimulatorAutoTrader({ portfolio, onApplyTrades }: SimulatorAutoTraderProps) {
+  const { user } = useAuth();
+  const [, setLocation] = useLocation();
+  const autoTradingEnabled = canUseAutoTrading(user);
+  const autoTradingUpgradeMessage = getAutoTradingUpgradeMessage(user);
   const universeQuery = trpc.simulator.getAutoTradingUniverse.useQuery();
   const autoRoundMutation = trpc.simulator.runAutoTradingRound.useMutation();
 
@@ -101,6 +108,11 @@ export function SimulatorAutoTrader({ portfolio, onApplyTrades }: SimulatorAutoT
   );
 
   const runRound = async (reshuffle: boolean = false) => {
+    if (!autoTradingEnabled) {
+      setLocation("/pricing");
+      return;
+    }
+
     const response = await autoRoundMutation.mutateAsync({
       positions: positionSnapshot,
       cashBalance: portfolio.cash,
@@ -181,33 +193,55 @@ export function SimulatorAutoTrader({ portfolio, onApplyTrades }: SimulatorAutoT
             </CardDescription>
           </div>
           <div className="flex gap-2">
-            <Button
-              variant={autoEnabled ? "secondary" : "default"}
-              onClick={async () => {
-                if (autoEnabled) {
-                  setAutoEnabled(false);
-                  return;
-                }
-                setAutoEnabled(true);
-                await runRound();
-              }}
-              disabled={autoRoundMutation.isPending}
-            >
-              {autoEnabled ? <Pause className="mr-2 h-4 w-4" /> : <Play className="mr-2 h-4 w-4" />}
-              {autoEnabled ? "Stop auto mode" : "Start auto mode"}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => void runRound()}
-              disabled={autoRoundMutation.isPending}
-            >
-              <RefreshCw className={`mr-2 h-4 w-4 ${autoRoundMutation.isPending ? "animate-spin" : ""}`} />
-              Run now
-            </Button>
+            {autoTradingEnabled ? (
+              <>
+                <Button
+                  variant={autoEnabled ? "secondary" : "default"}
+                  onClick={async () => {
+                    if (autoEnabled) {
+                      setAutoEnabled(false);
+                      return;
+                    }
+                    setAutoEnabled(true);
+                    await runRound();
+                  }}
+                  disabled={autoRoundMutation.isPending}
+                >
+                  {autoEnabled ? <Pause className="mr-2 h-4 w-4" /> : <Play className="mr-2 h-4 w-4" />}
+                  {autoEnabled ? "Stop auto mode" : "Start auto mode"}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => void runRound()}
+                  disabled={autoRoundMutation.isPending}
+                >
+                  <RefreshCw className={`mr-2 h-4 w-4 ${autoRoundMutation.isPending ? "animate-spin" : ""}`} />
+                  Run now
+                </Button>
+              </>
+            ) : (
+              <Button type="button" onClick={() => setLocation("/pricing")}>
+                <Lock className="mr-2 h-4 w-4" />
+                Unlock auto trading
+              </Button>
+            )}
           </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
+        {!autoTradingEnabled && (
+          <div className="rounded-2xl border border-primary/25 bg-primary/10 p-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-semibold text-foreground">Auto trading is locked on the free plan</p>
+                <p className="mt-1 text-sm text-muted-foreground">{autoTradingUpgradeMessage}</p>
+              </div>
+              <Button type="button" onClick={() => setLocation("/pricing")} className="pill-button pill-button-primary h-10 px-5">
+                View plans
+              </Button>
+            </div>
+          </div>
+        )}
         <div className="space-y-3">
           <div>
             <label className="text-sm font-medium">Risk profile</label>
@@ -220,6 +254,7 @@ export function SimulatorAutoTrader({ portfolio, onApplyTrades }: SimulatorAutoT
                   size="sm"
                   onClick={() => setRiskProfileId(profile.id)}
                   className="rounded-full"
+                  disabled={!autoTradingEnabled}
                 >
                   {profile.label}
                 </Button>
@@ -238,6 +273,7 @@ export function SimulatorAutoTrader({ portfolio, onApplyTrades }: SimulatorAutoT
               max={25}
               value={universeSize}
               onChange={(event) => setUniverseSize(Number(event.target.value) || 12)}
+              disabled={!autoTradingEnabled}
             />
           </div>
           <div>
@@ -249,6 +285,7 @@ export function SimulatorAutoTrader({ portfolio, onApplyTrades }: SimulatorAutoT
               max={95}
               value={minConfidence}
               onChange={(event) => setMinConfidence(Number(event.target.value) || 70)}
+              disabled={!autoTradingEnabled}
             />
           </div>
           <div>
@@ -260,6 +297,7 @@ export function SimulatorAutoTrader({ portfolio, onApplyTrades }: SimulatorAutoT
               max={5}
               value={maxTradesPerRound}
               onChange={(event) => setMaxTradesPerRound(Number(event.target.value) || 2)}
+              disabled={!autoTradingEnabled}
             />
           </div>
           <div>
@@ -271,6 +309,7 @@ export function SimulatorAutoTrader({ portfolio, onApplyTrades }: SimulatorAutoT
               max={40}
               value={positionSizePercent}
               onChange={(event) => setPositionSizePercent(Number(event.target.value) || 20)}
+              disabled={!autoTradingEnabled}
             />
           </div>
         </div>
@@ -288,12 +327,13 @@ export function SimulatorAutoTrader({ portfolio, onApplyTrades }: SimulatorAutoT
               step={15}
               value={intervalSeconds}
               onChange={(event) => setIntervalSeconds(Number(event.target.value) || DEFAULT_INTERVAL_SECONDS)}
+              disabled={!autoTradingEnabled}
             />
           </div>
           <Button
             variant="outline"
             onClick={() => void runRound(true)}
-            disabled={autoRoundMutation.isPending}
+            disabled={autoRoundMutation.isPending || !autoTradingEnabled}
           >
             <Shuffle className="mr-2 h-4 w-4" />
             New random basket
@@ -309,13 +349,13 @@ export function SimulatorAutoTrader({ portfolio, onApplyTrades }: SimulatorAutoT
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Bot className="h-4 w-4" />
-              {autoEnabled ? "Auto mode is actively scanning" : "Auto mode is idle"}
+              {autoTradingEnabled ? (autoEnabled ? "Auto mode is actively scanning" : "Auto mode is idle") : "Upgrade required for auto mode"}
             </div>
           </div>
 
           <div className="mt-4 flex flex-wrap gap-2">
             {selectedUniverse.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Run the auto trader to pick a fresh basket of companies from the broader universe.</p>
+              <p className="text-sm text-muted-foreground">{autoTradingEnabled ? "Run the auto trader to pick a fresh basket of companies from the broader universe." : "Upgrade to unlock a broader random basket and automated paper-trading rounds."}</p>
             ) : (
               selectedUniverse.map((stock) => (
                 <Badge key={stock.ticker} variant="outline" className="border-cyan-500/30 bg-cyan-500/10 text-cyan-100">

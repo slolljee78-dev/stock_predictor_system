@@ -15,6 +15,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { canUseAutoTrading } from "@/lib/subscriptionAccess";
 import { DASHBOARD_HOME_PATH, navigateToDashboardMenu } from "@/lib/navigation";
 import { applyAutoExecutedTrades, type AutoExecutedTrade } from "@/lib/simulatorAutoTrading";
 import {
@@ -80,9 +82,11 @@ export default function TradingSimulator() {
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [hasManualPriceOverride, setHasManualPriceOverride] = useState(false);
   const [tradeHistoryFilter, setTradeHistoryFilter] = useState<TradeHistoryFilter>("all");
+  const { user } = useAuth();
   const [, setLocation] = useLocation();
 
   const selectedPortfolio = useMemo(() => getSelectedPortfolio(simulatorState), [simulatorState]);
+  const autoTradingEnabled = canUseAutoTrading(user);
   const positions = selectedPortfolio.positions;
   const trades = selectedPortfolio.trades;
   const normalizedTicker = tradeForm.ticker.trim().toUpperCase();
@@ -436,12 +440,17 @@ export default function TradingSimulator() {
           <CardContent className="grid gap-4 p-6 md:grid-cols-[1.3fr_0.7fr] md:p-8">
             <div className="space-y-3">
               <Badge variant="secondary" className="w-fit rounded-full px-3 py-1 text-[11px] uppercase tracking-[0.22em]">
-                Major differentiator
+                {autoTradingEnabled ? "Major differentiator" : "Paid-plan feature"}
               </Badge>
               <h2 className="text-2xl font-semibold tracking-tight text-foreground">Automated paper trading is built directly into your simulator.</h2>
               <p className="text-sm leading-6 text-muted-foreground md:text-base">
                 Instead of only logging manual practice trades, the simulator can now scan a wider universe, rotate through random baskets, and place virtual buy and sell trades from live signals so users can validate the strategy first.
               </p>
+              {!autoTradingEnabled && (
+                <div className="rounded-2xl border border-primary/25 bg-primary/10 px-4 py-3">
+                  <p className="text-sm font-medium text-foreground">Free accounts can keep using manual paper trading, but auto trading unlocks after upgrading to a paid plan.</p>
+                </div>
+              )}
             </div>
             <div className="grid gap-3 sm:grid-cols-3 md:grid-cols-1">
               <div className="rounded-2xl border border-border/70 bg-background/40 p-4">
@@ -456,6 +465,11 @@ export default function TradingSimulator() {
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">Why it matters</p>
                 <p className="mt-2 text-lg font-semibold">Test the system before risking capital</p>
               </div>
+              {!autoTradingEnabled && (
+                <Button type="button" onClick={() => setLocation("/pricing")} className="pill-button pill-button-primary h-11 px-5 md:self-start">
+                  Unlock paid auto trading
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>

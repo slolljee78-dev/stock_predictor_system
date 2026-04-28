@@ -157,13 +157,33 @@ export const appRouter = router({
       }),
 
     getForUser: protectedProcedure.query(async ({ ctx }) => {
+      const { hasActivePaidPlan } = await import('./subscriptionAccess');
       const results = await import('./db').then(db => db.getActiveSignalsForUser(ctx.user.id));
-      return results;
+
+      if (hasActivePaidPlan(ctx.user)) {
+        return results;
+      }
+
+      return results.slice(0, 3).map((signal) => ({
+        ...signal,
+        confidenceScore: Math.min(signal.confidenceScore, 60),
+      }));
     }),
 
     statuses: protectedProcedure.query(async ({ ctx }) => {
+      const { hasActivePaidPlan } = await import('./subscriptionAccess');
       const { getWatchlistStatuses } = await import('./watchlistStatuses');
-      return getWatchlistStatuses(ctx.user.id);
+      const statuses = await getWatchlistStatuses(ctx.user.id);
+
+      if (hasActivePaidPlan(ctx.user)) {
+        return statuses;
+      }
+
+      return statuses.slice(0, 3).map((status) => ({
+        ...status,
+        explanation: "Upgrade to a paid plan to unlock the full live signal explanation for this stock.",
+        recommendation: "Upgrade required",
+      }));
     }),
   }),
 
@@ -320,9 +340,16 @@ export const appRouter = router({
         }
       }),
 
-    getAutoTradingUniverse: protectedProcedure.query(async () => {
+    getAutoTradingUniverse: protectedProcedure.query(async ({ ctx }) => {
+      const { hasActivePaidPlan } = await import('./subscriptionAccess');
       const { getTradingStocks } = await import('./stockDataFetcher');
-      return getTradingStocks();
+      const stocks = getTradingStocks();
+
+      if (hasActivePaidPlan(ctx.user)) {
+        return stocks;
+      }
+
+      return stocks.slice(0, 6);
     }),
 
     runAutoTradingRound: protectedProcedure
@@ -332,8 +359,10 @@ export const appRouter = router({
         }
         throw new Error('Invalid input');
       })
-      .mutation(async ({ input }) => {
+      .mutation(async ({ ctx, input }) => {
         try {
+          const { assertAutoTradingAccess } = await import('./subscriptionAccess');
+          assertAutoTradingAccess(ctx.user);
           const {
             DEFAULT_AUTO_TRADING_MAX_OPEN_POSITIONS,
             DEFAULT_AUTO_TRADING_MAX_TRADES_PER_ROUND,

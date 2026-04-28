@@ -771,3 +771,8 @@
 - [x] Add a prominent hero-level message at the top of the simulator page explaining the automated paper-trading feature and why it matters
 - [x] Verify the revised homepage and simulator messaging makes the auto-trade feature easy to notice
 
+- [x] Restrict detailed buy and sell signals for users on the free plan so premium signal depth remains reserved for subscribers
+- [x] Restrict the simulator auto-trading feature for non-subscribed users and show clear upgrade messaging instead of full access
+- [x] Add upgrade prompts and plan-aware messaging across affected signal and simulator surfaces
+- [x] Add tests covering subscription gating for signals and auto-trading access
+

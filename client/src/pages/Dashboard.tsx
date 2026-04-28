@@ -41,6 +41,10 @@ import {
   isWatchlistRefreshing,
 } from "@/lib/watchlistRefresh";
 import {
+  canViewPremiumSignalDetails,
+  getSignalUpgradeMessage,
+} from "@/lib/subscriptionAccess";
+import {
   canRefresh,
   getRefreshButtonLabel,
   getRefreshState,
@@ -127,6 +131,8 @@ export default function Dashboard() {
   const watchlist = watchlistQuery.data ?? [];
   const signals = signalsQuery.data ?? [];
   const watchlistStatuses = watchlistStatusesQuery.data ?? [];
+  const hasPremiumSignalAccess = canViewPremiumSignalDetails(user);
+  const signalUpgradeMessage = getSignalUpgradeMessage(user);
   const isRefreshingWatchlist = isWatchlistRefreshing([
     watchlistQuery.isFetching,
     watchlistStatusesQuery.isFetching,
@@ -413,21 +419,21 @@ export default function Dashboard() {
               />
               <MetricCard
                 label="Buy ideas"
-                value={String(buySignals)}
-                note="Stocks with current buy setups"
+                value={hasPremiumSignalAccess ? String(buySignals) : "Preview"}
+                note={hasPremiumSignalAccess ? "Stocks with current buy setups" : "Upgrade to unlock full buy signal counts"}
                 icon={<TrendingUp className="h-5 w-5 text-emerald-400" />}
-                trend={buyTrend}
-                trendPercent={buyTrendPercent}
-                onClick={() => setLocation(buildSignalDashboardPath("buy"))}
+                trend={hasPremiumSignalAccess ? buyTrend : undefined}
+                trendPercent={hasPremiumSignalAccess ? buyTrendPercent : undefined}
+                onClick={() => setLocation(hasPremiumSignalAccess ? buildSignalDashboardPath("buy") : "/pricing")}
               />
               <MetricCard
                 label="Sell signals"
-                value={String(sellSignals)}
-                note="Stocks with current sell setups"
+                value={hasPremiumSignalAccess ? String(sellSignals) : "Preview"}
+                note={hasPremiumSignalAccess ? "Stocks with current sell setups" : "Upgrade to unlock full sell signal counts"}
                 icon={<TrendingDown className="h-5 w-5 text-rose-400" />}
-                trend={sellTrend}
-                trendPercent={sellTrendPercent}
-                onClick={() => setLocation(buildSignalDashboardPath("sell"))}
+                trend={hasPremiumSignalAccess ? sellTrend : undefined}
+                trendPercent={hasPremiumSignalAccess ? sellTrendPercent : undefined}
+                onClick={() => setLocation(hasPremiumSignalAccess ? buildSignalDashboardPath("sell") : "/pricing")}
               />
             </div>
           </div>
@@ -531,7 +537,9 @@ export default function Dashboard() {
                   <p className="text-sm text-muted-foreground">
                     {watchlist.length === 0
                       ? "Start by adding stocks you want to track"
-                      : `${signalCoverage}% of your watchlist has active signals`}
+                      : hasPremiumSignalAccess
+                        ? `${signalCoverage}% of your watchlist has active signals`
+                        : "Free plan preview mode: upgrade to unlock full live buy and sell signal coverage."}
                   </p>
                   <p className="inline-flex items-center gap-1 text-xs text-muted-foreground/90">
                     <Clock3 className="h-3.5 w-3.5" />
@@ -640,6 +648,20 @@ export default function Dashboard() {
               </div>
             )}
 
+            {!hasPremiumSignalAccess && watchlist.length > 0 && (
+              <div className="rounded-2xl border border-primary/25 bg-primary/10 p-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Premium signal detail is locked on the free plan</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{signalUpgradeMessage}</p>
+                  </div>
+                  <Button type="button" onClick={() => setLocation("/pricing")} className="pill-button pill-button-primary h-10 px-5">
+                    View plans
+                  </Button>
+                </div>
+              </div>
+            )}
+
             {watchlist.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-border/70 p-8 text-center">
                 <Star className="h-12 w-12 text-muted-foreground/40 mx-auto mb-3" />
@@ -683,14 +705,14 @@ export default function Dashboard() {
                           <p className="font-semibold text-foreground group-hover:text-primary transition-colors">{stock.ticker}</p>
                           <p className="text-xs text-muted-foreground truncate">{stock.name}</p>
                           <p className="mt-1 text-[11px] leading-5 text-muted-foreground line-clamp-2 max-w-[34ch]">
-                            {presentation.statusDetail}
+                            {hasPremiumSignalAccess ? presentation.statusDetail : "Upgrade to unlock the full live signal explanation and current buy/sell status for this stock."}
                           </p>
                         </div>
                         <div className="flex items-center gap-2 flex-shrink-0">
-                          <Badge variant="secondary" className={statusClass}>
-                            {presentation.statusTone === "buy" ? <TrendingUp className="h-3 w-3 mr-1" /> : null}
-                            {presentation.statusTone === "sell" ? <TrendingDown className="h-3 w-3 mr-1" /> : null}
-                            {presentation.statusLabel}
+                          <Badge variant="secondary" className={hasPremiumSignalAccess ? statusClass : "bg-primary/15 text-primary border-primary/30"}>
+                            {hasPremiumSignalAccess && presentation.statusTone === "buy" ? <TrendingUp className="h-3 w-3 mr-1" /> : null}
+                            {hasPremiumSignalAccess && presentation.statusTone === "sell" ? <TrendingDown className="h-3 w-3 mr-1" /> : null}
+                            {hasPremiumSignalAccess ? presentation.statusLabel : "Premium"}
                           </Badge>
                         </div>
                       </div>
@@ -708,7 +730,7 @@ export default function Dashboard() {
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               <GuideCard
                 title="Review signals"
-                text="Check today's highest-conviction buy and sell ideas"
+                text={hasPremiumSignalAccess ? "Check today's highest-conviction buy and sell ideas" : "Unlock full buy and sell signal detail by upgrading your plan"}
                 icon={<BrainCircuit className="h-5 w-5 text-primary" />}
               />
               <GuideCard
