@@ -21,14 +21,17 @@ import {
 import {
   getDailyStockSignalSummary,
   getLatestSignalsByTicker,
-  getUniqueActionableCounts,
 } from "@/lib/dashboardSignalSummary";
+import {
+  getActionableWatchlistCounts,
+  getLiveSignalCoverage,
+  getResolvedWatchlistPresentation,
+} from "@/lib/dashboardWatchlistSignals";
 import {
   consumeDashboardSectionReturn,
   rememberDashboardSection,
 } from "@/lib/navigation";
 import {
-  getWatchlistRefreshLabel,
   isWatchlistRefreshing,
 } from "@/lib/watchlistRefresh";
 import {
@@ -129,8 +132,8 @@ export default function Dashboard() {
   const dailyTrendData = useMemo(() => getDailyStockSignalSummary(signals, 7), [signals]);
   const latestSignalsByTicker = useMemo(() => getLatestSignalsByTicker(signals), [signals]);
   const { buyCount: buySignals, sellCount: sellSignals } = useMemo(
-    () => getUniqueActionableCounts(signals),
-    [signals],
+    () => getActionableWatchlistCounts(watchlistStatuses),
+    [watchlistStatuses],
   );
 
   // Safely extract trend data
@@ -139,14 +142,10 @@ export default function Dashboard() {
   const sellTrend = 'down' as const;
   const sellTrendPercent = 0;
 
-  const signalCoverage = useMemo(() => {
-    if (!watchlist.length) return 0;
-    const watchlistTickers = new Set(watchlist.map((item) => item.ticker));
-    const coveredTickers = new Set(
-      Object.keys(latestSignalsByTicker).filter((ticker) => watchlistTickers.has(ticker)),
-    );
-    return Math.min(100, Math.round((coveredTickers.size / watchlist.length) * 100));
-  }, [latestSignalsByTicker, watchlist]);
+  const signalCoverage = useMemo(
+    () => getLiveSignalCoverage(watchlistStatuses, watchlist.length),
+    [watchlistStatuses, watchlist.length],
+  );
 
   useEffect(() => {
     if (!user) {
@@ -616,23 +615,19 @@ export default function Dashboard() {
                 {watchlist.map((stock) => {
                   const latestSignal = latestSignalsByTicker[stock.ticker];
                   const liveStatus = watchlistStatusMap[stock.ticker];
-                  const statusLabel = latestSignal?.type === "buy"
-                    ? "Buy"
-                    : latestSignal?.type === "sell"
-                      ? "Sell"
-                      : liveStatus?.badge ?? "No active setup";
-                  const statusDetail = latestSignal
-                    ? liveStatus?.detail ?? `This stock currently has an active ${latestSignal.type} setup.`
-                    : liveStatus?.detail ?? "We are still monitoring this stock for a stronger setup.";
-                  const statusTone = latestSignal?.type ?? liveStatus?.state ?? "no_active_setup";
+                  const presentation = getResolvedWatchlistPresentation(
+                    stock.ticker,
+                    liveStatus,
+                    latestSignal,
+                  );
                   const statusClass =
-                    statusTone === "buy"
+                    presentation.statusTone === "buy"
                       ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
-                      : statusTone === "sell"
+                      : presentation.statusTone === "sell"
                         ? "bg-rose-500/15 text-rose-400 border-rose-500/30"
-                        : statusTone === "low_confidence"
+                        : presentation.statusTone === "low_confidence"
                           ? "bg-amber-500/15 text-amber-300 border-amber-500/30"
-                          : statusTone === "data_unavailable"
+                          : presentation.statusTone === "data_unavailable"
                             ? "bg-slate-500/15 text-slate-300 border-slate-500/30"
                             : "bg-muted text-muted-foreground border-muted";
 
@@ -647,14 +642,14 @@ export default function Dashboard() {
                           <p className="font-semibold text-foreground group-hover:text-primary transition-colors">{stock.ticker}</p>
                           <p className="text-xs text-muted-foreground truncate">{stock.name}</p>
                           <p className="mt-1 text-[11px] leading-5 text-muted-foreground line-clamp-2 max-w-[34ch]">
-                            {statusDetail}
+                            {presentation.statusDetail}
                           </p>
                         </div>
                         <div className="flex items-center gap-2 flex-shrink-0">
                           <Badge variant="secondary" className={statusClass}>
-                            {statusTone === "buy" ? <TrendingUp className="h-3 w-3 mr-1" /> : null}
-                            {statusTone === "sell" ? <TrendingDown className="h-3 w-3 mr-1" /> : null}
-                            {statusLabel}
+                            {presentation.statusTone === "buy" ? <TrendingUp className="h-3 w-3 mr-1" /> : null}
+                            {presentation.statusTone === "sell" ? <TrendingDown className="h-3 w-3 mr-1" /> : null}
+                            {presentation.statusLabel}
                           </Badge>
                         </div>
                       </div>

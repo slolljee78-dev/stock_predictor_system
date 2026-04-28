@@ -746,3 +746,9 @@
 - [x] Add countdown display showing remaining cooldown time (Refresh in Xs)
 - [x] Write comprehensive tests for rate limiter logic (20 tests passing)
 - [x] Verify rate limiter works in browser with proper button state transitions
+- [x] Investigate why the dashboard buy and sell signals do not appear to change and confirm whether live signal generation and display are working correctly
+
+- [x] Make dashboard buy and sell summary counts derive from current live watchlist statuses instead of stale stored signal rows
+- [x] Make each watchlist badge prefer the current live status over older persisted signal records when the two disagree
+- [x] Add regression tests covering mismatches between stored signals and live watchlist statuses
+
