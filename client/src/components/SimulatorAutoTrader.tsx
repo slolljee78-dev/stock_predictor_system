@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { canUseAutoTrading, getAutoTradingUpgradeMessage } from "@/lib/subscriptionAccess";
+import { getPreviewUsage, LOCKED_FEATURE_PLAN_ROWS } from "@/lib/upgradeConversion";
 import {
   Card,
   CardContent,
@@ -89,6 +90,7 @@ export function SimulatorAutoTrader({ portfolio, onApplyTrades }: SimulatorAutoT
   const [lastRound, setLastRound] = useState<AutoTradingRoundResponse | null>(null);
 
   const activeRiskProfile = getRiskProfile(riskProfileId);
+  const autoPreviewUsage = getPreviewUsage(3, autoTradingEnabled ? 3 : 1);
 
   useEffect(() => {
     const profile = getRiskProfile(riskProfileId);
@@ -230,7 +232,7 @@ export function SimulatorAutoTrader({ portfolio, onApplyTrades }: SimulatorAutoT
       </CardHeader>
       <CardContent className="space-y-6">
         {!autoTradingEnabled && (
-          <div className="rounded-2xl border border-primary/25 bg-primary/10 p-4">
+          <div className="rounded-2xl border border-primary/25 bg-primary/10 p-4 space-y-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm font-semibold text-foreground">Auto trading is locked on the free plan</p>
@@ -239,6 +241,30 @@ export function SimulatorAutoTrader({ portfolio, onApplyTrades }: SimulatorAutoT
               <Button type="button" onClick={() => setLocation("/pricing")} className="pill-button pill-button-primary h-10 px-5">
                 View plans
               </Button>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-3 text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                <span>Feature preview</span>
+                <span>{autoPreviewUsage.label}</span>
+              </div>
+              <div className="h-2 overflow-hidden rounded-full bg-background/60">
+                <div className="h-full rounded-full bg-primary" style={{ width: `${autoPreviewUsage.percent}%` }} />
+              </div>
+              <p className="text-xs text-muted-foreground">{autoPreviewUsage.remainingLocked} premium automation features remain locked until upgrade.</p>
+            </div>
+            <div className="overflow-hidden rounded-2xl border border-border/70 bg-background/40">
+              <div className="grid grid-cols-3 gap-px bg-border/60 text-sm">
+                <div className="bg-background/95 px-3 py-2 font-semibold text-foreground">Feature</div>
+                <div className="bg-background/95 px-3 py-2 font-semibold text-foreground">Free</div>
+                <div className="bg-background/95 px-3 py-2 font-semibold text-foreground">Paid</div>
+              </div>
+              {LOCKED_FEATURE_PLAN_ROWS.map((row) => (
+                <div key={row.label} className="grid grid-cols-3 gap-px border-t border-border/60 bg-border/60 text-sm">
+                  <div className="bg-background/95 px-3 py-2 text-foreground">{row.label}</div>
+                  <div className="bg-background/95 px-3 py-2 text-muted-foreground">{row.free}</div>
+                  <div className="bg-background/95 px-3 py-2 text-foreground">{row.paid}</div>
+                </div>
+              ))}
             </div>
           </div>
         )}
@@ -369,17 +395,17 @@ export function SimulatorAutoTrader({ portfolio, onApplyTrades }: SimulatorAutoT
         <div className="grid gap-4 md:grid-cols-3">
           <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
             <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Universe available</p>
-            <p className="mt-2 text-2xl font-semibold">{universeQuery.data?.length ?? 0}</p>
+            <p className={`mt-2 text-2xl font-semibold ${autoTradingEnabled ? "" : "blur-[2px] select-none"}`}>{universeQuery.data?.length ?? 0}</p>
             <p className="text-sm text-muted-foreground">Tradable companies and ETFs in the expanded simulator pool</p>
           </div>
           <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
             <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Actionable signals</p>
-            <p className="mt-2 text-2xl font-semibold">{actionableSignals.length}</p>
+            <p className={`mt-2 text-2xl font-semibold ${autoTradingEnabled ? "" : "blur-[2px] select-none"}`}>{actionableSignals.length}</p>
             <p className="text-sm text-muted-foreground">Signals above your current confidence threshold in the latest scan</p>
           </div>
           <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
             <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Latest round</p>
-            <p className="mt-2 text-2xl font-semibold">{lastRound?.executedTrades.length ?? 0}</p>
+            <p className={`mt-2 text-2xl font-semibold ${autoTradingEnabled ? "" : "blur-[2px] select-none"}`}>{lastRound?.executedTrades.length ?? 0}</p>
             <p className="text-sm text-muted-foreground">Virtual trades executed in the most recent automated pass</p>
             {lastRound?.scannedTickers?.length ? (
               <p className="mt-2 text-xs text-muted-foreground">Scanned now: {lastRound.scannedTickers.join(", ")}</p>
@@ -392,7 +418,12 @@ export function SimulatorAutoTrader({ portfolio, onApplyTrades }: SimulatorAutoT
             <Sparkles className="h-4 w-4 text-cyan-300" />
             <p className="font-medium">Latest high-conviction signals</p>
           </div>
-          {actionableSignals.length === 0 ? (
+          {!autoTradingEnabled ? (
+            <div className="rounded-xl bg-secondary/30 px-3 py-3">
+              <p className="text-sm font-medium text-foreground blur-[2px] select-none">NVDA · BUY · 84% confidence</p>
+              <p className="mt-2 text-sm text-muted-foreground">Upgrade to reveal live actionable signals and automated trade candidates.</p>
+            </div>
+          ) : actionableSignals.length === 0 ? (
             <p className="text-sm text-muted-foreground">No buy or sell signals have crossed the current threshold yet.</p>
           ) : (
             <div className="space-y-2">

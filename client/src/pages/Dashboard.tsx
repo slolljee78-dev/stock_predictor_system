@@ -45,6 +45,11 @@ import {
   getSignalUpgradeMessage,
 } from "@/lib/subscriptionAccess";
 import {
+  getBlurredPreviewText,
+  getPreviewUsage,
+  LOCKED_FEATURE_PLAN_ROWS,
+} from "@/lib/upgradeConversion";
+import {
   canRefresh,
   getRefreshButtonLabel,
   getRefreshState,
@@ -133,6 +138,7 @@ export default function Dashboard() {
   const watchlistStatuses = watchlistStatusesQuery.data ?? [];
   const hasPremiumSignalAccess = canViewPremiumSignalDetails(user);
   const signalUpgradeMessage = getSignalUpgradeMessage(user);
+  const premiumPreviewUsage = getPreviewUsage(watchlist.length, 3);
   const isRefreshingWatchlist = isWatchlistRefreshing([
     watchlistQuery.isFetching,
     watchlistStatusesQuery.isFetching,
@@ -649,7 +655,7 @@ export default function Dashboard() {
             )}
 
             {!hasPremiumSignalAccess && watchlist.length > 0 && (
-              <div className="rounded-2xl border border-primary/25 bg-primary/10 p-4">
+              <div className="rounded-2xl border border-primary/25 bg-primary/10 p-4 space-y-4">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="text-sm font-semibold text-foreground">Premium signal detail is locked on the free plan</p>
@@ -658,6 +664,34 @@ export default function Dashboard() {
                   <Button type="button" onClick={() => setLocation("/pricing")} className="pill-button pill-button-primary h-10 px-5">
                     View plans
                   </Button>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-3 text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                    <span>Free preview usage</span>
+                    <span>{premiumPreviewUsage.label}</span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-background/60">
+                    <div className="h-full rounded-full bg-primary" style={{ width: `${premiumPreviewUsage.percent}%` }} />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {premiumPreviewUsage.remainingLocked > 0
+                      ? `${premiumPreviewUsage.remainingLocked} additional watchlist ${premiumPreviewUsage.remainingLocked === 1 ? "signal remains" : "signals remain"} locked until upgrade.`
+                      : "Your current watchlist fits within the preview, but deeper live signal detail remains paid."}
+                  </p>
+                </div>
+                <div className="overflow-hidden rounded-2xl border border-border/70 bg-background/40">
+                  <div className="grid grid-cols-3 gap-px bg-border/60 text-sm">
+                    <div className="bg-background/95 px-3 py-2 font-semibold text-foreground">Feature</div>
+                    <div className="bg-background/95 px-3 py-2 font-semibold text-foreground">Free</div>
+                    <div className="bg-background/95 px-3 py-2 font-semibold text-foreground">Paid</div>
+                  </div>
+                  {LOCKED_FEATURE_PLAN_ROWS.map((row) => (
+                    <div key={row.label} className="grid grid-cols-3 gap-px border-t border-border/60 bg-border/60 text-sm">
+                      <div className="bg-background/95 px-3 py-2 text-foreground">{row.label}</div>
+                      <div className="bg-background/95 px-3 py-2 text-muted-foreground">{row.free}</div>
+                      <div className="bg-background/95 px-3 py-2 text-foreground">{row.paid}</div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
@@ -704,16 +738,28 @@ export default function Dashboard() {
                         <div className="min-w-0 flex-1">
                           <p className="font-semibold text-foreground group-hover:text-primary transition-colors">{stock.ticker}</p>
                           <p className="text-xs text-muted-foreground truncate">{stock.name}</p>
-                          <p className="mt-1 text-[11px] leading-5 text-muted-foreground line-clamp-2 max-w-[34ch]">
-                            {hasPremiumSignalAccess ? presentation.statusDetail : "Upgrade to unlock the full live signal explanation and current buy/sell status for this stock."}
-                          </p>
+                          <div className="mt-1 max-w-[34ch]">
+                            {hasPremiumSignalAccess ? (
+                              <p className="text-[11px] leading-5 text-muted-foreground line-clamp-2">{presentation.statusDetail}</p>
+                            ) : (
+                              <div className="space-y-1">
+                                <p className="text-[11px] leading-5 text-muted-foreground blur-[2.5px] select-none">
+                                  {getBlurredPreviewText(presentation.statusDetail, "Premium signal explanation hidden until upgrade.")}
+                                </p>
+                                <p className="text-[11px] leading-5 text-primary">Upgrade to reveal the full live signal explanation and current buy/sell status.</p>
+                              </div>
+                            )}
+                          </div>
                         </div>
                         <div className="flex items-center gap-2 flex-shrink-0">
-                          <Badge variant="secondary" className={hasPremiumSignalAccess ? statusClass : "bg-primary/15 text-primary border-primary/30"}>
-                            {hasPremiumSignalAccess && presentation.statusTone === "buy" ? <TrendingUp className="h-3 w-3 mr-1" /> : null}
-                            {hasPremiumSignalAccess && presentation.statusTone === "sell" ? <TrendingDown className="h-3 w-3 mr-1" /> : null}
-                            {hasPremiumSignalAccess ? presentation.statusLabel : "Premium"}
-                          </Badge>
+                          <div className={hasPremiumSignalAccess ? "" : "relative"}>
+                            <Badge variant="secondary" className={hasPremiumSignalAccess ? statusClass : "bg-primary/15 text-primary border-primary/30 blur-[1.5px]"}>
+                              {hasPremiumSignalAccess && presentation.statusTone === "buy" ? <TrendingUp className="h-3 w-3 mr-1" /> : null}
+                              {hasPremiumSignalAccess && presentation.statusTone === "sell" ? <TrendingDown className="h-3 w-3 mr-1" /> : null}
+                              {hasPremiumSignalAccess ? presentation.statusLabel : "Premium"}
+                            </Badge>
+                            {!hasPremiumSignalAccess ? <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-[10px] font-semibold uppercase tracking-[0.14em] text-primary">Preview</span> : null}
+                          </div>
                         </div>
                       </div>
                     </button>

@@ -776,3 +776,8 @@
 - [x] Add upgrade prompts and plan-aware messaging across affected signal and simulator surfaces
 - [x] Add tests covering subscription gating for signals and auto-trading access
 
+- [x] Add an in-context plan comparison table inside locked dashboard and simulator premium states
+- [x] Add blurred premium signal previews so free users can see partial value without full access
+- [x] Add a free-preview usage meter and upgrade messaging for limited signal access
+- [x] Verify the new locked-state conversion UX and cover it with tests
+
