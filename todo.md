@@ -757,3 +757,8 @@
 - [x] Keep the manual refresh button as an on-demand override alongside automatic refresh
 - [x] Add tests covering timestamp display and automatic refresh behavior
 
+- [x] Add an automated paper-trading mode to the simulator that executes virtual trades from generated buy and sell signals
+- [x] Expand the simulator stock universe beyond the current small watchlist and support random stock selection for auto-trading
+- [x] Build simulator controls for starting, stopping, and reviewing automated virtual trading sessions
+- [x] Add tests covering automated trade generation, random stock selection, and simulator state updates
+

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useLocation } from "wouter";
 import { ArrowLeft, AlertCircle, BarChart3, CheckCircle2, DollarSign, History, House, Plus, Target, TrendingDown, TrendingUp } from "lucide-react";
 
+import { SimulatorAutoTrader } from "@/components/SimulatorAutoTrader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trpc } from "@/lib/trpc";
 import { DASHBOARD_HOME_PATH, navigateToDashboardMenu } from "@/lib/navigation";
+import { applyAutoExecutedTrades, type AutoExecutedTrade } from "@/lib/simulatorAutoTrading";
 import {
   createEmptyPortfolio,
   getSelectedPortfolio,
@@ -355,6 +357,20 @@ export default function TradingSimulator() {
     setFeedback({ type: "success", message: "The selected simulator portfolio was reset and the cleared state has been saved." });
   };
 
+  const handleAutoTradesApplied = async (executedTrades: AutoExecutedTrade[], summaryMessage: string) => {
+    setSimulatorState((current) => ({
+      ...current,
+      portfolios: current.portfolios.map((portfolio) =>
+        portfolio.id === current.selectedPortfolioId
+          ? applyAutoExecutedTrades(portfolio, executedTrades)
+          : portfolio
+      ),
+    }));
+    setFeedback({ type: "success", message: summaryMessage });
+    setTimeout(() => setFeedback(null), 4000);
+    await calculateLivePortfolioValue.refetch();
+  };
+
   const priceFieldHint = useMemo(() => {
     if (!normalizedTicker) {
       return "Enter a ticker and the latest live price will load automatically when available.";
@@ -575,6 +591,13 @@ export default function TradingSimulator() {
               )}
             </CardContent>
           </Card>
+
+          <SimulatorAutoTrader
+            portfolio={selectedPortfolio}
+            onApplyTrades={(executedTrades, summaryMessage) => {
+              void handleAutoTradesApplied(executedTrades, summaryMessage);
+            }}
+          />
 
           <Card className="premium-card border-0 bg-transparent shadow-none">
             <CardHeader>
