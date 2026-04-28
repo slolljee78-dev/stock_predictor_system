@@ -423,7 +423,7 @@ export default function TradingSimulator() {
           <div className="space-y-3">
             <h1 className="text-4xl font-bold gradient-text">Trading Simulator</h1>
             <p className="text-muted-foreground max-w-2xl">
-              Practice trades with live market prices when they are available, keep a saved simulator portfolio in this browser, and fall back to a manual price only when live data cannot be reached.
+              Practice trades with live market prices when they are available, or let the built-in auto-trader scan broader stock baskets and execute signal-driven paper trades before you commit real money.
             </p>
           </div>
           <Button onClick={createPortfolio} className="pill-button pill-button-primary">
@@ -431,6 +431,34 @@ export default function TradingSimulator() {
             New Portfolio
           </Button>
         </div>
+
+        <Card className="premium-card border-0 bg-transparent shadow-none">
+          <CardContent className="grid gap-4 p-6 md:grid-cols-[1.3fr_0.7fr] md:p-8">
+            <div className="space-y-3">
+              <Badge variant="secondary" className="w-fit rounded-full px-3 py-1 text-[11px] uppercase tracking-[0.22em]">
+                Major differentiator
+              </Badge>
+              <h2 className="text-2xl font-semibold tracking-tight text-foreground">Automated paper trading is built directly into your simulator.</h2>
+              <p className="text-sm leading-6 text-muted-foreground md:text-base">
+                Instead of only logging manual practice trades, the simulator can now scan a wider universe, rotate through random baskets, and place virtual buy and sell trades from live signals so users can validate the strategy first.
+              </p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-3 md:grid-cols-1">
+              <div className="rounded-2xl border border-border/70 bg-background/40 p-4">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">Broader universe</p>
+                <p className="mt-2 text-lg font-semibold">25 stocks per auto-trade pool</p>
+              </div>
+              <div className="rounded-2xl border border-border/70 bg-background/40 p-4">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">Signal driven</p>
+                <p className="mt-2 text-lg font-semibold">Virtual buys and sells from live analysis</p>
+              </div>
+              <div className="rounded-2xl border border-border/70 bg-background/40 p-4">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">Why it matters</p>
+                <p className="mt-2 text-lg font-semibold">Test the system before risking capital</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {feedback && (
           <div className={`flex items-start gap-3 rounded-2xl border px-4 py-3 ${feedback.type === "success" ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-100" : "border-rose-500/30 bg-rose-500/10 text-rose-100"}`}>

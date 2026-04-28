@@ -767,3 +767,7 @@
 - [x] Add trade-history filters so users can separate manual trades from automated trades in the simulator
 - [x] Add tests covering risk profile selection, performance summary calculations, and trade-history filtering
 
+- [x] Highlight the auto-trade simulator capability prominently on the homepage as a major product differentiator
+- [x] Add a prominent hero-level message at the top of the simulator page explaining the automated paper-trading feature and why it matters
+- [x] Verify the revised homepage and simulator messaging makes the auto-trade feature easy to notice
+

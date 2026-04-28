@@ -43,9 +43,9 @@ const featureCards = [
   },
   {
     icon: BellRing,
-    title: "Alert-driven decision flow",
+    title: "Automated paper trading built in",
     description:
-      "Know when to review a stock, when momentum shifts, and when a setup deserves attention without staring at charts all day.",
+      "Let the simulator scan a broader stock universe, choose random baskets, and execute virtual trades from live buy and sell signals before you risk real capital.",
   },
 ];
 
@@ -53,7 +53,7 @@ const proofStats = [
   { label: "Trading 212 stocks covered", value: "212" },
   { label: "Signals generated each week", value: "12k+" },
   { label: "Average review time saved", value: "73%" },
-  { label: "Portfolio workflows supported", value: "Watchlists, alerts, simulator" },
+  { label: "Auto-trading simulator", value: "Random baskets, signal-driven paper trades" },
 ];
 
 const workflowSteps = [
@@ -72,8 +72,8 @@ const workflowSteps = [
   },
   {
     step: "03",
-    title: "Test ideas before you trade",
-    body: "Use the simulator and validation tools to practise, compare outcomes, and feel more confident before risking real money.",
+    title: "Let the simulator trade the idea first",
+    body: "Use the automated simulator to scan, select, and paper-trade ideas for you, then compare the results before risking real money.",
     action: "/simulator",
     link: { text: "Explore analysis tools", href: "/analysis" }
   },
@@ -174,12 +174,12 @@ export default function Home() {
                   <div className="space-y-3">
                     <p className="text-sm font-bold uppercase tracking-[0.24em] text-primary/85">Stock Predictor</p>
                     <h1 className="display-title max-w-5xl text-balance leading-tight">
-                      Trade With <span className="gradient-text">Conviction,</span><br className="hidden sm:block" /> Not Guesswork.
+                      Trade With <span className="gradient-text">Conviction,</span><br className="hidden sm:block" /> and Let Your Simulator Act First.
                     </h1>
                   </div>
 
                   <p className="lead-copy">
-                    AI-ranked trading signals, built for active traders. Cut your analysis time by 70%. Trade with confidence.
+                    AI-ranked trading signals plus an automated paper-trading simulator that scans wider stock baskets and executes virtual trades from buy and sell signals before you commit real money.
                   </p>
                 </div>
 
@@ -223,7 +223,7 @@ export default function Home() {
                   </div>
                   <div className="flex items-center gap-2">
                     <Check className="h-4 w-4 text-primary" />
-                    <span>Full access</span>
+                    <span>Auto-trading simulator included</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Check className="h-4 w-4 text-primary" />
@@ -278,9 +278,9 @@ export default function Home() {
                         </div>
                         <Badge className="rounded-full bg-primary/15 text-primary border-primary/30 text-sm md:text-xs px-3 py-2 md:px-2 md:py-1">Risk controlled</Badge>
                       </div>
-                      <p className="text-xs md:text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">Your Watchlist</p>
-                      <p className="mt-3 text-3xl md:text-3xl font-semibold tracking-tight">6 stocks tracked</p>
-                      <p className="mt-3 text-sm text-muted-foreground">Get alerts when your stocks show strong buy or sell signals.</p>
+                      <p className="text-xs md:text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">Auto Trader</p>
+                      <p className="mt-3 text-3xl md:text-3xl font-semibold tracking-tight">25-stock random basket</p>
+                      <p className="mt-3 text-sm text-muted-foreground">Run automated paper-trading rounds from live buy and sell signals to test the idea before you trade it yourself.</p>
                     </button>
                   </div>
 
@@ -292,12 +292,12 @@ export default function Home() {
                       </div>
                       <div className="grid grid-cols-2 gap-3 text-sm md:w-[18rem]">
                         <div className="rounded-2xl border border-border/70 bg-background/40 p-3">
-                          <p className="text-muted-foreground">Watchlist flow</p>
-                          <p className="mt-1 font-semibold">Guided and clear</p>
+                          <p className="text-muted-foreground">Auto-trade engine</p>
+                          <p className="mt-1 font-semibold">Signal-driven</p>
                         </div>
                         <div className="rounded-2xl border border-border/70 bg-background/40 p-3">
-                          <p className="text-muted-foreground">Signal review</p>
-                          <p className="mt-1 font-semibold">Prioritised</p>
+                          <p className="text-muted-foreground">Paper validation</p>
+                          <p className="mt-1 font-semibold">Before real capital</p>
                         </div>
                       </div>
                     </div>
