@@ -29,6 +29,16 @@ describe("client subscription access", () => {
     expect(getAutoTradingUpgradeMessage(user)).toContain("available on your account");
   });
 
+  it("grants admin accounts premium access for internal testing", () => {
+    const user = { role: "admin", subscriptionTier: "free", subscriptionStatus: "inactive" };
+
+    expect(hasActivePaidPlan(user)).toBe(true);
+    expect(canViewPremiumSignalDetails(user)).toBe(true);
+    expect(canUseAutoTrading(user)).toBe(true);
+    expect(getSignalUpgradeMessage(user)).toContain("active on your account");
+    expect(getAutoTradingUpgradeMessage(user)).toContain("available on your account");
+  });
+
   it("normalizes missing values to a locked state", () => {
     expect(hasActivePaidPlan(null)).toBe(false);
     expect(hasActivePaidPlan({})).toBe(false);

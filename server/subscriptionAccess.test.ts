@@ -16,4 +16,11 @@ describe("server subscription access", () => {
     expect(hasActivePaidPlan(user)).toBe(true);
     expect(() => assertAutoTradingAccess(user)).not.toThrow();
   });
+
+  it("allows admin accounts to bypass premium gating for internal testing", () => {
+    const user = { role: "admin", subscriptionTier: "free", subscriptionStatus: "inactive" };
+
+    expect(hasActivePaidPlan(user)).toBe(true);
+    expect(() => assertAutoTradingAccess(user)).not.toThrow();
+  });
 });

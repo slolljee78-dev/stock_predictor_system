@@ -1,7 +1,12 @@
 export type SubscriptionAwareUser = {
+  role?: string | null;
   subscriptionTier?: string | null;
   subscriptionStatus?: string | null;
 };
+
+export function isAdminUser(user?: SubscriptionAwareUser | null) {
+  return (user?.role ?? "").toLowerCase() === "admin";
+}
 
 export function normalizeSubscriptionTier(tier?: string | null) {
   return (tier ?? "free").toLowerCase();
@@ -14,6 +19,10 @@ export function normalizeSubscriptionStatus(status?: string | null) {
 export function hasActivePaidPlan(user?: SubscriptionAwareUser | null) {
   if (!user) {
     return false;
+  }
+
+  if (isAdminUser(user)) {
+    return true;
   }
 
   const tier = normalizeSubscriptionTier(user.subscriptionTier);

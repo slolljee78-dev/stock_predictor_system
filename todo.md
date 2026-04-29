@@ -785,3 +785,7 @@
 - [x] Fix the simulator auto-trader unlock button layout so it stays fully visible on mobile screens
 - [x] Verify the updated pricing copy and mobile simulator layout after the fix
 
+- [x] Add an admin bypass so admin accounts can access premium signal detail and auto-trading features for internal testing
+- [x] Update shared subscription gating helpers so admin users are treated as premium-access testers without changing normal user plan rules
+- [x] Add tests covering admin access to premium-gated dashboard and simulator features
+
