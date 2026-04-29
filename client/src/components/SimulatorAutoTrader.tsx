@@ -182,7 +182,7 @@ export function SimulatorAutoTrader({ portfolio, onApplyTrades }: SimulatorAutoT
   return (
     <Card className="premium-card border-0 bg-transparent shadow-none lg:col-span-2">
       <CardHeader>
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <CardTitle className="text-xl font-semibold tracking-tight">Auto Trader</CardTitle>
@@ -194,7 +194,7 @@ export function SimulatorAutoTrader({ portfolio, onApplyTrades }: SimulatorAutoT
               Let the simulator scan a broader random stock basket, then open or close virtual positions from live buy and sell signals while keeping the manual simulator available.
             </CardDescription>
           </div>
-          <div className="flex gap-2">
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:justify-end">
             {autoTradingEnabled ? (
               <>
                 <Button
@@ -222,7 +222,7 @@ export function SimulatorAutoTrader({ portfolio, onApplyTrades }: SimulatorAutoT
                 </Button>
               </>
             ) : (
-              <Button type="button" onClick={() => setLocation("/pricing")}>
+              <Button type="button" onClick={() => setLocation("/pricing")} className="w-full sm:w-auto">
                 <Lock className="mr-2 h-4 w-4" />
                 Unlock auto trading
               </Button>

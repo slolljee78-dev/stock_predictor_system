@@ -22,7 +22,7 @@ import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { navigateToDashboardMenu, navigateToDashboardReturn } from "@/lib/navigation";
 
-const PRICING_TIERS: Array<{
+export const PRICING_TIERS: Array<{
   name: string;
   price: number;
   currency: string;
@@ -72,7 +72,7 @@ const PRICING_TIERS: Array<{
       { name: "Priority support", included: true },
       { name: "Simulator access", included: true },
       { name: "Validation workflow", included: true },
-      { name: "Exports and API access", included: false },
+      { name: "Auto-trading access", included: true },
     ],
   },
   {

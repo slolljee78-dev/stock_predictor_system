@@ -781,3 +781,7 @@
 - [x] Add a free-preview usage meter and upgrade messaging for limited signal access
 - [x] Verify the new locked-state conversion UX and cover it with tests
 
+- [x] Remove the export and API access mention from the Pro plan feature list
+- [x] Fix the simulator auto-trader unlock button layout so it stays fully visible on mobile screens
+- [x] Verify the updated pricing copy and mobile simulator layout after the fix
+
