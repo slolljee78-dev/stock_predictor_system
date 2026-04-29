@@ -800,3 +800,7 @@
 - [x] Audit all admin-only testing toggle entry points to ensure non-admin subscribers never see them
 - [x] Add an explicit non-admin visibility safeguard for admin test-mode UI and related messaging across dashboard, simulator, and Alert Preferences
 - [x] Add regression tests confirming non-admin subscribers do not see admin-only testing controls
+- [x] Add more vertical gap between the overview banner and the AI trading workspace header on mobile dashboard
+- [x] Fix the admin test-mode panel horizontal offset on mobile so it aligns with the main dashboard content column
+- [x] Fix the watchlist card horizontal offset on mobile so it aligns with the main dashboard content column
+- [x] Add regression coverage for the mobile dashboard spacing and alignment helpers where practical

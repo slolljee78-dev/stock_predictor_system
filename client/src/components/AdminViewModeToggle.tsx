@@ -13,10 +13,10 @@ interface AdminViewModeToggleProps {
 
 export function AdminViewModeToggle({ viewMode, description, onChange }: AdminViewModeToggleProps) {
   return (
-    <div className="rounded-2xl border border-primary/25 bg-primary/10 p-4 sm:p-5">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
+    <div className="w-full max-w-full overflow-hidden rounded-2xl border border-primary/25 bg-primary/10 p-4 sm:p-5">
+      <div className="flex min-w-0 flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="min-w-0 space-y-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Badge variant="secondary" className="rounded-full px-3 py-1 text-[11px] uppercase tracking-[0.2em]">
               <ShieldCheck className="mr-1 h-3.5 w-3.5" />
               Admin test mode
@@ -26,12 +26,12 @@ export function AdminViewModeToggle({ viewMode, description, onChange }: AdminVi
               {viewMode === "free" ? "Free view" : "Premium view"}
             </Badge>
           </div>
-          <p className="text-sm text-foreground">
+          <p className="max-w-full text-sm text-foreground">
             Switch this browser between the locked free-plan experience and the unlocked premium admin view.
           </p>
           <p className="text-xs leading-5 text-muted-foreground">{description}</p>
         </div>
-        <div className="grid w-full gap-2 sm:grid-cols-2 lg:w-auto lg:min-w-[320px]">
+        <div className="grid w-full min-w-0 gap-2 sm:grid-cols-2 lg:w-auto lg:min-w-[320px]">
           <Button
             type="button"
             variant={viewMode === "premium" ? "default" : "outline"}

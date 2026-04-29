@@ -406,7 +406,7 @@ export default function Dashboard() {
   return (
     <DashboardLayout>
       <div className="space-y-8 lg:space-y-10">
-        <section data-section="overview" className="dashboard-frame relative overflow-hidden px-4 py-0 sm:px-6 sm:py-0 md:px-8 md:py-0">
+        <section data-section="overview" className="dashboard-frame relative overflow-hidden px-4 py-4 sm:px-6 sm:py-5 md:px-8 md:py-6">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(84,151,255,0.20),transparent_30%),radial-gradient(circle_at_bottom_left,rgba(88,212,255,0.10),transparent_22%)]" />
           <div className="relative grid gap-6 xl:grid-cols-[1.1fr_0.9fr] xl:items-end">
             <div className="space-y-3">
@@ -839,10 +839,10 @@ function MetricCard({
     <button
       type="button"
       onClick={onClick}
-      className="metric-card cursor-pointer hover:shadow-lg hover:shadow-primary/20 transition-all duration-200 text-left"
+      className="metric-card w-full min-w-0 cursor-pointer text-left transition-all duration-200 hover:shadow-lg hover:shadow-primary/20"
     >
       <div className="flex items-center justify-between gap-4">
-        <div>
+        <div className="min-w-0 flex-1">
           <p className="metric-label">{label}</p>
           <p className="metric-value">{value}</p>
           {trend && trendPercent && (
