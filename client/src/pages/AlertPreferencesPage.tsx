@@ -1,15 +1,27 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useState } from "react";
+import { useLocation } from "wouter";
+import { Bell, Mail, Smartphone, Clock, ArrowLeft, Home, SlidersHorizontal } from "lucide-react";
+
+import { useAuth } from "@/_core/hooks/useAuth";
+import { AdminViewModeToggle } from "@/components/AdminViewModeToggle";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Bell, Mail, Smartphone, Clock, ArrowLeft, Home } from "lucide-react";
-import { useState } from "react";
-import { useLocation } from "wouter";
+import { useAdminViewMode } from "@/lib/adminViewMode";
 import { DASHBOARD_HOME_PATH, navigateToDashboardMenu } from "@/lib/navigation";
 
 export default function AlertPreferencesPage() {
   const [, setLocation] = useLocation();
+  const { user } = useAuth();
+  const {
+    showAdminViewModeToggle,
+    viewMode,
+    setViewMode,
+    description: adminViewModeDescription,
+  } = useAdminViewMode(user);
+
   const [buyThreshold, setBuyThreshold] = useState([60]);
   const [sellThreshold, setSellThreshold] = useState([60]);
   const [emailEnabled, setEmailEnabled] = useState(true);
@@ -19,7 +31,6 @@ export default function AlertPreferencesPage() {
   const [quietHourEnd, setQuietHourEnd] = useState("08:00");
 
   const handleSave = () => {
-    // TODO: Implement save functionality with tRPC mutation
     console.log({
       buyThreshold: buyThreshold[0],
       sellThreshold: sellThreshold[0],
@@ -28,37 +39,58 @@ export default function AlertPreferencesPage() {
       inAppEnabled,
       quietHourStart,
       quietHourEnd,
+      adminViewMode: viewMode,
     });
   };
 
   return (
     <div className="space-y-6 px-1 sm:px-0">
-      <div className="flex items-center justify-between gap-3 mb-8 pt-2">
+      <div className="mb-8 flex items-center justify-between gap-3 pt-2">
         <button
           onClick={() => navigateToDashboardMenu(setLocation)}
-          className="flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:text-white transition-colors hover:bg-slate-700 rounded-lg"
+          className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-300 transition-colors hover:bg-slate-700 hover:text-white"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to menu
         </button>
         <button
           onClick={() => setLocation(DASHBOARD_HOME_PATH)}
-          className="flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-600 text-white hover:bg-cyan-700 transition-colors text-sm font-medium"
+          className="flex items-center gap-2 rounded-full bg-cyan-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-cyan-700"
         >
           <Home className="h-4 w-4" />
           Back to dashboard
         </button>
       </div>
 
-      <div>
-        <h1 className="text-4xl font-bold gradient-text mb-2">Alert Preferences</h1>
+      <div className="space-y-2">
+        <h1 className="gradient-text text-4xl font-bold">Alert Preferences</h1>
         <p className="text-muted-foreground">
-          Customize how you receive trading signal alerts
+          Customize how you receive trading signal alerts and, for admin testing, switch this browser between free and premium product views.
         </p>
       </div>
 
+      {showAdminViewModeToggle && (
+        <Card className="border-primary/20 bg-primary/5">
+          <CardHeader className="space-y-3">
+            <div className="flex items-center gap-2 text-primary">
+              <SlidersHorizontal className="h-5 w-5" />
+              <CardTitle className="text-lg">Admin test mode</CardTitle>
+            </div>
+            <CardDescription>
+              This settings-level control changes the premium access view for this browser only. It does not change real subscription records.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <AdminViewModeToggle
+              viewMode={viewMode}
+              description={adminViewModeDescription}
+              onChange={setViewMode}
+            />
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid gap-6 md:grid-cols-2">
-        {/* Confidence Thresholds */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -108,7 +140,6 @@ export default function AlertPreferencesPage() {
           </CardContent>
         </Card>
 
-        {/* Notification Channels */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -120,26 +151,26 @@ export default function AlertPreferencesPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center justify-between p-3 border rounded-lg">
+            <div className="flex items-center justify-between rounded-lg border p-3">
               <div className="flex items-center gap-3">
                 <Mail className="h-5 w-5 text-muted-foreground" />
-                <Label className="text-base font-medium cursor-pointer">Email Alerts</Label>
+                <Label className="cursor-pointer text-base font-medium">Email Alerts</Label>
               </div>
               <Switch checked={emailEnabled} onCheckedChange={setEmailEnabled} />
             </div>
 
-            <div className="flex items-center justify-between p-3 border rounded-lg">
+            <div className="flex items-center justify-between rounded-lg border p-3">
               <div className="flex items-center gap-3">
                 <Bell className="h-5 w-5 text-muted-foreground" />
-                <Label className="text-base font-medium cursor-pointer">Push Notifications</Label>
+                <Label className="cursor-pointer text-base font-medium">Push Notifications</Label>
               </div>
               <Switch checked={pushEnabled} onCheckedChange={setPushEnabled} />
             </div>
 
-            <div className="flex items-center justify-between p-3 border rounded-lg">
+            <div className="flex items-center justify-between rounded-lg border p-3">
               <div className="flex items-center gap-3">
                 <Smartphone className="h-5 w-5 text-muted-foreground" />
-                <Label className="text-base font-medium cursor-pointer">In-App Alerts</Label>
+                <Label className="cursor-pointer text-base font-medium">In-App Alerts</Label>
               </div>
               <Switch checked={inAppEnabled} onCheckedChange={setInAppEnabled} />
             </div>
@@ -147,7 +178,6 @@ export default function AlertPreferencesPage() {
         </Card>
       </div>
 
-      {/* Quiet Hours */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -169,7 +199,7 @@ export default function AlertPreferencesPage() {
                 type="time"
                 value={quietHourStart}
                 onChange={(e) => setQuietHourStart(e.target.value)}
-                className="w-full px-3 py-2 border rounded-md bg-background"
+                className="w-full rounded-md border bg-background px-3 py-2"
               />
               <p className="text-xs text-muted-foreground">
                 Alerts will pause at this time
@@ -185,7 +215,7 @@ export default function AlertPreferencesPage() {
                 type="time"
                 value={quietHourEnd}
                 onChange={(e) => setQuietHourEnd(e.target.value)}
-                className="w-full px-3 py-2 border rounded-md bg-background"
+                className="w-full rounded-md border bg-background px-3 py-2"
               />
               <p className="text-xs text-muted-foreground">
                 Alerts will resume at this time
@@ -195,7 +225,6 @@ export default function AlertPreferencesPage() {
         </CardContent>
       </Card>
 
-      {/* Save Button */}
       <div className="flex justify-end gap-3">
         <Button variant="outline">Cancel</Button>
         <Button onClick={handleSave}>Save Preferences</Button>

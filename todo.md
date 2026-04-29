@@ -793,3 +793,7 @@
 - [x] Apply the admin view-mode toggle to premium-gated dashboard and simulator UI surfaces
 - [x] Add tests covering admin view-mode overrides for premium access messaging and locked states
 
+- [x] Add a settings-level admin switch for free-versus-paid testing mode
+- [x] Connect the settings-level switch to the shared admin premium-view logic used across dashboard and simulator surfaces
+- [x] Add tests covering the settings-level admin view switch behavior
+

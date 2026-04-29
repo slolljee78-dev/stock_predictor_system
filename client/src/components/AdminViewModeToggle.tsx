@@ -1,3 +1,4 @@
+import React from "react";
 import { Eye, ShieldCheck } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
