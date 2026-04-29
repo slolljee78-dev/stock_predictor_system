@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { AdminViewModeToggle } from "@/components/AdminViewModeToggle";
 import {
   Card,
   CardContent,
@@ -44,6 +45,7 @@ import {
   canViewPremiumSignalDetails,
   getSignalUpgradeMessage,
 } from "@/lib/subscriptionAccess";
+import { useAdminViewMode } from "@/lib/adminViewMode";
 import {
   getBlurredPreviewText,
   getPreviewUsage,
@@ -78,6 +80,13 @@ const quickSearches = ["AAPL", "MSFT", "NVDA", "GOOGL", "TSLA", "AMZN"];
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const {
+    effectiveUser,
+    showAdminViewModeToggle,
+    viewMode,
+    setViewMode,
+    description: adminViewModeDescription,
+  } = useAdminViewMode(user);
   const [, setLocation] = useLocation();
   const utils = trpc.useUtils();
   const dashboardGateAction = getPublicPrimaryAction("visitor", "dashboard_gate");
@@ -136,8 +145,8 @@ export default function Dashboard() {
   const watchlist = watchlistQuery.data ?? [];
   const signals = signalsQuery.data ?? [];
   const watchlistStatuses = watchlistStatusesQuery.data ?? [];
-  const hasPremiumSignalAccess = canViewPremiumSignalDetails(user);
-  const signalUpgradeMessage = getSignalUpgradeMessage(user);
+  const hasPremiumSignalAccess = canViewPremiumSignalDetails(effectiveUser);
+  const signalUpgradeMessage = getSignalUpgradeMessage(effectiveUser);
   const premiumPreviewUsage = getPreviewUsage(watchlist.length, 3);
   const isRefreshingWatchlist = isWatchlistRefreshing([
     watchlistQuery.isFetching,
@@ -412,6 +421,15 @@ export default function Dashboard() {
                 <p className="max-w-3xl text-sm text-muted-foreground md:text-base">
                   Review your watchlist, prioritise the strongest buy and sell setups, and move from idea to detail without the clutter of a basic dashboard.
                 </p>
+                {showAdminViewModeToggle ? (
+                  <div className="max-w-3xl pt-2">
+                    <AdminViewModeToggle
+                      viewMode={viewMode}
+                      description={adminViewModeDescription}
+                      onChange={setViewMode}
+                    />
+                  </div>
+                ) : null}
               </div>
             </div>
 

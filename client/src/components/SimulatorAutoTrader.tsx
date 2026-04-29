@@ -3,8 +3,11 @@ import { Bot, Pause, Play, RefreshCw, Shuffle, Sparkles, Lock } from "lucide-rea
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/_core/hooks/useAuth";
-import { canUseAutoTrading, getAutoTradingUpgradeMessage } from "@/lib/subscriptionAccess";
+import {
+  canUseAutoTrading,
+  getAutoTradingUpgradeMessage,
+  type SubscriptionAwareUser,
+} from "@/lib/subscriptionAccess";
 import { getPreviewUsage, LOCKED_FEATURE_PLAN_ROWS } from "@/lib/upgradeConversion";
 import {
   Card,
@@ -50,6 +53,7 @@ interface AutoTradingRoundResponse {
 
 interface SimulatorAutoTraderProps {
   portfolio: SimulatorPortfolio;
+  accessUser?: SubscriptionAwareUser | null;
   onApplyTrades: (trades: AutoExecutedTrade[], summaryMessage: string) => void;
 }
 
@@ -69,11 +73,10 @@ function formatLastRun(value: string | null) {
   return `Last run ${parsed.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
 }
 
-export function SimulatorAutoTrader({ portfolio, onApplyTrades }: SimulatorAutoTraderProps) {
-  const { user } = useAuth();
+export function SimulatorAutoTrader({ portfolio, accessUser, onApplyTrades }: SimulatorAutoTraderProps) {
   const [, setLocation] = useLocation();
-  const autoTradingEnabled = canUseAutoTrading(user);
-  const autoTradingUpgradeMessage = getAutoTradingUpgradeMessage(user);
+  const autoTradingEnabled = canUseAutoTrading(accessUser);
+  const autoTradingUpgradeMessage = getAutoTradingUpgradeMessage(accessUser);
   const universeQuery = trpc.simulator.getAutoTradingUniverse.useQuery();
   const autoRoundMutation = trpc.simulator.runAutoTradingRound.useMutation();
 

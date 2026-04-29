@@ -789,3 +789,7 @@
 - [x] Update shared subscription gating helpers so admin users are treated as premium-access testers without changing normal user plan rules
 - [x] Add tests covering admin access to premium-gated dashboard and simulator features
 
+- [x] Add an admin-only toggle to simulate free versus paid product views without changing real subscription data
+- [x] Apply the admin view-mode toggle to premium-gated dashboard and simulator UI surfaces
+- [x] Add tests covering admin view-mode overrides for premium access messaging and locked states
+

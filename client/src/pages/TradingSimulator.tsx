@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { ArrowLeft, AlertCircle, BarChart3, CheckCircle2, DollarSign, History, House, Plus, Target, TrendingDown, TrendingUp } from "lucide-react";
 
 import { SimulatorAutoTrader } from "@/components/SimulatorAutoTrader";
+import { AdminViewModeToggle } from "@/components/AdminViewModeToggle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { canUseAutoTrading } from "@/lib/subscriptionAccess";
+import { useAdminViewMode } from "@/lib/adminViewMode";
 import { DASHBOARD_HOME_PATH, navigateToDashboardMenu } from "@/lib/navigation";
 import { applyAutoExecutedTrades, type AutoExecutedTrade } from "@/lib/simulatorAutoTrading";
 import {
@@ -83,10 +85,17 @@ export default function TradingSimulator() {
   const [hasManualPriceOverride, setHasManualPriceOverride] = useState(false);
   const [tradeHistoryFilter, setTradeHistoryFilter] = useState<TradeHistoryFilter>("all");
   const { user } = useAuth();
+  const {
+    effectiveUser,
+    showAdminViewModeToggle,
+    viewMode,
+    setViewMode,
+    description: adminViewModeDescription,
+  } = useAdminViewMode(user);
   const [, setLocation] = useLocation();
 
   const selectedPortfolio = useMemo(() => getSelectedPortfolio(simulatorState), [simulatorState]);
-  const autoTradingEnabled = canUseAutoTrading(user);
+  const autoTradingEnabled = canUseAutoTrading(effectiveUser);
   const positions = selectedPortfolio.positions;
   const trades = selectedPortfolio.trades;
   const normalizedTicker = tradeForm.ticker.trim().toUpperCase();
@@ -423,14 +432,24 @@ export default function TradingSimulator() {
           </button>
         </div>
 
-        <div className="flex items-center justify-between gap-6">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-3">
             <h1 className="text-4xl font-bold gradient-text">Trading Simulator</h1>
-            <p className="text-muted-foreground max-w-2xl">
-              Practice trades with live market prices when they are available, or let the built-in auto-trader scan broader stock baskets and execute signal-driven paper trades before you commit real money.
-            </p>
-          </div>
-          <Button onClick={createPortfolio} className="pill-button pill-button-primary">
+                <p className="text-muted-foreground max-w-2xl">
+                  Practice trades with live market prices when they are available, or let the built-in auto-trader scan broader stock baskets and execute signal-driven paper trades before you commit real money.
+                </p>
+                {showAdminViewModeToggle ? (
+                  <div className="max-w-3xl pt-2">
+                    <AdminViewModeToggle
+                      viewMode={viewMode}
+                      description={adminViewModeDescription}
+                      onChange={setViewMode}
+                    />
+                  </div>
+                ) : null}
+              </div>
+
+          <Button onClick={createPortfolio} className="pill-button pill-button-primary w-full sm:w-auto lg:self-start">
             <Plus className="h-4 w-4 mr-2" />
             New Portfolio
           </Button>
@@ -684,6 +703,7 @@ export default function TradingSimulator() {
 
           <SimulatorAutoTrader
             portfolio={selectedPortfolio}
+            accessUser={effectiveUser}
             onApplyTrades={(executedTrades, summaryMessage) => {
               void handleAutoTradesApplied(executedTrades, summaryMessage);
             }}
