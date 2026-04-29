@@ -797,3 +797,6 @@
 - [x] Connect the settings-level switch to the shared admin premium-view logic used across dashboard and simulator surfaces
 - [x] Add tests covering the settings-level admin view switch behavior
 
+- [x] Audit all admin-only testing toggle entry points to ensure non-admin subscribers never see them
+- [x] Add an explicit non-admin visibility safeguard for admin test-mode UI and related messaging across dashboard, simulator, and Alert Preferences
+- [x] Add regression tests confirming non-admin subscribers do not see admin-only testing controls

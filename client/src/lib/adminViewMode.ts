@@ -47,9 +47,16 @@ export function getAdminViewModeDescription(mode: AdminViewMode) {
 export function useAdminViewMode(user?: SubscriptionAwareUser | null) {
   const [viewMode, setViewMode] = useState<AdminViewMode>(() => getStoredAdminViewMode());
   const isAdmin = isAdminUser(user);
+  const resolvedViewMode: AdminViewMode = isAdmin ? viewMode : "premium";
 
   useEffect(() => {
-    if (!isAdmin || typeof window === "undefined") {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    if (!isAdmin) {
+      window.localStorage.removeItem(ADMIN_VIEW_MODE_STORAGE_KEY);
+      setViewMode("premium");
       return;
     }
 
@@ -61,19 +68,19 @@ export function useAdminViewMode(user?: SubscriptionAwareUser | null) {
       return;
     }
 
-    window.localStorage.setItem(ADMIN_VIEW_MODE_STORAGE_KEY, viewMode);
-  }, [isAdmin, viewMode]);
+    window.localStorage.setItem(ADMIN_VIEW_MODE_STORAGE_KEY, resolvedViewMode);
+  }, [isAdmin, resolvedViewMode]);
 
   const effectiveUser = useMemo(
-    () => resolveAccessUserForAdminViewMode(user, viewMode),
-    [user, viewMode],
+    () => resolveAccessUserForAdminViewMode(user, resolvedViewMode),
+    [user, resolvedViewMode],
   );
 
   return {
     effectiveUser,
     showAdminViewModeToggle: isAdmin,
-    viewMode,
+    viewMode: resolvedViewMode,
     setViewMode,
-    description: getAdminViewModeDescription(viewMode),
+    description: isAdmin ? getAdminViewModeDescription(resolvedViewMode) : "",
   };
 }
