@@ -11,6 +11,7 @@ import {
   userPreferences,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
+import { isStoredSignalActionable } from './actionableStoredSignals';
 
 type CuratedStock = {
   ticker: string;
@@ -411,6 +412,9 @@ export async function getActiveSignalsForUser(userId: number) {
         confidenceScore: signals.confidenceScore,
         priceAtSignal: signals.priceAtSignal,
         createdAt: signals.createdAt,
+        minConfidenceThreshold: watchlists.minConfidenceThreshold,
+        alertOnBuy: watchlists.alertOnBuy,
+        alertOnSell: watchlists.alertOnSell,
       })
       .from(signals)
       .innerJoin(stocks, eq(signals.stockId, stocks.id))
@@ -423,8 +427,9 @@ export async function getActiveSignalsForUser(userId: number) {
       )
       .orderBy(signals.createdAt);
     
-    // Return real signals from database
-    return results;
+    return results
+      .filter((signal) => isStoredSignalActionable(signal))
+      .map(({ minConfidenceThreshold, alertOnBuy, alertOnSell, ...signal }) => signal);
   } catch (error) {
     console.error('Error fetching active signals:', error);
     // Return empty array on error instead of mock data

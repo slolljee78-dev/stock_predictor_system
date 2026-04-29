@@ -48,11 +48,11 @@ export function generateRealtimeSignal(marketData: MarketDataPoint): RealtimeSig
       triggerIndicators.push('RSI Overbought');
       totalConfidence += 40;
     } else if (indicators.rsi14 < 50) {
-      signals.push('buy');
+      signals.push('sell');
       triggerIndicators.push('RSI Downtrend');
       totalConfidence += 20;
     } else {
-      signals.push('sell');
+      signals.push('buy');
       triggerIndicators.push('RSI Uptrend');
       totalConfidence += 20;
     }

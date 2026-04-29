@@ -804,3 +804,6 @@
 - [x] Fix the admin test-mode panel horizontal offset on mobile so it aligns with the main dashboard content column
 - [x] Fix the watchlist card horizontal offset on mobile so it aligns with the main dashboard content column
 - [x] Add regression coverage for the mobile dashboard spacing and alignment helpers where practical
+- [x] Investigate whether dashboard signal generation is incorrectly producing sell-only outcomes
+- [x] Verify whether buy-signal generation logic, stored data, or dashboard aggregation is suppressing buy counts
+- [x] Fix and test the buy-versus-sell signal behavior if the sell-only pattern is caused by a defect
