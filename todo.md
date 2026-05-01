@@ -807,3 +807,6 @@
 - [x] Investigate whether dashboard signal generation is incorrectly producing sell-only outcomes
 - [x] Verify whether buy-signal generation logic, stored data, or dashboard aggregation is suppressing buy counts
 - [x] Fix and test the buy-versus-sell signal behavior if the sell-only pattern is caused by a defect
+- [x] Investigate why the auto-trade function may be leaving accounts with no executed trades over multiple days
+- [x] Verify whether auto-trade scheduling, signal eligibility, held-position constraints, or execution persistence is blocking trades unexpectedly
+- [x] Fix and test the auto-trade flow if the no-trades behavior is caused by a defect

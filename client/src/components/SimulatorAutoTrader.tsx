@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Bot, Pause, Play, RefreshCw, Shuffle, Sparkles, Lock } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -194,7 +194,7 @@ export function SimulatorAutoTrader({ portfolio, accessUser, onApplyTrades }: Si
               </Badge>
             </div>
             <CardDescription>
-              Let the simulator scan a broader random stock basket, then open or close virtual positions from live buy and sell signals while keeping the manual simulator available.
+              Let the simulator scan a broader random stock basket, then open or close virtual positions from live buy and sell signals while keeping the manual simulator available. Automated rounds only continue while this dashboard tab stays open.
             </CardDescription>
           </div>
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:justify-end">
@@ -345,6 +345,13 @@ export function SimulatorAutoTrader({ portfolio, accessUser, onApplyTrades }: Si
 
         </div>
 
+        <div className="rounded-2xl border border-amber-500/25 bg-amber-500/10 p-4">
+          <p className="text-sm font-semibold text-foreground">Auto mode currently runs in the open browser tab only</p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            If you close the simulator, switch apps, or leave the tab suspended in the background, automated rounds can pause. Use <strong>Run now</strong> for an immediate pass, and keep this page open while testing the feature.
+          </p>
+        </div>
+
         <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
           <div>
             <label className="text-sm font-medium">Auto-run interval (seconds)</label>
@@ -374,11 +381,11 @@ export function SimulatorAutoTrader({ portfolio, accessUser, onApplyTrades }: Si
             <div>
               <p className="text-sm font-medium text-foreground">{selectedUniverseText}</p>
               <p className="text-sm text-muted-foreground">{formatLastRun(lastRunAt)}</p>
-              <p className="text-xs text-muted-foreground">Each round scans a rotating batch so the basket can be larger without overwhelming the live market-data providers.</p>
+              <p className="text-xs text-muted-foreground">Each round scans a rotating batch so the basket can be larger without overwhelming the live market-data providers. Background mobile tabs may pause these browser timers.</p>
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Bot className="h-4 w-4" />
-              {autoTradingEnabled ? (autoEnabled ? "Auto mode is actively scanning" : "Auto mode is idle") : "Upgrade required for auto mode"}
+              {autoTradingEnabled ? (autoEnabled ? "Auto mode is scanning while this tab stays open" : "Auto mode is idle") : "Upgrade required for auto mode"}
             </div>
           </div>
 
