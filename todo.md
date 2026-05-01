@@ -810,3 +810,7 @@
 - [x] Investigate why the auto-trade function may be leaving accounts with no executed trades over multiple days
 - [x] Verify whether auto-trade scheduling, signal eligibility, held-position constraints, or execution persistence is blocking trades unexpectedly
 - [x] Fix and test the auto-trade flow if the no-trades behavior is caused by a defect
+- [x] Persist simulator portfolios server-side for timed 1-day, 3-day, and 7-day auto-trading runs
+- [x] Add server procedures and a scheduled processing endpoint for recurring simulator auto-trading rounds
+- [x] Redesign the simulator auto-trader UI to start, monitor, and stop server-backed timed runs alongside browser-only auto mode
+- [x] Add regression coverage for the timed auto-trader disclosure and controls

@@ -9,6 +9,9 @@ import { SimulatorAutoTrader } from "./SimulatorAutoTrader";
 const useLocationMock = vi.fn(() => ["/dashboard", vi.fn()]);
 const getAutoTradingUniverseUseQueryMock = vi.fn(() => ({ data: [], isLoading: false }));
 const runAutoTradingRoundUseMutationMock = vi.fn(() => ({ mutateAsync: vi.fn(), isPending: false }));
+const getScheduledAutoTradingRunUseQueryMock = vi.fn(() => ({ data: null, isLoading: false, refetch: vi.fn() }));
+const startScheduledAutoTradingRunUseMutationMock = vi.fn(() => ({ mutateAsync: vi.fn(), isPending: false }));
+const cancelScheduledAutoTradingRunUseMutationMock = vi.fn(() => ({ mutateAsync: vi.fn(), isPending: false }));
 
 vi.mock("wouter", () => ({
   useLocation: () => useLocationMock(),
@@ -19,6 +22,9 @@ vi.mock("@/lib/trpc", () => ({
     simulator: {
       getAutoTradingUniverse: { useQuery: () => getAutoTradingUniverseUseQueryMock() },
       runAutoTradingRound: { useMutation: () => runAutoTradingRoundUseMutationMock() },
+      getScheduledAutoTradingRun: { useQuery: () => getScheduledAutoTradingRunUseQueryMock() },
+      startScheduledAutoTradingRun: { useMutation: () => startScheduledAutoTradingRunUseMutationMock() },
+      cancelScheduledAutoTradingRun: { useMutation: () => cancelScheduledAutoTradingRunUseMutationMock() },
     },
   },
 }));
@@ -28,6 +34,9 @@ describe("SimulatorAutoTrader disclosure", () => {
     useLocationMock.mockReturnValue(["/dashboard", vi.fn()]);
     getAutoTradingUniverseUseQueryMock.mockReturnValue({ data: [], isLoading: false });
     runAutoTradingRoundUseMutationMock.mockReturnValue({ mutateAsync: vi.fn(), isPending: false });
+    getScheduledAutoTradingRunUseQueryMock.mockReturnValue({ data: null, isLoading: false, refetch: vi.fn() });
+    startScheduledAutoTradingRunUseMutationMock.mockReturnValue({ mutateAsync: vi.fn(), isPending: false });
+    cancelScheduledAutoTradingRunUseMutationMock.mockReturnValue({ mutateAsync: vi.fn(), isPending: false });
   });
 
   afterEach(() => {
@@ -48,12 +57,14 @@ describe("SimulatorAutoTrader disclosure", () => {
           positions: [],
           trades: [],
         }}
-        accessUser={{ role: "user", subscriptionTier: "pro" }}
+        accessUser={{ role: "user", subscriptionTier: "pro", subscriptionStatus: "active" }}
         onApplyTrades={() => undefined}
       />,
     );
 
-    expect(screen.getByText(/automated rounds only continue while this dashboard tab stays open/i)).toBeTruthy();
+    expect(screen.getByText(/timed auto-trading run/i)).toBeTruthy();
+    expect(screen.getByText(/server and let it execute one automated round per day/i)).toBeTruthy();
+    expect(screen.getByText(/start timed run/i)).toBeTruthy();
     expect(screen.getByText(/auto mode currently runs in the open browser tab only/i)).toBeTruthy();
     expect(screen.getByText(/background mobile tabs may pause these browser timers/i)).toBeTruthy();
   });

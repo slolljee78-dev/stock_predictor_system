@@ -40,6 +40,18 @@ async function startServer() {
   registerOAuthRoutes(app);
   // Stripe checkout endpoint
   app.use("/api/stripe", stripeCheckoutRouter);
+
+  app.post("/api/scheduled/simulator-auto-trading", async (_req, res) => {
+    try {
+      const { processScheduledSimulatorRuns } = await import("../scheduledSimulatorRuns");
+      const processed = await processScheduledSimulatorRuns();
+      res.json({ success: true, processedRuns: processed.length });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to process scheduled simulator runs";
+      res.status(500).json({ success: false, error: message });
+    }
+  });
+
   // tRPC API
   app.use(
     "/api/trpc",

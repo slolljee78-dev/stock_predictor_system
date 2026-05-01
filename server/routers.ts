@@ -362,150 +362,68 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         try {
           const { assertAutoTradingAccess } = await import('./subscriptionAccess');
+          const { executeAutoTradingRound } = await import('./autoTradingRoundService');
           assertAutoTradingAccess(ctx.user);
-          const {
-            DEFAULT_AUTO_TRADING_MAX_OPEN_POSITIONS,
-            DEFAULT_AUTO_TRADING_MAX_TRADES_PER_ROUND,
-            DEFAULT_AUTO_TRADING_MIN_CONFIDENCE,
-            DEFAULT_AUTO_TRADING_POSITION_SIZE_PERCENT,
-            DEFAULT_AUTO_TRADING_UNIVERSE_SIZE,
-            planAutoTradingRound,
-            selectAutoTradingUniverse,
-          } = await import('./simulatorAutoTrading');
-          const { getTradingStocks } = await import('./stockDataFetcher');
-          const { fetchMultipleMarketData } = await import('./realtimeMarketData');
-          const { generateRealtimeSignal } = await import('./realtimeSignalGenerator');
-          const { executeLiveTradeWithMarketPrice } = await import('./liveSimulator');
-
-          const stocks = getTradingStocks();
-          const desiredUniverseSize = typeof (input as any).desiredUniverseSize === 'number'
-            ? (input as any).desiredUniverseSize
-            : DEFAULT_AUTO_TRADING_UNIVERSE_SIZE;
-          const selectedUniverse = selectAutoTradingUniverse(
-            stocks,
-            desiredUniverseSize,
-            Array.isArray((input as any).universeTickers) ? (input as any).universeTickers : [],
-          );
-
-          const positions = Array.isArray((input as any).positions) ? (input as any).positions : [];
-          const scanBatchSize = typeof (input as any).scanBatchSize === 'number'
-            ? Math.max(1, Math.min((input as any).scanBatchSize, selectedUniverse.length || 1))
-            : Math.min(4, selectedUniverse.length || 1);
-          const scanOffset = typeof (input as any).scanOffset === 'number' ? (input as any).scanOffset : 0;
-          const scanTargets = selectedUniverse.length > 0
-            ? Array.from({ length: scanBatchSize }, (_, index) => selectedUniverse[(scanOffset + index) % selectedUniverse.length])
-            : [];
-          const trackedTickers = Array.from(new Set([
-            ...scanTargets.map((stock) => stock.ticker),
-            ...positions.map((position: { ticker: string }) => position.ticker),
-          ]));
-
-          const marketDataMap = await fetchMultipleMarketData(trackedTickers);
-          const universeByTicker = new Map(selectedUniverse.map((stock) => [stock.ticker.toUpperCase(), stock]));
-
-          const signals = trackedTickers.flatMap((ticker) => {
-            const marketData = marketDataMap.get(ticker);
-            if (!marketData) {
-              return [];
-            }
-
-            const stock = universeByTicker.get(ticker.toUpperCase()) ?? stocks.find((item) => item.ticker === ticker);
-            const signal = generateRealtimeSignal(marketData);
-
-            return [{
-              ticker,
-              name: stock?.name ?? ticker,
-              sector: stock?.sector ?? 'Unknown',
-              signalType: signal.signalType,
-              confidence: signal.confidence,
-              currentPrice: marketData.price.close,
-              reasoning: signal.reasoning,
-            }];
-          });
-
-          const plannedRound = planAutoTradingRound({
-            signals,
-            positions,
+          return await executeAutoTradingRound({
+            positions: Array.isArray((input as any).positions) ? (input as any).positions : [],
             cashBalance: typeof (input as any).cashBalance === 'number' ? (input as any).cashBalance : 0,
-            config: {
-              minConfidence: typeof (input as any).minConfidence === 'number'
-                ? (input as any).minConfidence
-                : DEFAULT_AUTO_TRADING_MIN_CONFIDENCE,
-              maxTradesPerRound: typeof (input as any).maxTradesPerRound === 'number'
-                ? (input as any).maxTradesPerRound
-                : DEFAULT_AUTO_TRADING_MAX_TRADES_PER_ROUND,
-              positionSizePercent: typeof (input as any).positionSizePercent === 'number'
-                ? (input as any).positionSizePercent
-                : DEFAULT_AUTO_TRADING_POSITION_SIZE_PERCENT,
-              maxOpenPositions: typeof (input as any).maxOpenPositions === 'number'
-                ? (input as any).maxOpenPositions
-                : DEFAULT_AUTO_TRADING_MAX_OPEN_POSITIONS,
-            },
+            desiredUniverseSize: typeof (input as any).desiredUniverseSize === 'number' ? (input as any).desiredUniverseSize : undefined,
+            universeTickers: Array.isArray((input as any).universeTickers) ? (input as any).universeTickers : [],
+            minConfidence: typeof (input as any).minConfidence === 'number' ? (input as any).minConfidence : undefined,
+            maxTradesPerRound: typeof (input as any).maxTradesPerRound === 'number' ? (input as any).maxTradesPerRound : undefined,
+            positionSizePercent: typeof (input as any).positionSizePercent === 'number' ? (input as any).positionSizePercent : undefined,
+            maxOpenPositions: typeof (input as any).maxOpenPositions === 'number' ? (input as any).maxOpenPositions : undefined,
+            scanBatchSize: typeof (input as any).scanBatchSize === 'number' ? (input as any).scanBatchSize : undefined,
+            scanOffset: typeof (input as any).scanOffset === 'number' ? (input as any).scanOffset : undefined,
+            slippagePercent: typeof (input as any).slippagePercent === 'number' ? (input as any).slippagePercent : undefined,
+            commissionPercent: typeof (input as any).commissionPercent === 'number' ? (input as any).commissionPercent : undefined,
           });
-
-          const executedTrades = [] as Array<{
-            ticker: string;
-            name: string;
-            sector: string;
-            type: 'BUY' | 'SELL';
-            quantity: number;
-            requestedPrice: number;
-            executedPrice: number;
-            executionTime: string;
-            slippage: number;
-            commission: number;
-            totalCost: number;
-            priceSource: 'live' | 'fallback';
-            confidence: number;
-            reasoning: string;
-          }>;
-
-          for (const action of plannedRound.actions) {
-            const execution = await executeLiveTradeWithMarketPrice(
-              action.ticker,
-              action.type,
-              action.quantity,
-              action.requestedPrice,
-              typeof (input as any).slippagePercent === 'number' ? (input as any).slippagePercent : 0.05,
-              typeof (input as any).commissionPercent === 'number' ? (input as any).commissionPercent : 0.1,
-            );
-
-            if (!execution.success) {
-              continue;
-            }
-
-            executedTrades.push({
-              ticker: action.ticker,
-              name: action.name,
-              sector: action.sector,
-              type: action.type,
-              quantity: action.quantity,
-              requestedPrice: execution.requestedPrice,
-              executedPrice: execution.executedPrice,
-              executionTime: execution.executionTime,
-              slippage: execution.slippage,
-              commission: execution.commission,
-              totalCost: execution.totalCost,
-              priceSource: execution.priceSource,
-              confidence: action.confidence,
-              reasoning: action.reasoning,
-            });
-          }
-
-          return {
-            runAt: new Date().toISOString(),
-            selectedUniverse,
-            scannedCount: trackedTickers.length,
-            scannedTickers: trackedTickers,
-            nextScanOffset: selectedUniverse.length > 0 ? (scanOffset + scanBatchSize) % selectedUniverse.length : 0,
-            actionableSignals: plannedRound.actionableSignals,
-            executedTrades,
-          };
         } catch (error) {
           const message = error instanceof Error ? error.message : 'Automated trading round failed';
           throw new Error(message);
         }
       }),
+
+    getScheduledAutoTradingRun: protectedProcedure.query(async ({ ctx }) => {
+      const { assertAutoTradingAccess } = await import('./subscriptionAccess');
+      const { getScheduledSimulatorRun, processScheduledSimulatorRuns } = await import('./scheduledSimulatorRuns');
+      assertAutoTradingAccess(ctx.user);
+      await processScheduledSimulatorRuns({ userId: ctx.user.id, limit: 1 });
+      return getScheduledSimulatorRun(ctx.user.id);
+    }),
+
+    startScheduledAutoTradingRun: protectedProcedure
+      .input((val: unknown) => {
+        if (typeof val === 'object' && val !== null) {
+          return val as any;
+        }
+        throw new Error('Invalid input');
+      })
+      .mutation(async ({ ctx, input }) => {
+        const { assertAutoTradingAccess } = await import('./subscriptionAccess');
+        const { startScheduledSimulatorRun } = await import('./scheduledSimulatorRuns');
+        assertAutoTradingAccess(ctx.user);
+        return startScheduledSimulatorRun({
+          userId: ctx.user.id,
+          portfolio: (input as any).portfolio,
+          settings: {
+            durationDays: (input as any).durationDays,
+            riskProfileId: (input as any).riskProfileId,
+            universeSize: (input as any).universeSize,
+            minConfidence: (input as any).minConfidence,
+            maxTradesPerRound: (input as any).maxTradesPerRound,
+            positionSizePercent: (input as any).positionSizePercent,
+          },
+        });
+      }),
+
+    cancelScheduledAutoTradingRun: protectedProcedure.mutation(async ({ ctx }) => {
+      const { assertAutoTradingAccess } = await import('./subscriptionAccess');
+      const { cancelScheduledSimulatorRun } = await import('./scheduledSimulatorRuns');
+      assertAutoTradingAccess(ctx.user);
+      await cancelScheduledSimulatorRun(ctx.user.id);
+      return { success: true };
+    }),
 
     calculateLivePortfolioValue: protectedProcedure
       .input((val: unknown) => {

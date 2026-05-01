@@ -51,6 +51,23 @@ interface AutoTradingRoundResponse {
   executedTrades: AutoExecutedTrade[];
 }
 
+interface ScheduledAutoTradingRun {
+  status: "active" | "completed" | "cancelled";
+  durationDays: 1 | 3 | 7;
+  startedAt: string | null;
+  endsAt: string | null;
+  nextRunAt: string | null;
+  lastRunAt: string | null;
+  totalRoundsCompleted: number;
+  totalTradesExecuted: number;
+  lastSummary: string | null;
+  portfolio: {
+    currentValue: number;
+    cash: number;
+    totalReturnPercent: number;
+  };
+}
+
 interface SimulatorAutoTraderProps {
   portfolio: SimulatorPortfolio;
   accessUser?: SubscriptionAwareUser | null;
@@ -73,12 +90,43 @@ function formatLastRun(value: string | null) {
   return `Last run ${parsed.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
 }
 
+function formatDateTime(value: string | null) {
+  if (!value) {
+    return "Not scheduled";
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return "Not scheduled";
+  }
+
+  return parsed.toLocaleString([], {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function formatCurrencyValue(value: number) {
+  return `£${value.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+}
+
 export function SimulatorAutoTrader({ portfolio, accessUser, onApplyTrades }: SimulatorAutoTraderProps) {
   const [, setLocation] = useLocation();
   const autoTradingEnabled = canUseAutoTrading(accessUser);
   const autoTradingUpgradeMessage = getAutoTradingUpgradeMessage(accessUser);
   const universeQuery = trpc.simulator.getAutoTradingUniverse.useQuery();
   const autoRoundMutation = trpc.simulator.runAutoTradingRound.useMutation();
+  const scheduledRunQuery = trpc.simulator.getScheduledAutoTradingRun.useQuery(undefined, {
+    enabled: autoTradingEnabled,
+    refetchInterval: autoTradingEnabled ? 60000 : false,
+  });
+  const startScheduledRunMutation = trpc.simulator.startScheduledAutoTradingRun.useMutation();
+  const cancelScheduledRunMutation = trpc.simulator.cancelScheduledAutoTradingRun.useMutation();
 
   const [autoEnabled, setAutoEnabled] = useState(false);
   const [riskProfileId, setRiskProfileId] = useState<SimulatorRiskProfileId>(DEFAULT_RISK_PROFILE);
@@ -91,9 +139,11 @@ export function SimulatorAutoTrader({ portfolio, accessUser, onApplyTrades }: Si
   const [scanOffset, setScanOffset] = useState(0);
   const [lastRunAt, setLastRunAt] = useState<string | null>(null);
   const [lastRound, setLastRound] = useState<AutoTradingRoundResponse | null>(null);
+  const [scheduledDurationDays, setScheduledDurationDays] = useState<1 | 3 | 7>(1);
 
   const activeRiskProfile = getRiskProfile(riskProfileId);
   const autoPreviewUsage = getPreviewUsage(3, autoTradingEnabled ? 3 : 1);
+  const scheduledRun = (scheduledRunQuery.data ?? null) as ScheduledAutoTradingRun | null;
 
   useEffect(() => {
     const profile = getRiskProfile(riskProfileId);
@@ -194,7 +244,7 @@ export function SimulatorAutoTrader({ portfolio, accessUser, onApplyTrades }: Si
               </Badge>
             </div>
             <CardDescription>
-              Let the simulator scan a broader random stock basket, then open or close virtual positions from live buy and sell signals while keeping the manual simulator available. Automated rounds only continue while this dashboard tab stays open.
+              Let the simulator scan a broader random stock basket, then open or close virtual positions from live buy and sell signals while keeping the manual simulator available. Use the browser-only mode for fast open-tab testing, or launch a timed 1-day, 3-day, or 7-day server run below for a truer hands-off example.
             </CardDescription>
           </div>
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:justify-end">
@@ -344,6 +394,90 @@ export function SimulatorAutoTrader({ portfolio, accessUser, onApplyTrades }: Si
         </div>
 
         </div>
+
+        {autoTradingEnabled && (
+          <div className="rounded-2xl border border-cyan-500/25 bg-cyan-500/10 p-4 space-y-4">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+              <div className="space-y-2">
+                <p className="text-sm font-semibold text-foreground">Timed auto-trading run</p>
+                <p className="text-sm text-muted-foreground">
+                  Save the current simulator portfolio on the server and let it execute one automated round per day for <strong>1 day</strong>, <strong>3 days</strong>, or <strong>7 days</strong>. This is separate from the browser-only loop below and keeps its own persisted schedule state.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {[1, 3, 7].map((duration) => (
+                  <Button
+                    key={duration}
+                    type="button"
+                    size="sm"
+                    variant={scheduledDurationDays === duration ? "default" : "outline"}
+                    onClick={() => setScheduledDurationDays(duration as 1 | 3 | 7)}
+                    disabled={startScheduledRunMutation.isPending || cancelScheduledRunMutation.isPending}
+                  >
+                    {duration}-day run
+                  </Button>
+                ))}
+                <Button
+                  type="button"
+                  onClick={async () => {
+                    await startScheduledRunMutation.mutateAsync({
+                      durationDays: scheduledDurationDays,
+                      riskProfileId,
+                      universeSize,
+                      minConfidence,
+                      maxTradesPerRound,
+                      positionSizePercent,
+                      portfolio,
+                    });
+                    await scheduledRunQuery.refetch();
+                  }}
+                  disabled={startScheduledRunMutation.isPending}
+                >
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  {startScheduledRunMutation.isPending ? "Starting…" : "Start timed run"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={async () => {
+                    await cancelScheduledRunMutation.mutateAsync();
+                    await scheduledRunQuery.refetch();
+                  }}
+                  disabled={!scheduledRun || scheduledRun.status !== "active" || cancelScheduledRunMutation.isPending}
+                >
+                  {cancelScheduledRunMutation.isPending ? "Stopping…" : "Stop timed run"}
+                </Button>
+              </div>
+            </div>
+
+            <div className="grid gap-3 md:grid-cols-4">
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Status</p>
+                <p className="mt-2 text-lg font-semibold text-foreground">{scheduledRun?.status ?? "idle"}</p>
+                <p className="text-sm text-muted-foreground">Duration: {scheduledRun?.durationDays ?? scheduledDurationDays} day(s)</p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Next round</p>
+                <p className="mt-2 text-lg font-semibold text-foreground">{formatDateTime(scheduledRun?.nextRunAt ?? null)}</p>
+                <p className="text-sm text-muted-foreground">Last run: {formatDateTime(scheduledRun?.lastRunAt ?? null)}</p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Portfolio value</p>
+                <p className="mt-2 text-lg font-semibold text-foreground">{formatCurrencyValue(scheduledRun?.portfolio.currentValue ?? portfolio.currentValue)}</p>
+                <p className="text-sm text-muted-foreground">Cash: {formatCurrencyValue(scheduledRun?.portfolio.cash ?? portfolio.cash)}</p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Executed trades</p>
+                <p className="mt-2 text-lg font-semibold text-foreground">{scheduledRun?.totalTradesExecuted ?? 0}</p>
+                <p className="text-sm text-muted-foreground">Rounds completed: {scheduledRun?.totalRoundsCompleted ?? 0}</p>
+              </div>
+            </div>
+
+            <p className="text-sm text-muted-foreground">
+              {scheduledRun?.lastSummary ?? "Start a timed run to persist this simulator snapshot on the server and let daily automated rounds update it over the selected duration."}
+            </p>
+          </div>
+        )}
 
         <div className="rounded-2xl border border-amber-500/25 bg-amber-500/10 p-4">
           <p className="text-sm font-semibold text-foreground">Auto mode currently runs in the open browser tab only</p>
