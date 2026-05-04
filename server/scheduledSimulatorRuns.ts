@@ -434,6 +434,7 @@ export async function processScheduledSimulatorRuns(options?: { userId?: number;
 
     for (const row of rows) {
       const record = mapRow(row);
+      const scheduledScanBatchSize = Math.max(1, record.selectedUniverse.length || record.universeSize);
       const round = await executeAutoTradingRound({
         positions: record.portfolio.positions.map((position) => ({
           ticker: position.ticker,
@@ -447,7 +448,7 @@ export async function processScheduledSimulatorRuns(options?: { userId?: number;
         maxTradesPerRound: record.maxTradesPerRound,
         positionSizePercent: record.positionSizePercent,
         maxOpenPositions: 8,
-        scanBatchSize: 4,
+        scanBatchSize: scheduledScanBatchSize,
         scanOffset: record.lastRound?.nextScanOffset ?? 0,
       });
 

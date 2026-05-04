@@ -821,3 +821,6 @@
 - [x] Identify and fix any remaining signal-generation or aggregation issue if either side is not being produced correctly
 - [x] Add clear website messaging that the service is not financial advice and is not regulated by the FCA
 - [x] Validate the new disclaimer placement and wording across the affected pages
+- [x] Change the timed auto-run start control to show an in-progress state once a scheduled run is active
+- [x] Investigate why scheduled auto runs can remain active while executing zero trades across completed rounds
+- [x] Fix and test the scheduled auto-trading execution flow if trades are being blocked by logic or persistence defects

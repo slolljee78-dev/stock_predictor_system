@@ -228,6 +228,7 @@ export function SimulatorAutoTrader({ portfolio, accessUser, onApplyTrades }: Si
   ]);
 
   const actionableSignals = lastRound?.actionableSignals ?? [];
+  const scheduledRunInProgress = scheduledRun?.status === "active";
   const selectedUniverseText = selectedUniverse.length > 0
     ? `${selectedUniverse.length} stocks in the current random basket`
     : "A random basket will be chosen on the first run";
@@ -412,7 +413,7 @@ export function SimulatorAutoTrader({ portfolio, accessUser, onApplyTrades }: Si
                     size="sm"
                     variant={scheduledDurationDays === duration ? "default" : "outline"}
                     onClick={() => setScheduledDurationDays(duration as 1 | 3 | 7)}
-                    disabled={startScheduledRunMutation.isPending || cancelScheduledRunMutation.isPending}
+                    disabled={startScheduledRunMutation.isPending || cancelScheduledRunMutation.isPending || scheduledRunInProgress}
                   >
                     {duration}-day run
                   </Button>
@@ -431,10 +432,10 @@ export function SimulatorAutoTrader({ portfolio, accessUser, onApplyTrades }: Si
                     });
                     await scheduledRunQuery.refetch();
                   }}
-                  disabled={startScheduledRunMutation.isPending}
+                  disabled={startScheduledRunMutation.isPending || scheduledRunInProgress}
                 >
                   <Sparkles className="mr-2 h-4 w-4" />
-                  {startScheduledRunMutation.isPending ? "Starting…" : "Start timed run"}
+                  {startScheduledRunMutation.isPending ? "Starting…" : scheduledRunInProgress ? "Timed run in progress" : "Start timed run"}
                 </Button>
                 <Button
                   type="button"
@@ -453,7 +454,7 @@ export function SimulatorAutoTrader({ portfolio, accessUser, onApplyTrades }: Si
             <div className="grid gap-3 md:grid-cols-4">
               <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                 <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Status</p>
-                <p className="mt-2 text-lg font-semibold text-foreground">{scheduledRun?.status ?? "idle"}</p>
+                <p className="mt-2 text-lg font-semibold text-foreground">{scheduledRunInProgress ? "in progress" : scheduledRun?.status ?? "idle"}</p>
                 <p className="text-sm text-muted-foreground">Duration: {scheduledRun?.durationDays ?? scheduledDurationDays} day(s)</p>
               </div>
               <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
