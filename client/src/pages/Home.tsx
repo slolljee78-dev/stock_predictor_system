@@ -114,7 +114,7 @@ const faqItems = [
   },
   {
     question: "Is this a scam?",
-    answer: "We're FCA-compliant, transparent about our methodology, and backed by 12,000+ active traders with real reviews. We don't hide behind hype. Our 'Responsible Use' section explicitly warns against overconfidence. We're built to be trustworthy.",
+    answer: "No. Stock Predictor is a decision-support platform for self-directed investors. It does not provide personal financial advice and it is not regulated by the FCA. We aim to be trustworthy by being transparent about methodology, risk, and the role of simulation before real capital is used.",
   },
   {
     question: "How accurate are the signals?",
@@ -231,6 +231,13 @@ export default function Home() {
                   </div>
                 </div>
 
+                <div className="rounded-3xl border border-amber-400/25 bg-amber-500/10 px-5 py-4 text-sm text-amber-50/90 shadow-[0_20px_50px_rgba(245,158,11,0.12)]">
+                  <p className="font-semibold uppercase tracking-[0.16em] text-amber-200">Important risk notice</p>
+                  <p className="mt-2 leading-6 text-amber-50/85">
+                    Stock Predictor provides market analysis, ranking tools, and paper-trading workflows for educational decision support. It does not provide financial advice or personal investment recommendations, and it is not regulated by the FCA.
+                  </p>
+                </div>
+
                 <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                   {proofStats.map((stat) => (
                     <div key={stat.label} className="stat-card">
@@ -339,8 +346,8 @@ export default function Home() {
                     <div className="flex justify-center">
                       <Shield className="h-10 w-10 text-primary" />
                     </div>
-                    <h3 className="font-semibold text-foreground">FCA-Compliant</h3>
-                    <p className="text-sm text-muted-foreground">Built with regulatory best practices in mind.</p>
+                    <h3 className="font-semibold text-foreground">Not FCA-Regulated</h3>
+                    <p className="text-sm text-muted-foreground">This is decision-support software, not regulated investment advice, and it should be used with independent judgment.</p>
                   </div>
                 </div>
               </div>

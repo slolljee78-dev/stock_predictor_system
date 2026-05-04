@@ -814,3 +814,10 @@
 - [x] Add server procedures and a scheduled processing endpoint for recurring simulator auto-trading rounds
 - [x] Redesign the simulator auto-trader UI to start, monitor, and stop server-backed timed runs alongside browser-only auto mode
 - [x] Add regression coverage for the timed auto-trader disclosure and controls
+- [x] Investigate why the preview page reports a Vite websocket connection failure
+- [x] Verify whether the websocket error is caused by transient preview-server state or by project configuration
+- [x] Fix and validate the preview websocket behavior if the issue is caused by project code or dev configuration
+- [x] Verify that buy and sell signals are both generating correctly in the current app state
+- [x] Identify and fix any remaining signal-generation or aggregation issue if either side is not being produced correctly
+- [x] Add clear website messaging that the service is not financial advice and is not regulated by the FCA
+- [x] Validate the new disclaimer placement and wording across the affected pages

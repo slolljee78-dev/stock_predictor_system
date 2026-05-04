@@ -30,7 +30,7 @@ describe("Home marketing copy", () => {
     setLocation.mockReset();
   });
 
-  it("renders the friendlier workflow and walkthrough messaging", async () => {
+  it("renders the friendlier workflow, walkthrough messaging, and public risk notice", async () => {
     const { default: Home } = await import("../client/src/pages/Home.tsx");
 
     render(React.createElement(Home));
@@ -39,6 +39,8 @@ describe("Home marketing copy", () => {
     expect(screen.getByText("See how the platform helps you make better trading decisions.")).not.toBeNull();
     expect(screen.getByText("Create a watchlist that suits you")).not.toBeNull();
     expect(screen.getByText("Check your strongest opportunities")).not.toBeNull();
-    expect(screen.getByText("Test ideas before you trade")).not.toBeNull();
+    expect(screen.getByText("Let the simulator trade the idea first")).not.toBeNull();
+    expect(screen.getByText("Important risk notice")).not.toBeNull();
+    expect(screen.getByText(/it does not provide financial advice or personal investment recommendations, and it is not regulated by the fca/i)).not.toBeNull();
   });
 });

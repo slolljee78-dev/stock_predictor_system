@@ -137,6 +137,13 @@ const faqItems: FAQItem[] = [
   {
     id: "trust-3",
     category: "Trust & responsible use",
+    question: "Is Stock Predictor regulated by the FCA or giving financial advice?",
+    answer:
+      "No. Stock Predictor is decision-support software for self-directed investors. It does not provide personal financial advice, it is not regulated by the FCA, and it should be used alongside your own research, judgment, and risk controls.",
+  },
+  {
+    id: "trust-4",
+    category: "Trust & responsible use",
     question: "Why does the product emphasise validation and simulation?",
     answer:
       "Because the product is designed to support better decisions, not impulsive ones. Validation helps you review what is working, and simulation helps you practice without immediate capital risk.",
@@ -202,6 +209,12 @@ export default function FAQ() {
                   <p className="lead-copy max-w-3xl">
                     This FAQ is designed to help you understand what the product does, who it is for, how plans differ, and how to use signals with a calmer decision process.
                   </p>
+                  <div className="max-w-3xl rounded-3xl border border-amber-400/25 bg-amber-500/10 px-5 py-4 text-sm text-amber-50/90 shadow-[0_20px_50px_rgba(245,158,11,0.12)]">
+                    <p className="font-semibold uppercase tracking-[0.16em] text-amber-200">Important risk notice</p>
+                    <p className="mt-2 leading-6 text-amber-50/85">
+                      Stock Predictor provides market analysis, ranking tools, and paper-trading workflows for educational decision support. It does not provide financial advice or personal investment recommendations, and it is not regulated by the FCA.
+                    </p>
+                  </div>
                 </div>
                 <div className="relative max-w-xl">
                   <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
