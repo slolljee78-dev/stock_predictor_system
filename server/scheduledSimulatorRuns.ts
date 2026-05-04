@@ -51,6 +51,19 @@ export interface ScheduledRunSettings {
   positionSizePercent: number;
 }
 
+export interface ScheduledSimulatorRoundLogEntry {
+  runAt: string;
+  scannedCount: number;
+  scannedTickers: string[];
+  actionableSignalsCount: number;
+  actionableBuySignals: number;
+  actionableSellSignals: number;
+  executedTradesCount: number;
+  buyTrades: number;
+  sellTrades: number;
+  summary: string;
+}
+
 export interface ScheduledSimulatorRunRecord {
   id: number;
   userId: number;
@@ -64,6 +77,7 @@ export interface ScheduledSimulatorRunRecord {
   portfolio: ScheduledSimulatorPortfolio;
   selectedUniverse: string[];
   lastRound: AutoTradingRoundResponse | null;
+  roundHistory: ScheduledSimulatorRoundLogEntry[];
   lastSummary: string | null;
   startedAt: string | null;
   endsAt: string | null;
@@ -86,6 +100,7 @@ interface ScheduledRunRow {
   portfolioJson: string;
   selectedUniverseJson: string | null;
   lastRoundJson: string | null;
+  roundHistoryJson: string | null;
   lastSummary: string | null;
   startedAt: Date | null;
   endsAt: Date | null;
@@ -250,6 +265,26 @@ function summarizeRound(round: AutoTradingRoundResponse) {
     : `Scheduled simulator scanned ${round.scannedCount} stocks and found no trade that met the current confidence and sizing rules.`;
 }
 
+function createRoundHistoryEntry(round: AutoTradingRoundResponse, summary: string): ScheduledSimulatorRoundLogEntry {
+  const buyTrades = round.executedTrades.filter((trade) => trade.type === "BUY").length;
+  const sellTrades = round.executedTrades.filter((trade) => trade.type === "SELL").length;
+  const actionableBuySignals = round.actionableSignals.filter((signal) => signal.signalType === "buy").length;
+  const actionableSellSignals = round.actionableSignals.filter((signal) => signal.signalType === "sell").length;
+
+  return {
+    runAt: round.runAt,
+    scannedCount: round.scannedCount,
+    scannedTickers: round.scannedTickers,
+    actionableSignalsCount: round.actionableSignals.length,
+    actionableBuySignals,
+    actionableSellSignals,
+    executedTradesCount: round.executedTrades.length,
+    buyTrades,
+    sellTrades,
+    summary,
+  };
+}
+
 function mapRow(row: ScheduledRunRow): ScheduledSimulatorRunRecord {
   return {
     id: row.id,
@@ -274,6 +309,7 @@ function mapRow(row: ScheduledRunRow): ScheduledSimulatorRunRecord {
     }),
     selectedUniverse: safeParseJson<string[]>(row.selectedUniverseJson, []),
     lastRound: safeParseJson<AutoTradingRoundResponse | null>(row.lastRoundJson, null),
+    roundHistory: safeParseJson<ScheduledSimulatorRoundLogEntry[]>(row.roundHistoryJson, []),
     lastSummary: row.lastSummary,
     startedAt: asIsoString(row.startedAt),
     endsAt: asIsoString(row.endsAt),
@@ -300,6 +336,7 @@ export async function ensureScheduledSimulatorRunsTable() {
         portfolioJson LONGTEXT NOT NULL,
         selectedUniverseJson LONGTEXT NULL,
         lastRoundJson LONGTEXT NULL,
+        roundHistoryJson LONGTEXT NULL,
         lastSummary TEXT NULL,
         startedAt TIMESTAMP NULL,
         endsAt TIMESTAMP NULL,
@@ -311,6 +348,11 @@ export async function ensureScheduledSimulatorRunsTable() {
         updatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         INDEX scheduled_simulator_runs_status_nextRunAt_idx (status, nextRunAt)
       )
+    `);
+
+    await connection.execute(`
+      ALTER TABLE scheduled_simulator_runs
+      ADD COLUMN IF NOT EXISTS roundHistoryJson LONGTEXT NULL AFTER lastRoundJson
     `);
   });
 }
@@ -363,6 +405,7 @@ export async function startScheduledSimulatorRun(input: {
           portfolioJson,
           selectedUniverseJson,
           lastRoundJson,
+          roundHistoryJson,
           lastSummary,
           startedAt,
           endsAt,
@@ -370,7 +413,7 @@ export async function startScheduledSimulatorRun(input: {
           lastRunAt,
           totalRoundsCompleted,
           totalTradesExecuted
-        ) VALUES (?, 'active', ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL, ?, ?, ?, NULL, 0, 0)
+        ) VALUES (?, 'active', ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL, NULL, ?, ?, ?, NULL, 0, 0)
         ON DUPLICATE KEY UPDATE
           status = VALUES(status),
           durationDays = VALUES(durationDays),
@@ -382,6 +425,7 @@ export async function startScheduledSimulatorRun(input: {
           portfolioJson = VALUES(portfolioJson),
           selectedUniverseJson = VALUES(selectedUniverseJson),
           lastRoundJson = NULL,
+          roundHistoryJson = NULL,
           lastSummary = NULL,
           startedAt = VALUES(startedAt),
           endsAt = VALUES(endsAt),
@@ -454,6 +498,8 @@ export async function processScheduledSimulatorRuns(options?: { userId?: number;
 
       const updatedPortfolio = applyExecutedTradesToPortfolio(record.portfolio, round.executedTrades, record.riskProfileId);
       const summary = summarizeRound(round);
+      const roundHistoryEntry = createRoundHistoryEntry(round, summary);
+      const updatedRoundHistory = [roundHistoryEntry, ...record.roundHistory].slice(0, 14);
       const nextRunAt = new Date(now.getTime() + 24 * 60 * 60 * 1000);
       const completed = record.endsAt ? nextRunAt.getTime() > new Date(record.endsAt).getTime() : false;
 
@@ -463,6 +509,7 @@ export async function processScheduledSimulatorRuns(options?: { userId?: number;
           SET portfolioJson = ?,
               selectedUniverseJson = ?,
               lastRoundJson = ?,
+              roundHistoryJson = ?,
               lastSummary = ?,
               lastRunAt = ?,
               nextRunAt = ?,
@@ -475,6 +522,7 @@ export async function processScheduledSimulatorRuns(options?: { userId?: number;
           JSON.stringify(updatedPortfolio),
           JSON.stringify(round.selectedUniverse.map((stock) => stock.ticker)),
           JSON.stringify(round),
+          JSON.stringify(updatedRoundHistory),
           summary,
           now,
           completed ? null : nextRunAt,
@@ -490,6 +538,7 @@ export async function processScheduledSimulatorRuns(options?: { userId?: number;
         portfolio: updatedPortfolio,
         selectedUniverse: round.selectedUniverse.map((stock) => stock.ticker),
         lastRound: round,
+        roundHistory: updatedRoundHistory,
         lastSummary: summary,
         lastRunAt: now.toISOString(),
         nextRunAt: completed ? null : nextRunAt.toISOString(),

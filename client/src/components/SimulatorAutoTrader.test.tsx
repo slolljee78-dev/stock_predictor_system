@@ -81,6 +81,20 @@ describe("SimulatorAutoTrader disclosure", () => {
         totalRoundsCompleted: 2,
         totalTradesExecuted: 0,
         lastSummary: "Scheduled simulator scanned 6 stocks and found no trade that met the current confidence and sizing rules.",
+        roundHistory: [
+          {
+            runAt: "2026-05-04T15:55:00.000Z",
+            scannedCount: 6,
+            scannedTickers: ["AAPL", "MSFT", "NVDA", "AMZN", "META", "TSLA"],
+            actionableSignalsCount: 2,
+            actionableBuySignals: 1,
+            actionableSellSignals: 1,
+            executedTradesCount: 0,
+            buyTrades: 0,
+            sellTrades: 0,
+            summary: "Scheduled simulator scanned 6 stocks and found no trade that met the current confidence and sizing rules.",
+          },
+        ],
         portfolio: {
           currentValue: 8548.68,
           cash: 4156.49,
@@ -111,5 +125,11 @@ describe("SimulatorAutoTrader disclosure", () => {
 
     expect(screen.getByText(/timed run in progress/i)).toBeTruthy();
     expect(screen.getByText(/^in progress$/i)).toBeTruthy();
+    expect(screen.getAllByText(/per-round execution log/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/1 round logged/i)).toBeTruthy();
+    expect(screen.getByText(/6 scanned/i)).toBeTruthy();
+    expect(screen.getByText(/1 buy signals/i)).toBeTruthy();
+    expect(screen.getByText(/1 sell signals/i)).toBeTruthy();
+    expect(screen.getByText(/scanned tickers: aapl, msft, nvda, amzn, meta, tsla/i)).toBeTruthy();
   });
 });

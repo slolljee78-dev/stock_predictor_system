@@ -51,6 +51,19 @@ interface AutoTradingRoundResponse {
   executedTrades: AutoExecutedTrade[];
 }
 
+interface ScheduledRoundLogEntry {
+  runAt: string;
+  scannedCount: number;
+  scannedTickers: string[];
+  actionableSignalsCount: number;
+  actionableBuySignals: number;
+  actionableSellSignals: number;
+  executedTradesCount: number;
+  buyTrades: number;
+  sellTrades: number;
+  summary: string;
+}
+
 interface ScheduledAutoTradingRun {
   status: "active" | "completed" | "cancelled";
   durationDays: 1 | 3 | 7;
@@ -61,6 +74,7 @@ interface ScheduledAutoTradingRun {
   totalRoundsCompleted: number;
   totalTradesExecuted: number;
   lastSummary: string | null;
+  roundHistory: ScheduledRoundLogEntry[];
   portfolio: {
     currentValue: number;
     cash: number;
@@ -229,6 +243,7 @@ export function SimulatorAutoTrader({ portfolio, accessUser, onApplyTrades }: Si
 
   const actionableSignals = lastRound?.actionableSignals ?? [];
   const scheduledRunInProgress = scheduledRun?.status === "active";
+  const scheduledRoundHistory = scheduledRun?.roundHistory ?? [];
   const selectedUniverseText = selectedUniverse.length > 0
     ? `${selectedUniverse.length} stocks in the current random basket`
     : "A random basket will be chosen on the first run";
@@ -477,6 +492,54 @@ export function SimulatorAutoTrader({ portfolio, accessUser, onApplyTrades }: Si
             <p className="text-sm text-muted-foreground">
               {scheduledRun?.lastSummary ?? "Start a timed run to persist this simulator snapshot on the server and let daily automated rounds update it over the selected duration."}
             </p>
+
+            <div className="space-y-3 rounded-2xl border border-white/10 bg-black/10 p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-foreground">Per-round execution log</p>
+                  <p className="text-xs text-muted-foreground">Each scheduled pass records when it ran, how many tickers it scanned, how many actionable signals it found, and whether any trades executed.</p>
+                </div>
+                {scheduledRoundHistory.length > 0 ? (
+                  <Badge variant="outline" className="border-cyan-500/30 bg-cyan-500/10 text-cyan-100">
+                    {scheduledRoundHistory.length} round{scheduledRoundHistory.length === 1 ? "" : "s"} logged
+                  </Badge>
+                ) : null}
+              </div>
+
+              {scheduledRoundHistory.length === 0 ? (
+                <p className="text-sm text-muted-foreground">The execution log will appear after the first scheduled round completes.</p>
+              ) : (
+                <div className="space-y-3">
+                  {scheduledRoundHistory.slice(0, 6).map((round) => (
+                    <div key={round.runAt} className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">{formatDateTime(round.runAt)}</p>
+                          <p className="mt-1 text-sm text-muted-foreground">{round.summary}</p>
+                        </div>
+                        <div className="flex flex-wrap gap-2 text-xs">
+                          <Badge variant="outline" className="border-white/10 bg-white/5 text-foreground">
+                            {round.scannedCount} scanned
+                          </Badge>
+                          <Badge variant="outline" className="border-emerald-500/30 bg-emerald-500/10 text-emerald-200">
+                            {round.actionableBuySignals} buy signals
+                          </Badge>
+                          <Badge variant="outline" className="border-rose-500/30 bg-rose-500/10 text-rose-200">
+                            {round.actionableSellSignals} sell signals
+                          </Badge>
+                          <Badge variant="outline" className="border-cyan-500/30 bg-cyan-500/10 text-cyan-100">
+                            {round.executedTradesCount} trade{round.executedTradesCount === 1 ? "" : "s"}
+                          </Badge>
+                        </div>
+                      </div>
+                      {round.scannedTickers.length > 0 ? (
+                        <p className="mt-3 text-xs text-muted-foreground">Scanned tickers: {round.scannedTickers.join(", ")}</p>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
 

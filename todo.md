@@ -824,3 +824,6 @@
 - [x] Change the timed auto-run start control to show an in-progress state once a scheduled run is active
 - [x] Investigate why scheduled auto runs can remain active while executing zero trades across completed rounds
 - [x] Fix and test the scheduled auto-trading execution flow if trades are being blocked by logic or persistence defects
+- [x] Add a per-round execution log to the timed auto-trading panel
+- [x] Persist and surface round-by-round scheduled run details such as scan time, tickers reviewed, signals found, and trades executed
+- [x] Add focused tests covering the scheduled execution log rendering and data flow
