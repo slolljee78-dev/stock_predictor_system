@@ -127,6 +127,13 @@
       "when": 1776584395045,
       "tag": "0017_elite_lilandra",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "5",
+      "when": 1778194995544,
+      "tag": "0018_silly_swarm",
+      "breakpoints": true
     }
   ]
 }

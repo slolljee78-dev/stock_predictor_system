@@ -19,7 +19,7 @@ export interface SignalFilterOptions {
 
 export const DEFAULT_FILTERS: SignalFilterOptions = {
   signalType: 'all',
-  minConfidence: 60,
+  minConfidence: 25,
   rsiMin: 0,
   rsiMax: 100,
   macdFilter: 'all',

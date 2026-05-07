@@ -1,0 +1,1 @@
+ALTER TABLE `watchlists` MODIFY COLUMN `minConfidenceThreshold` int NOT NULL DEFAULT 25;

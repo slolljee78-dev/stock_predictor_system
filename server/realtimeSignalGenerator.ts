@@ -273,7 +273,7 @@ function generateReasoning(
 /**
  * Validate signal strength
  */
-export function validateSignalStrength(signal: RealtimeSignal, minConfidence: number = 50): boolean {
+export function validateSignalStrength(signal: RealtimeSignal, minConfidence: number = 25): boolean {
   return signal.confidence >= minConfidence && signal.signalType !== 'hold';
 }
 
@@ -282,7 +282,7 @@ export function validateSignalStrength(signal: RealtimeSignal, minConfidence: nu
  */
 export function filterSignalsByConfidence(
   signals: RealtimeSignal[],
-  minConfidence: number = 60
+  minConfidence: number = 25
 ): RealtimeSignal[] {
   return signals.filter(signal => signal.confidence >= minConfidence && signal.signalType !== 'hold');
 }

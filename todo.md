@@ -827,3 +827,8 @@
 - [x] Add a per-round execution log to the timed auto-trading panel
 - [x] Persist and surface round-by-round scheduled run details such as scan time, tickers reviewed, signals found, and trades executed
 - [x] Add focused tests covering the scheduled execution log rendering and data flow
+- [x] Investigate why actionable buy and sell signals are no longer appearing in the dashboard signal trend
+- [x] Verify whether signal generation, actionability filtering, or watchlist-specific thresholds are suppressing all signal output
+- [x] Investigate why the auto-trade simulator is showing no executed results despite scheduled or manual runs
+- [x] Fix and test the signal-generation and simulator execution flow if results are being blocked by logic, persistence, or configuration defects
+- [x] Calibrate stored-signal and simulator confidence thresholds so dashboard buy/sell signals render and scheduled auto-trading can execute qualifying trades again

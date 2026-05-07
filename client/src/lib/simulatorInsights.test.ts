@@ -97,6 +97,9 @@ describe("simulatorInsights", () => {
     const conservative = getRiskProfile("conservative");
     const aggressive = getRiskProfile("aggressive");
 
+    expect(conservative.minConfidence).toBe(35);
+    expect(getRiskProfile("balanced").minConfidence).toBe(30);
+    expect(aggressive.minConfidence).toBe(25);
     expect(conservative.minConfidence).toBeGreaterThan(aggressive.minConfidence);
     expect(conservative.positionSizePercent).toBeLessThan(aggressive.positionSizePercent);
     expect(aggressive.maxTradesPerRound).toBeGreaterThan(conservative.maxTradesPerRound);

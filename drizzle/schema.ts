@@ -110,7 +110,7 @@ export const watchlists = mysqlTable("watchlists", {
   alertOnBuy: int("alertOnBuy").default(1).notNull(), // 1 = true, 0 = false
   alertOnSell: int("alertOnSell").default(1).notNull(),
   /** Minimum confidence score threshold for alerts (0-100) */
-  minConfidenceThreshold: int("minConfidenceThreshold").default(60).notNull(),
+  minConfidenceThreshold: int("minConfidenceThreshold").default(25).notNull(),
   /** Email notification enabled for this stock */
   emailNotifications: int("emailNotifications").default(1).notNull(),
   /** In-app notification enabled for this stock */

@@ -17,7 +17,7 @@ export const realtimeSignalsRouter = router({
     .input(
       z.object({
         ticker: z.string().min(1).max(10),
-        minConfidence: z.number().min(0).max(100).optional().default(50),
+        minConfidence: z.number().min(0).max(100).optional().default(25),
       })
     )
     .query(async ({ input }) => {
@@ -67,7 +67,7 @@ export const realtimeSignalsRouter = router({
     .input(
       z.object({
         tickers: z.array(z.string().min(1).max(10)).min(1).max(50),
-        minConfidence: z.number().min(0).max(100).optional().default(60),
+        minConfidence: z.number().min(0).max(100).optional().default(25),
       })
     )
     .query(async ({ input }) => {
@@ -105,7 +105,7 @@ export const realtimeSignalsRouter = router({
     .input(
       z.object({
         tickers: z.array(z.string().min(1).max(10)).min(1).max(50),
-        minConfidence: z.number().min(0).max(100).optional().default(60),
+        minConfidence: z.number().min(0).max(100).optional().default(25),
         notifyOnSignal: z.boolean().optional().default(true),
       })
     )
@@ -184,7 +184,7 @@ export const realtimeSignalsRouter = router({
     .input(
       z.object({
         tickers: z.array(z.string().min(1).max(10)).min(1).max(50),
-        minConfidence: z.number().min(0).max(100).optional().default(70),
+        minConfidence: z.number().min(0).max(100).optional().default(30),
       })
     )
     .query(async ({ input }) => {
@@ -222,7 +222,7 @@ export const realtimeSignalsRouter = router({
     .input(
       z.object({
         tickers: z.array(z.string().min(1).max(10)).min(1).max(50),
-        minConfidence: z.number().min(0).max(100).optional().default(70),
+        minConfidence: z.number().min(0).max(100).optional().default(30),
       })
     )
     .query(async ({ input }) => {
@@ -260,7 +260,7 @@ export const realtimeSignalsRouter = router({
     .input(
       z.object({
         tickers: z.array(z.string().min(1).max(10)).optional().default(['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN']),
-        minConfidence: z.number().min(0).max(100).optional().default(60),
+        minConfidence: z.number().min(0).max(100).optional().default(25),
       })
     )
     .query(async ({ input }) => {

@@ -28,7 +28,7 @@ describe('SignalFilters Component', () => {
   describe('Default Filters', () => {
     it('has correct default filter values', () => {
       expect(DEFAULT_FILTERS.signalType).toBe('all');
-      expect(DEFAULT_FILTERS.minConfidence).toBe(60);
+      expect(DEFAULT_FILTERS.minConfidence).toBe(25);
       expect(DEFAULT_FILTERS.rsiMin).toBe(0);
       expect(DEFAULT_FILTERS.rsiMax).toBe(100);
       expect(DEFAULT_FILTERS.macdFilter).toBe('all');

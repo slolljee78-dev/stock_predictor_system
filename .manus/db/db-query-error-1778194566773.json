@@ -1,0 +1,8 @@
+{
+  "query": "SELECT DATE(createdAt) AS signal_day, signalType, COUNT(*) AS signal_count, AVG(confidenceScore) AS avg_confidence FROM signals WHERE createdAt >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 7 DAY) GROUP BY DATE(createdAt), signalType ORDER BY signal_day DESC, signalType; SELECT id, userId, status, durationDays, minConfidence, maxTradesPerRound, totalRoundsCompleted, totalTradesExecuted, startedAt, lastRunAt, nextRunAt, lastSummary FROM scheduled_simulator_runs ORDER BY id DESC LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user irvuEERniB6Vw7s.bec5f3955eab --database knJ3QkdJFvivzkyeUv8kpq --execute SELECT DATE(createdAt) AS signal_day, signalType, COUNT(*) AS signal_count, AVG(confidenceScore) AS avg_confidence FROM signals WHERE createdAt >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 7 DAY) GROUP BY DATE(createdAt), signalType ORDER BY signal_day DESC, signalType; SELECT id, userId, status, durationDays, minConfidence, maxTradesPerRound, totalRoundsCompleted, totalTradesExecuted, startedAt, lastRunAt, nextRunAt, lastSummary FROM scheduled_simulator_runs ORDER BY id DESC LIMIT 5;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'signaltype' in 'group statement'"
+  ]
+}
