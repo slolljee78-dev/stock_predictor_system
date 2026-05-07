@@ -832,3 +832,4 @@
 - [x] Investigate why the auto-trade simulator is showing no executed results despite scheduled or manual runs
 - [x] Fix and test the signal-generation and simulator execution flow if results are being blocked by logic, persistence, or configuration defects
 - [x] Calibrate stored-signal and simulator confidence thresholds so dashboard buy/sell signals render and scheduled auto-trading can execute qualifying trades again
+- [x] Update the real-time signals dashboard cards so the buy section surfaces concrete buy ideas instead of only aggregate counts

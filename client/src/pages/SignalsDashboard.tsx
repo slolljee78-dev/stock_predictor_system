@@ -139,6 +139,8 @@ export default function SignalsDashboard() {
   const sellSignals = signals.filter(s => s.signalType === 'sell').length;
   const avgConfidence = signals.length > 0 ? Math.round(signals.reduce((sum, s) => sum + s.confidence, 0) / signals.length) : 0;
   const quickFilterValue = getQuickFilterValue(filters);
+  const buyIdeaSignals = sortedSignals.filter((signal) => signal.signalType === 'buy').slice(0, 3);
+  const sellIdeaSignals = sortedSignals.filter((signal) => signal.signalType === 'sell').slice(0, 3);
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
@@ -194,25 +196,69 @@ export default function SignalsDashboard() {
           </div>
         </div>
 
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Buy Signals</CardTitle>
+        {/* Idea Summary Cards */}
+        <div className="mb-8 grid grid-cols-1 gap-4 lg:grid-cols-4">
+          <Card className="lg:col-span-2" data-testid="buy-ideas-card">
+            <CardHeader className="pb-3">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Buy Ideas</CardTitle>
+                  <CardDescription className="mt-1">Top buy signals matching your current filters</CardDescription>
+                </div>
+                <Badge className="bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/15">{buySignals} total</Badge>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-500">{buySignals}</div>
-              <p className="text-xs text-muted-foreground mt-1">Active opportunities</p>
+              {buyIdeaSignals.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No buy ideas match the current filters yet.</p>
+              ) : (
+                <div className="space-y-3">
+                  {buyIdeaSignals.map((signal) => (
+                    <div key={`buy-idea-${signal.ticker}-${signal.timestamp}`} className="flex items-center justify-between gap-3 rounded-xl border border-emerald-500/15 bg-emerald-500/5 px-3 py-3">
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">{signal.ticker}</p>
+                        <p className="text-xs text-muted-foreground">{signal.confidence}% confidence buy idea</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-semibold text-emerald-300">${signal.price.toFixed(2)}</p>
+                        <p className="text-xs text-muted-foreground">{new Date(signal.timestamp).toLocaleTimeString()}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Sell Signals</CardTitle>
+          <Card className="lg:col-span-2" data-testid="sell-ideas-card">
+            <CardHeader className="pb-3">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Sell Ideas</CardTitle>
+                  <CardDescription className="mt-1">Top sell signals matching your current filters</CardDescription>
+                </div>
+                <Badge className="bg-rose-500/15 text-rose-300 hover:bg-rose-500/15">{sellSignals} total</Badge>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-500">{sellSignals}</div>
-              <p className="text-xs text-muted-foreground mt-1">Exit opportunities</p>
+              {sellIdeaSignals.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No sell ideas match the current filters yet.</p>
+              ) : (
+                <div className="space-y-3">
+                  {sellIdeaSignals.map((signal) => (
+                    <div key={`sell-idea-${signal.ticker}-${signal.timestamp}`} className="flex items-center justify-between gap-3 rounded-xl border border-rose-500/15 bg-rose-500/5 px-3 py-3">
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">{signal.ticker}</p>
+                        <p className="text-xs text-muted-foreground">{signal.confidence}% confidence sell idea</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-semibold text-rose-300">${signal.price.toFixed(2)}</p>
+                        <p className="text-xs text-muted-foreground">{new Date(signal.timestamp).toLocaleTimeString()}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -222,17 +268,17 @@ export default function SignalsDashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-blue-500">{avgConfidence}%</div>
-              <p className="text-xs text-muted-foreground mt-1">Signal strength</p>
+              <p className="mt-1 text-xs text-muted-foreground">Signal strength across the current feed</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Signals</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Showing</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground">{signals.length}</div>
-              <p className="text-xs text-muted-foreground mt-1">Monitored stocks</p>
+              <div className="text-2xl font-bold text-foreground">{sortedSignals.length}/{signals.length}</div>
+              <p className="mt-1 text-xs text-muted-foreground">Signals visible after your filters are applied</p>
             </CardContent>
           </Card>
         </div>
