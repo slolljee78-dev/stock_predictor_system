@@ -1,435 +1,333 @@
-import React, { useState, useEffect } from "react";
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-import { TrendingUp, TrendingDown, Target, AlertTriangle, RefreshCw, CheckCircle, AlertCircle, Zap, ChevronLeft, Home } from "lucide-react";
-import { trpc } from "@/lib/trpc";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { ArrowLeft, BarChart3, CheckCircle2, Clock3, Home, RefreshCw, Target, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PageTransition from "@/components/PageTransition";
 import { useLocation } from "wouter";
 import { DASHBOARD_HOME_PATH, navigateToDashboardMenu } from "@/lib/navigation";
+import { calculateSimulatorPerformanceSummary, formatHoldingTime } from "@/lib/simulatorInsights";
+import { getSelectedPortfolio, loadTradingSimulatorState, type SimulatorTrade } from "@/lib/tradingSimulatorState";
 
-interface ValidationMetrics {
-  currentCapital: number;
-  dailyPnL: number;
-  monthlyReturn: number;
-  winRate: number;
-  sharpeRatio: number;
-  maxDrawdown: number;
-  totalTrades: number;
+const VALIDATION_BASE_CAPITAL = 100;
+const VALIDATION_TARGETS = [110, 121, 133.1] as const;
+
+function getBrowserStorage(): Storage | undefined {
+  if (typeof window === "undefined") {
+    return undefined;
+  }
+
+  return window.localStorage;
 }
 
-interface MonthlyTarget {
-  month: number;
-  target: number;
-  actual: number;
-  met: boolean;
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat("en-GB", {
+    style: "currency",
+    currency: "GBP",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
+}
+
+function formatDateTime(value?: string) {
+  if (!value) {
+    return "Not recorded yet";
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return value;
+  }
+
+  return parsed.toLocaleString("en-GB", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function sortTradesDescending(trades: SimulatorTrade[]) {
+  return [...trades].sort((left, right) => {
+    const leftTime = left.executedAt ? new Date(left.executedAt).getTime() : 0;
+    const rightTime = right.executedAt ? new Date(right.executedAt).getTime() : 0;
+    return rightTime - leftTime;
+  });
 }
 
 export default function ValidationDashboard() {
   const [, setLocation] = useLocation();
-  const [metrics, setMetrics] = useState<ValidationMetrics>({
-    currentCapital: 100,
-    dailyPnL: 0,
-    monthlyReturn: 0,
-    winRate: 0.65,
-    sharpeRatio: 1.2,
-    maxDrawdown: 3.5,
-    totalTrades: 12,
-  });
+  const [simulatorState, setSimulatorState] = useState(() => loadTradingSimulatorState(getBrowserStorage()));
   const [loading, setLoading] = useState(false);
-  const [lastUpdate, setLastUpdate] = useState<string>(new Date().toLocaleTimeString());
+  const [lastUpdated, setLastUpdated] = useState(() => new Date().toLocaleTimeString("en-GB"));
 
-  // Fetch live market data
-  const { data: liveData, refetch: refetchLiveData } = trpc.liveMarket.getPrices.useQuery(
-    { tickers: ["AAPL", "MSFT", "GOOGL"] },
-    { enabled: false }
-  );
+  const refreshFromStorage = useCallback(() => {
+    setLoading(true);
+    setSimulatorState(loadTradingSimulatorState(getBrowserStorage()));
+    setLastUpdated(new Date().toLocaleTimeString("en-GB"));
+    setLoading(false);
+  }, []);
 
-  // Refresh live data every 30 seconds
   useEffect(() => {
-    const interval = setInterval(() => {
-      setLoading(true);
-      refetchLiveData().finally(() => {
-        setLoading(false);
-        setLastUpdate(new Date().toLocaleTimeString());
-      });
+    const interval = window.setInterval(() => {
+      refreshFromStorage();
     }, 30000);
 
-    return () => clearInterval(interval);
-  }, [refetchLiveData]);
+    const handleFocus = () => refreshFromStorage();
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleFocus);
 
-  const [monthlyTargets, setMonthlyTargets] = useState<MonthlyTarget[]>([
-    { month: 1, target: 110, actual: 100, met: false },
-    { month: 2, target: 121, actual: 100, met: false },
-    { month: 3, target: 133.1, actual: 100, met: false },
-  ]);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleFocus);
+    };
+  }, [refreshFromStorage]);
 
-  const [performanceHistory, setPerformanceHistory] = useState([
-    { date: "Day 1", capital: 100, target: 100 },
-    { date: "Day 2", capital: 101, target: 100.5 },
-    { date: "Day 3", capital: 102.5, target: 101 },
-  ]);
+  const selectedPortfolio = useMemo(() => getSelectedPortfolio(simulatorState), [simulatorState]);
+  const performanceSummary = useMemo(() => calculateSimulatorPerformanceSummary(selectedPortfolio), [selectedPortfolio]);
+  const sortedTrades = useMemo(() => sortTradesDescending(selectedPortfolio.trades), [selectedPortfolio.trades]);
+  const recentTrades = sortedTrades.slice(0, 6);
+  const autoTrades = sortedTrades.filter((trade) => trade.origin === "auto");
+  const latestAutoTrade = autoTrades[0] ?? null;
 
-  const [tradeHistory, setTradeHistory] = useState([
-    {
-      id: 1,
-      date: "2026-04-11",
-      ticker: "AAPL",
-      type: "BUY",
-      quantity: 10,
-      price: 150.5,
-      pnl: 15,
-      pnlPercent: 1.0,
-    },
-    {
-      id: 2,
-      date: "2026-04-11",
-      ticker: "MSFT",
-      type: "SELL",
-      quantity: 5,
-      price: 320.2,
-      pnl: 8,
-      pnlPercent: 0.5,
-    },
-  ]);
+  const challengeCapital = useMemo(
+    () => VALIDATION_BASE_CAPITAL * (1 + selectedPortfolio.totalReturnPercent / 100),
+    [selectedPortfolio.totalReturnPercent],
+  );
+  const finalTarget = VALIDATION_TARGETS[2];
+  const progressPercent = Math.max(0, Math.min((challengeCapital / finalTarget) * 100, 100));
+  const monthlyTargets = VALIDATION_TARGETS.map((target, index) => ({
+    month: index + 1,
+    target,
+    actual: challengeCapital,
+    met: challengeCapital >= target,
+  }));
 
-  const handleManualRefresh = async () => {
-    setLoading(true);
-    await refetchLiveData();
-    setLoading(false);
-    setLastUpdate(new Date().toLocaleTimeString());
-  };
-
-  const capitalProgress = (metrics.currentCapital / monthlyTargets[2].target) * 100;
-  const riskLimitStatus = Math.abs(metrics.dailyPnL) > 2 ? "EXCEEDED" : "OK";
-  const riskColor = riskLimitStatus === "EXCEEDED" ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400";
-
-  const winLossData = [
-    { name: "Wins", value: Math.round(metrics.totalTrades * metrics.winRate) },
-    { name: "Losses", value: Math.round(metrics.totalTrades * (1 - metrics.winRate)) },
-  ];
-
-  const COLORS = ["#10b981", "#ef4444"];
+  const validationStatus = challengeCapital >= finalTarget
+    ? "Target already reached"
+    : challengeCapital >= VALIDATION_TARGETS[1]
+      ? "Ahead of the month-two checkpoint"
+      : challengeCapital >= VALIDATION_TARGETS[0]
+        ? "Ahead of the month-one checkpoint"
+        : "Still building toward the challenge target";
 
   return (
     <PageTransition>
-      <div className="space-y-8 p-6">
-      {/* Navigation Buttons */}
-      <div className="flex items-center justify-between gap-3 mb-6">
-        <button
-          onClick={() => navigateToDashboardMenu(setLocation)}
-          className="flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:text-white transition-colors hover:bg-slate-700 rounded-lg"
-        >
-          <ChevronLeft className="h-4 w-4" />
-          Back to menu
-        </button>
-        <button
-          onClick={() => setLocation(DASHBOARD_HOME_PATH)}
-          className="flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-600 text-white hover:bg-cyan-700 transition-colors text-sm font-medium"
-        >
-          <Home className="h-4 w-4" />
-          Back to dashboard
-        </button>
-      </div>
-
-      {/* Premium Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 animate-fade-in-up">
-        <div>
-          <h1 className="text-4xl font-bold gradient-text mb-2">3-Month Validation</h1>
-          <p className="text-muted-foreground">Track your paper trading performance toward £100 → £133.10</p>
-        </div>
-        <Button 
-          onClick={handleManualRefresh}
-          disabled={loading}
-          className="btn-premium gap-2"
-        >
-          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-          Refresh Data
-        </Button>
-      </div>
-
-      {/* Key Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Current Capital */}
-        <div className="metric-card">
-          <div className="flex items-center justify-between mb-2">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <TrendingUp className="h-5 w-5 text-primary" />
-            </div>
-            <span className="text-xs font-semibold text-muted-foreground">CAPITAL</span>
-          </div>
-          <div className="metric-value">£{metrics.currentCapital.toFixed(2)}</div>
-          <div className={`metric-change ${metrics.dailyPnL >= 0 ? 'positive' : 'negative'}`}>
-            {metrics.dailyPnL >= 0 ? '+' : ''}{metrics.dailyPnL.toFixed(2)} today
-          </div>
+      <div className="space-y-8 p-6 page-enter">
+        <div className="flex items-center justify-between gap-3 mb-6">
+          <button
+            onClick={() => navigateToDashboardMenu(setLocation)}
+            className="flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:text-white transition-colors hover:bg-slate-700 rounded-lg"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to menu
+          </button>
+          <button
+            onClick={() => setLocation(DASHBOARD_HOME_PATH)}
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-600 text-white hover:bg-cyan-700 transition-colors text-sm font-medium"
+          >
+            <Home className="h-4 w-4" />
+            Back to dashboard
+          </button>
         </div>
 
-        {/* Win Rate */}
-        <div className="metric-card">
-          <div className="flex items-center justify-between mb-2">
-            <div className="p-2 bg-accent/10 rounded-lg">
-              <CheckCircle className="h-5 w-5 text-accent" />
-            </div>
-            <span className="text-xs font-semibold text-muted-foreground">WIN RATE</span>
-          </div>
-          <div className="metric-value">{(metrics.winRate * 100).toFixed(1)}%</div>
-          <div className="metric-label">Target: 60%+</div>
-          <div className="progress-premium mt-3">
-            <div 
-              className="progress-premium-fill" 
-              style={{ width: `${Math.min(metrics.winRate * 100, 100)}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Sharpe Ratio */}
-        <div className="metric-card">
-          <div className="flex items-center justify-between mb-2">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <Zap className="h-5 w-5 text-primary" />
-            </div>
-            <span className="text-xs font-semibold text-muted-foreground">SHARPE RATIO</span>
-          </div>
-          <div className="metric-value">{metrics.sharpeRatio.toFixed(2)}</div>
-          <div className="metric-label">Target: {'>'}1.0</div>
-        </div>
-
-        {/* Max Drawdown */}
-        <div className="metric-card">
-          <div className="flex items-center justify-between mb-2">
-            <div className="p-2 bg-accent/10 rounded-lg">
-              <TrendingDown className="h-5 w-5 text-accent" />
-            </div>
-            <span className="text-xs font-semibold text-muted-foreground">MAX DRAWDOWN</span>
-          </div>
-          <div className="metric-value">{metrics.maxDrawdown.toFixed(1)}%</div>
-              <div className="metric-label">Target: {'<'}5%</div>
-        </div>
-      </div>
-
-      {/* Monthly Targets */}
-      <div className="card-premium">
-        <div className="flex items-center gap-2 mb-6">
-          <Target className="h-5 w-5 text-primary" />
-          <h2 className="text-xl font-bold">Monthly Targets</h2>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {monthlyTargets.map((target) => (
-            <div key={target.month} className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="font-semibold">Month {target.month}</span>
-                {target.met === true ? (
-                  <CheckCircle className="h-5 w-5 text-accent" />
-                ) : (
-                  <AlertCircle className="h-5 w-5 text-muted-foreground" />
-                )}
-              </div>
-              <div className="space-y-1">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Target</span>
-                  <span className="font-semibold">£{target.target.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Actual</span>
-                  <span className="font-semibold">£{target.actual.toFixed(2)}</span>
-                </div>
-              </div>
-              <div className="progress-premium">
-                <div 
-                  className="progress-premium-fill" 
-                  style={{ width: `${Math.min((target.actual / target.target) * 100, 100)}%` }}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Charts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Performance Chart */}
-        <div className="card-premium">
-          <h3 className="text-lg font-bold mb-4">Capital Growth</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={performanceHistory}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-              <XAxis dataKey="date" stroke="var(--muted-foreground)" />
-              <YAxis stroke="var(--muted-foreground)" />
-              <Tooltip 
-                contentStyle={{
-                  backgroundColor: 'var(--card)',
-                  border: '1px solid var(--border)',
-                  borderRadius: '8px'
-                }}
-              />
-              <Legend />
-              <Line 
-                type="monotone" 
-                dataKey="capital" 
-                stroke="var(--accent)" 
-                strokeWidth={2}
-                dot={{ fill: 'var(--accent)' }}
-                name="Your Capital"
-              />
-              <Line 
-                type="monotone" 
-                dataKey="target" 
-                stroke="var(--muted-foreground)" 
-                strokeDasharray="5 5"
-                strokeWidth={2}
-                name="Target"
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Win/Loss Distribution */}
-        <div className="card-premium">
-          <h3 className="text-lg font-bold mb-4">Win/Loss Distribution</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={winLossData}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ name, value }) => `${name}: ${value}`}
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="value"
-              >
-                {COLORS.map((color, index) => (
-                  <Cell key={`cell-${index}`} fill={color} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* Benchmark Comparison */}
-      <div className="card-premium">
-        <div className="flex items-center gap-2 mb-6">
-          <TrendingUp className="h-5 w-5 text-primary" />
-          <h2 className="text-xl font-bold">Portfolio vs S&P 500</h2>
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Comparison Chart */}
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={performanceHistory}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Line 
-                  type="monotone" 
-                  dataKey="capital" 
-                  stroke="var(--primary)" 
-                  strokeWidth={2}
-                  name="Your Portfolio"
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="target" 
-                  stroke="var(--muted-foreground)" 
-                  strokeDasharray="5 5"
-                  strokeWidth={2}
-                  name="S&P 500 (Benchmark)"
-                />
-              </LineChart>
-            </ResponsiveContainer>
+            <h1 className="text-4xl font-bold gradient-text mb-2">3-Month Validation</h1>
+            <p className="max-w-3xl text-muted-foreground">
+              This page does <strong>not</strong> place trades by itself. It converts your currently selected simulator portfolio into a
+              normalized <strong>{formatCurrency(VALIDATION_BASE_CAPITAL)}</strong> challenge so you can see whether the strategy is tracking toward
+              <strong> {formatCurrency(finalTarget)}</strong> over three months.
+            </p>
           </div>
+          <div className="flex flex-wrap gap-3">
+            <Button onClick={refreshFromStorage} disabled={loading} className="gap-2 btn-premium">
+              <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+              Refresh data
+            </Button>
+            <Button variant="outline" onClick={() => setLocation("/simulator")} className="gap-2">
+              <BarChart3 className="h-4 w-4" />
+              Open simulator
+            </Button>
+          </div>
+        </div>
 
-          {/* Comparison Metrics */}
-          <div className="space-y-4">
-            <div className="p-4 rounded-lg bg-secondary/30">
-              <p className="text-sm text-muted-foreground mb-1">Your Portfolio Return</p>
-              <p className="text-2xl font-bold text-accent">{((metrics.currentCapital - 100) / 100 * 100).toFixed(2)}%</p>
-            </div>
-            <div className="p-4 rounded-lg bg-secondary/30">
-              <p className="text-sm text-muted-foreground mb-1">S&P 500 Return (Benchmark)</p>
-              <p className="text-2xl font-bold text-muted-foreground">8.50%</p>
-            </div>
-            <div className="p-4 rounded-lg bg-secondary/30">
-              <p className="text-sm text-muted-foreground mb-1">Outperformance</p>
-              <p className={`text-2xl font-bold ${((metrics.currentCapital - 100) / 100 * 100) > 8.50 ? 'text-accent' : 'text-red-600 dark:text-red-400'}`}>
-                {(((metrics.currentCapital - 100) / 100 * 100) - 8.50).toFixed(2)}%
+        <div className="rounded-3xl border border-primary/20 bg-primary/8 p-5">
+          <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="text-sm font-semibold text-foreground">How it works</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Manual simulator trades update this page after refresh. Auto-trades also appear here once the simulator records them.
+                If you do not run trades in the simulator, this validation view will remain unchanged.
               </p>
             </div>
-            <div className="p-4 rounded-lg bg-secondary/30">
-              <p className="text-sm text-muted-foreground mb-1">Sharpe Ratio (vs S&P 500: 0.95)</p>
-              <p className={`text-2xl font-bold ${metrics.sharpeRatio > 0.95 ? 'text-accent' : 'text-red-600 dark:text-red-400'}`}>
-                {metrics.sharpeRatio.toFixed(2)}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Risk Status */}
-      <div className={`card-premium border-l-4 ${riskLimitStatus === 'EXCEEDED' ? 'border-red-500' : 'border-accent'}`}>
-        <div className="flex items-center gap-3">
-          {riskLimitStatus === 'EXCEEDED' ? (
-            <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
-          ) : (
-            <CheckCircle className="h-6 w-6 text-accent" />
-          )}
-          <div>
-            <p className="font-semibold">Daily Loss Limit: 2%</p>
-            <p className={`text-sm ${riskColor}`}>
-              Status: {riskLimitStatus} - {Math.abs(metrics.dailyPnL).toFixed(2)} loss today
+            <p className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+              <Clock3 className="h-3.5 w-3.5" />
+              Last synced at {lastUpdated}
             </p>
           </div>
         </div>
-      </div>
 
-      {/* Trade History */}
-      <div className="card-premium">
-        <h3 className="text-lg font-bold mb-4">Recent Trades</h3>
-        <div className="overflow-x-auto">
-          <table className="table-premium">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Ticker</th>
-                <th>Type</th>
-                <th>Quantity</th>
-                <th>Price</th>
-                <th>P&L</th>
-                <th>P&L %</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tradeHistory.map((trade) => (
-                <tr key={trade.id}>
-                  <td>{trade.date}</td>
-                  <td className="font-semibold">{trade.ticker}</td>
-                  <td>
-                    <span className={`badge-premium ${trade.type === 'BUY' ? 'badge-success' : 'badge-warning'}`}>
-                      {trade.type}
-                    </span>
-                  </td>
-                  <td>{trade.quantity}</td>
-                  <td>£{trade.price.toFixed(2)}</td>
-                  <td className={trade.pnl >= 0 ? 'text-accent' : 'text-red-600 dark:text-red-400'}>
-                    {trade.pnl >= 0 ? '+' : ''}£{trade.pnl.toFixed(2)}
-                  </td>
-                  <td className={trade.pnlPercent >= 0 ? 'text-accent font-semibold' : 'text-red-600 dark:text-red-400 font-semibold'}>
-                    {trade.pnlPercent >= 0 ? '+' : ''}{trade.pnlPercent.toFixed(2)}%
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+          <div className="metric-card">
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-2 rounded-lg bg-primary/10">
+                <Target className="h-5 w-5 text-primary" />
+              </div>
+              <span className="text-xs font-semibold text-muted-foreground">CHALLENGE VALUE</span>
+            </div>
+            <div className="metric-value">{formatCurrency(challengeCapital)}</div>
+            <div className={`metric-change ${challengeCapital >= VALIDATION_BASE_CAPITAL ? "positive" : "negative"}`}>
+              {selectedPortfolio.totalReturnPercent >= 0 ? "+" : ""}{selectedPortfolio.totalReturnPercent.toFixed(2)}% vs simulator start
+            </div>
+            <div className="progress-premium mt-3">
+              <div className="progress-premium-fill" style={{ width: `${progressPercent}%` }} />
+            </div>
+          </div>
+
+          <div className="metric-card">
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-2 rounded-lg bg-accent/10">
+                <TrendingUp className="h-5 w-5 text-accent" />
+              </div>
+              <span className="text-xs font-semibold text-muted-foreground">SIMULATOR PORTFOLIO</span>
+            </div>
+            <div className="metric-value">{formatCurrency(selectedPortfolio.currentValue)}</div>
+            <div className="metric-label">Cash: {formatCurrency(selectedPortfolio.cash)}</div>
+            <div className="mt-2 text-xs text-muted-foreground">Portfolio: {selectedPortfolio.name}</div>
+          </div>
+
+          <div className="metric-card">
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-2 rounded-lg bg-primary/10">
+                <CheckCircle2 className="h-5 w-5 text-primary" />
+              </div>
+              <span className="text-xs font-semibold text-muted-foreground">WIN RATE</span>
+            </div>
+            <div className="metric-value">{performanceSummary.closedTrades > 0 ? `${performanceSummary.winRate.toFixed(1)}%` : "No closes yet"}</div>
+            <div className="metric-label">{performanceSummary.winningTrades} wins from {performanceSummary.closedTrades} closed trades</div>
+            <div className="mt-2 text-xs text-muted-foreground">Average hold: {formatHoldingTime(performanceSummary.averageHoldingMinutes)}</div>
+          </div>
+
+          <div className="metric-card">
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-2 rounded-lg bg-accent/10">
+                <BarChart3 className="h-5 w-5 text-accent" />
+              </div>
+              <span className="text-xs font-semibold text-muted-foreground">BACKGROUND STATUS</span>
+            </div>
+            <div className="metric-value text-2xl">{latestAutoTrade ? "Auto activity recorded" : "Manual only"}</div>
+            <div className="metric-label">{selectedPortfolio.trades.length} total trade{selectedPortfolio.trades.length === 1 ? "" : "s"}</div>
+            <div className="mt-2 text-xs text-muted-foreground">
+              {latestAutoTrade
+                ? `Latest auto-trade: ${latestAutoTrade.ticker} ${latestAutoTrade.type.toUpperCase()} on ${formatDateTime(latestAutoTrade.executedAt)}`
+                : "No scheduled or auto-trader activity has been recorded in this portfolio yet."}
+            </div>
+          </div>
         </div>
-      </div>
 
-      {/* Last Update */}
-      <div className="text-center text-sm text-muted-foreground">
-        Last updated: {lastUpdate}
-      </div>
+        <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+          <div className="card-premium">
+            <div className="flex items-center justify-between gap-3 mb-6">
+              <div>
+                <h2 className="text-xl font-bold">Monthly checkpoints</h2>
+                <p className="text-sm text-muted-foreground">Current challenge status: {validationStatus}</p>
+              </div>
+              <div className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                Target {formatCurrency(finalTarget)}
+              </div>
+            </div>
+            <div className="grid gap-4 md:grid-cols-3">
+              {monthlyTargets.map((target) => (
+                <div key={target.month} className="rounded-2xl border border-border/60 bg-background/35 p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="font-semibold">Month {target.month}</p>
+                    <span className={`text-xs font-semibold ${target.met ? "text-emerald-300" : "text-muted-foreground"}`}>
+                      {target.met ? "Met" : "In progress"}
+                    </span>
+                  </div>
+                  <div className="space-y-1 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Target</span>
+                      <span className="font-medium text-foreground">{formatCurrency(target.target)}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Current equivalent</span>
+                      <span className="font-medium text-foreground">{formatCurrency(target.actual)}</span>
+                    </div>
+                  </div>
+                  <div className="progress-premium">
+                    <div
+                      className="progress-premium-fill"
+                      style={{ width: `${Math.min((target.actual / target.target) * 100, 100)}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="card-premium">
+            <h2 className="text-xl font-bold">What this page is for</h2>
+            <div className="mt-4 space-y-3 text-sm text-muted-foreground leading-6">
+              <p>
+                The validation dashboard is a <strong>scoreboard</strong> for your simulator, not a second simulator. It translates your paper-trading
+                return into the <strong>{formatCurrency(VALIDATION_BASE_CAPITAL)} to {formatCurrency(finalTarget)}</strong> challenge format.
+              </p>
+              <p>
+                If you trade manually in the simulator, the metrics here move after refresh. If you enable auto-trading there, those recorded trades
+                also feed into this page once they are saved in the simulator portfolio.
+              </p>
+              <p>
+                If nothing changes here, it usually means the simulator portfolio has not changed yet rather than this page failing silently.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="card-premium">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-5">
+            <div>
+              <h2 className="text-xl font-bold">Recent validation activity</h2>
+              <p className="text-sm text-muted-foreground">The latest manual and auto simulator trades flowing into this validation scorecard.</p>
+            </div>
+            <div className="rounded-full border border-border/70 bg-background/40 px-3 py-1 text-xs font-medium text-muted-foreground">
+              Auto: {autoTrades.length} · Manual: {selectedPortfolio.trades.length - autoTrades.length}
+            </div>
+          </div>
+
+          {recentTrades.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-border/70 bg-background/25 p-6 text-sm text-muted-foreground">
+              No simulator trades have been recorded yet. Open the simulator to place manual trades or start an auto-trading run, then refresh this page.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {recentTrades.map((trade) => (
+                <div key={trade.id} className="rounded-2xl border border-border/60 bg-background/35 p-4">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold text-foreground">{trade.ticker}</p>
+                        <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.12em] ${trade.type === "buy" ? "bg-emerald-500/10 text-emerald-300" : "bg-rose-500/10 text-rose-300"}`}>
+                          {trade.type}
+                        </span>
+                        <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+                          {trade.origin === "auto" ? "Auto" : "Manual"}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {trade.quantity} share{trade.quantity === 1 ? "" : "s"} at {formatCurrency(trade.price)} · {formatDateTime(trade.executedAt)}
+                      </p>
+                    </div>
+                    <div className="text-sm text-muted-foreground sm:text-right">
+                      {typeof trade.confidence === "number" ? <p>Confidence: {Math.round(trade.confidence)}%</p> : null}
+                      {trade.reasoning ? <p className="max-w-md">{trade.reasoning}</p> : null}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </PageTransition>
   );

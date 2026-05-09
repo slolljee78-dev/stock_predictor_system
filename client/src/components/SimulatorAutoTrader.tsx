@@ -486,6 +486,7 @@ export function SimulatorAutoTrader({ portfolio, accessUser, onApplyTrades }: Si
                 <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Executed trades</p>
                 <p className="mt-2 text-lg font-semibold text-foreground">{scheduledRun?.totalTradesExecuted ?? 0}</p>
                 <p className="text-sm text-muted-foreground">Rounds completed: {scheduledRun?.totalRoundsCompleted ?? 0}</p>
+                <p className="mt-2 text-xs text-muted-foreground">Trades only count when a signal also passes confidence, sizing, and open-position rules.</p>
               </div>
             </div>
 
@@ -497,11 +498,11 @@ export function SimulatorAutoTrader({ portfolio, accessUser, onApplyTrades }: Si
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-sm font-semibold text-foreground">Per-round execution log</p>
-                  <p className="text-xs text-muted-foreground">Each scheduled pass records when it ran, how many tickers it scanned, how many actionable signals it found, and whether any trades executed.</p>
+                  <p className="text-xs text-muted-foreground">Each scheduled pass records when it ran, how many tickers it scanned, how many actionable signals it found, and whether any trades executed. A 3-day run now completes three daily passes, not four.</p>
                 </div>
                 {scheduledRoundHistory.length > 0 ? (
                   <Badge variant="outline" className="border-cyan-500/30 bg-cyan-500/10 text-cyan-100">
-                    {scheduledRoundHistory.length} round{scheduledRoundHistory.length === 1 ? "" : "s"} logged
+                    {(scheduledRun?.totalRoundsCompleted ?? scheduledRoundHistory.length)} round{(scheduledRun?.totalRoundsCompleted ?? scheduledRoundHistory.length) === 1 ? "" : "s"} completed
                   </Badge>
                 ) : null}
               </div>

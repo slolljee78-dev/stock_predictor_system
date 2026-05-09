@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import DashboardLayout from "@/components/DashboardLayout";
 import { AdminViewModeToggle } from "@/components/AdminViewModeToggle";
 import {
   Card,
@@ -24,8 +25,6 @@ import {
   getLatestSignalsByTicker,
 } from "@/lib/dashboardSignalSummary";
 import {
-  getActionableWatchlistCounts,
-  getLiveSignalCoverage,
   getResolvedWatchlistPresentation,
 } from "@/lib/dashboardWatchlistSignals";
 import {
@@ -59,6 +58,7 @@ import {
 } from "@/lib/refreshRateLimiter";
 import {
   ArrowRight,
+  BarChart3,
   BellRing,
   BrainCircuit,
   CheckCircle2,
@@ -179,9 +179,32 @@ export default function Dashboard() {
   );
   const dailyTrendData = useMemo(() => getDailyStockSignalSummary(signals, 7), [signals]);
   const latestSignalsByTicker = useMemo(() => getLatestSignalsByTicker(signals), [signals]);
-  const { buyCount: buySignals, sellCount: sellSignals } = useMemo(
-    () => getActionableWatchlistCounts(watchlistStatuses),
-    [watchlistStatuses],
+  const resolvedWatchlistPresentations = useMemo(
+    () => watchlist.map((stock) => getResolvedWatchlistPresentation(
+      stock.ticker,
+      watchlistStatusMap[stock.ticker],
+      latestSignalsByTicker[stock.ticker],
+    )),
+    [latestSignalsByTicker, watchlist, watchlistStatusMap],
+  );
+  const { buyCount: buySignals, sellCount: sellSignals, activeCount: actionableSignalCount } = useMemo(
+    () => resolvedWatchlistPresentations.reduce(
+      (counts, presentation) => {
+        if (presentation.statusTone === "buy") {
+          counts.buyCount += 1;
+          counts.activeCount += 1;
+        }
+
+        if (presentation.statusTone === "sell") {
+          counts.sellCount += 1;
+          counts.activeCount += 1;
+        }
+
+        return counts;
+      },
+      { buyCount: 0, sellCount: 0, activeCount: 0 },
+    ),
+    [resolvedWatchlistPresentations],
   );
 
   // Safely extract trend data
@@ -191,8 +214,8 @@ export default function Dashboard() {
   const sellTrendPercent = 0;
 
   const signalCoverage = useMemo(
-    () => getLiveSignalCoverage(watchlistStatuses, watchlist.length),
-    [watchlistStatuses, watchlist.length],
+    () => (watchlist.length > 0 ? Math.round((actionableSignalCount / watchlist.length) * 100) : 0),
+    [actionableSignalCount, watchlist.length],
   );
 
   useEffect(() => {
@@ -495,7 +518,7 @@ export default function Dashboard() {
             <Card className="border-0 bg-transparent shadow-none">
               <CardHeader className="px-0 pt-0">
                 <CardTitle>Signal Trend</CardTitle>
-                <CardDescription>7-day stock activity across your watchlist</CardDescription>
+                <CardDescription>7-day stock activity across your watchlist. Overview cards above show the latest current setup for each ticker.</CardDescription>
               </CardHeader>
               <CardContent className="px-0">
                 <div className="space-y-3">
@@ -796,16 +819,19 @@ export default function Dashboard() {
                 title="Review signals"
                 text={hasPremiumSignalAccess ? "Check today's highest-conviction buy and sell ideas" : "Unlock full buy and sell signal detail by upgrading your plan"}
                 icon={<BrainCircuit className="h-5 w-5 text-primary" />}
+                onClick={() => setLocation(hasPremiumSignalAccess ? "/signals" : "/pricing")}
               />
               <GuideCard
                 title="Validate ideas"
-                text="Use the simulator to test strategies before trading"
+                text="Review how your simulator portfolio is tracking against the 3-month challenge"
                 icon={<BarChart3 className="h-5 w-5 text-primary" />}
+                onClick={() => setLocation("/validation/dashboard")}
               />
               <GuideCard
                 title="Set alerts"
                 text="Get notified when key setups appear in your watchlist"
                 icon={<BellRing className="h-5 w-5 text-primary" />}
+                onClick={() => setLocation("/alert-preferences")}
               />
             </div>
           </div>
@@ -814,9 +840,6 @@ export default function Dashboard() {
     </DashboardLayout>
   );
 }
-
-import DashboardLayout from "@/components/DashboardLayout";
-import { BarChart3 } from "lucide-react";
 
 function MetricCard({
   label,
@@ -866,13 +889,19 @@ function GuideCard({
   title,
   text,
   icon,
+  onClick,
 }: {
   title: string;
   text: string;
   icon: React.ReactNode;
+  onClick?: () => void;
 }) {
   return (
-    <div className="rounded-3xl border border-border/70 bg-background/35 p-4">
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-full rounded-3xl border border-border/70 bg-background/35 p-4 text-left transition hover:border-primary/35 hover:bg-background/55"
+    >
       <div className="flex items-center gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/12 border border-primary/20">
           {icon}
@@ -880,6 +909,6 @@ function GuideCard({
         <p className="font-semibold text-foreground">{title}</p>
       </div>
       <p className="mt-3 text-sm text-muted-foreground">{text}</p>
-    </div>
+    </button>
   );
 }

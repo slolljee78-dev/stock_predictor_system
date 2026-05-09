@@ -833,3 +833,7 @@
 - [x] Fix and test the signal-generation and simulator execution flow if results are being blocked by logic, persistence, or configuration defects
 - [x] Calibrate stored-signal and simulator confidence thresholds so dashboard buy/sell signals render and scheduled auto-trading can execute qualifying trades again
 - [x] Update the real-time signals dashboard cards so the buy section surfaces concrete buy ideas instead of only aggregate counts
+- [x] Investigate why the scheduled auto-trade simulator reports only one trade after multiple rounds and correct any misleading summary or execution logic
+- [x] Reconcile the overview buy and sell counts with the signal trend cards so both surfaces reflect the same current signal basis
+- [x] Make each dashboard next-step card navigate to its relevant destination page
+- [x] Clarify and fix the 3-month validation page so its metrics and background behavior match the intended simulator or validation workflow
