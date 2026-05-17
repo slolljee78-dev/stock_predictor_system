@@ -10,6 +10,7 @@ import { applyQuickFilter, getQuickFilterValue } from '@/lib/signalQuickFilters'
 import { useLocation } from 'wouter';
 import { DASHBOARD_HOME_PATH, navigateToDashboardMenu } from '@/lib/navigation';
 import { getSignalFilterFromSearch } from '@/lib/dashboardNavigation';
+import { PriceFreshnessIndicator } from '@/components/TickerSupportIndicator';
 
 interface SignalWithMetrics {
   ticker: string;
@@ -411,14 +412,18 @@ function SignalCard({
   const isPositive = signal.changePercent >= 0;
   const isGreen = signal.signalType === 'buy';
 
+  // Calculate freshness state
+  const isStale = Date.now() - signal.timestamp > 3600000; // Stale if older than 1 hour
+  const isLoading = false; // Not loading in this context
+
   return (
     <div className="border border-border rounded-lg p-4 hover:bg-accent transition-colors">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-4 flex-1">
           {/* Ticker and Signal Type */}
           <div>
             <h3 className="text-lg font-bold text-foreground">{signal.ticker}</h3>
-            <div className="flex gap-2 mt-1">
+            <div className="flex gap-2 mt-1 flex-wrap">
               <Badge
                 variant={isGreen ? 'default' : 'destructive'}
                 className={isGreen ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}
@@ -426,6 +431,11 @@ function SignalCard({
                 {signal.signalType.toUpperCase()}
               </Badge>
               <Badge variant="outline">Confidence: {signal.confidence}%</Badge>
+              <PriceFreshnessIndicator
+                lastUpdateTime={signal.timestamp}
+                isStale={isStale}
+                isLoading={isLoading}
+              />
             </div>
           </div>
         </div>

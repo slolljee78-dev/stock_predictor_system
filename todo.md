@@ -837,3 +837,56 @@
 - [x] Reconcile the overview buy and sell counts with the signal trend cards so both surfaces reflect the same current signal basis
 - [x] Make each dashboard next-step card navigate to its relevant destination page
 - [x] Clarify and fix the 3-month validation page so its metrics and background behavior match the intended simulator or validation workflow
+
+
+## Audit Recommendations - Phase 1: Credibility & Trust
+- [x] Remove or replace fake accuracy metrics from SignalAccuracyDashboard.tsx (hard-coded 75.5% win rate, 78.2% buy accuracy)
+- [x] Add disclaimer to Home.tsx about unverified claims (12,000+ traders, 4.8/5 rating, 67% accuracy)
+- [x] Add "Data Freshness" disclosure badge to signal cards showing "Last updated: X hours ago"
+- [x] Add tooltip explaining daily data limitation on signal generation
+- [x] Update marketing copy to clarify signals are swing-trading focused (3-5 day holds), not day-trading
+- [x] Add backtesting disclaimer: "Past performance does not guarantee future results"
+- [x] Add simulator accuracy disclaimer: "Real fills may differ from simulated prices"
+
+## Audit Recommendations - Phase 2: Onboarding & UX
+- [x] Build 3-step onboarding modal for new users (Add stock → Check signals → Try simulator)
+- [ ] Add contextual help tooltips (Confidence, Signal Type, Simulator, Auto-Trading)
+- [ ] Create "Getting Started" guide page (/getting-started)
+- [ ] Add video tutorial links (YouTube embeds)
+- [ ] Build interactive walkthrough for first-time dashboard visit
+
+## Audit Recommendations - Phase 3: Simulator Improvements
+- [ ] Add limit order support to simulator (buy/sell at specified price)
+- [ ] Add stop-loss order support (sell if price drops below threshold)
+- [ ] Add fractional share support (buy $100 worth instead of whole shares)
+- [ ] Update commission model to 0% (match Trading 212)
+- [ ] Improve slippage calculation (market-realistic instead of fixed 0.05%)
+- [ ] Add dividend handling to long-term backtests
+- [ ] Add corporate action handling (splits, mergers)
+
+## Audit Recommendations - Phase 4: Data & Signal Quality
+- [ ] Upgrade from daily to intraday data (15-minute candles from Alpha Vantage or Finnhub)
+- [ ] Recalculate indicators every 15 minutes instead of once per day
+- [ ] Add volume confirmation to signal generation
+- [ ] Add earnings/news event filtering to signals
+- [ ] Build backtesting validation to verify signal accuracy
+- [ ] Add correlation and sector rotation analysis
+
+## Audit Recommendations - Phase 5: Growth & Content
+- [ ] Create blog section (/blog) with 50+ articles on trading signals, technical analysis, Trading 212 guide
+- [ ] Build case studies page with real user stories (with permission)
+- [ ] Create YouTube channel with 10+ tutorials
+- [ ] Add signal sharing feature (Twitter, Reddit, Discord)
+- [ ] Build leaderboard for simulator performance
+- [ ] Launch monthly challenges ("Beat the market in 30 days")
+- [ ] Create affiliate program
+- [ ] Partner with trading blogs and YouTube channels
+
+## Audit Recommendations - Phase 6: Feature Parity with Competitors
+- [ ] Add charting and technical analysis tools (TradingView-like)
+- [ ] Build community forum or Discord server
+- [ ] Add API documentation for developers
+- [ ] Create mobile app (iOS/Android)
+- [ ] Integrate with Trading 212 API (if available)
+- [ ] Add real-time news and sentiment analysis
+- [ ] Build stock screener with advanced filters

@@ -26,7 +26,8 @@ import { useLocation } from "wouter";
 import { PublicSiteHeader } from "@/components/PublicSiteHeader";
 import { getPublicAudienceState, getPublicPrimaryAction } from "@/lib/publicSite";
 import { getLoginUrl } from "@/const";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { OnboardingModal } from "@/components/OnboardingModal";
 
 const featureCards = [
   {
@@ -51,9 +52,9 @@ const featureCards = [
 
 const proofStats = [
   { label: "Trading 212 stocks covered", value: "212" },
-  { label: "Signals generated each week", value: "12k+" },
-  { label: "Average review time saved", value: "73%" },
-  { label: "Auto-trading simulator", value: "Random baskets, signal-driven paper trades" },
+  { label: "Technical indicators used", value: "RSI, MACD, SMA, Bollinger Bands" },
+  { label: "Signal update frequency", value: "Daily (end-of-day)" },
+  { label: "Auto-trading simulator", value: "Paper trading with $10k virtual capital" },
 ];
 
 const workflowSteps = [
@@ -101,36 +102,36 @@ const testimonials = [
 ];
 
 const socialProofStats = [
-  { value: "12,000+", label: "Active traders" },
-  { value: "4.8/5", label: "Average rating (2,300+ reviews)" },
-  { value: "73%", label: "Average analysis time saved" },
-  { value: "67%", label: "Signal accuracy rate (backtested)" },
+  { value: "212", label: "Trading 212 stocks covered" },
+  { value: "Real-time", label: "Signal generation (daily updates)" },
+  { value: "$10k", label: "Virtual capital for simulator" },
+  { value: "Multi-indicator", label: "Consensus-based signals" },
 ];
 
 const faqItems = [
   {
     question: "Will this guarantee me profits?",
-    answer: "No. We're transparent about this: no trading tool guarantees profits. Markets are unpredictable, and you can lose money. What we do guarantee is clarity. We help you analyze faster, validate ideas, and make better decisions. The rest is up to you.",
+    answer: "No. No trading tool guarantees profits. Markets are unpredictable, and you can lose money. Stock Predictor is a decision-support tool that helps you analyze faster and validate ideas. The simulator is for learning only—real trading results may differ significantly. Always trade responsibly and never risk more than you can afford to lose.",
   },
   {
     question: "Is this a scam?",
-    answer: "No. Stock Predictor is a decision-support platform for self-directed investors. It does not provide personal financial advice and it is not regulated by the FCA. We aim to be trustworthy by being transparent about methodology, risk, and the role of simulation before real capital is used.",
+    answer: "No. Stock Predictor is a decision-support platform for self-directed investors. It does not provide personal financial advice and is not regulated by the FCA. We are transparent about our methodology (technical indicators), data sources (Alpha Vantage), and limitations (daily data, not real-time). Use the simulator to validate ideas before risking real capital.",
   },
   {
     question: "How accurate are the signals?",
-    answer: "Our backtested accuracy rate is 67% across 212 stocks over the past 3 years. That's significantly better than random chance (50%) but far from perfect. Markets are complex. We're honest about this.",
+    answer: "Signal accuracy depends on market conditions and is not guaranteed. We use technical indicators (RSI, MACD, SMA, Bollinger Bands) to generate buy/sell recommendations, but past performance does not guarantee future results. Use the simulator to test strategies before risking real capital.",
   },
   {
     question: "What if I don't like it?",
-    answer: "30-day money-back guarantee. No questions asked. Try the full platform free for 7 days, then decide.",
+    answer: "We offer a 30-day money-back guarantee if you're not satisfied. Start with the free tier to explore the simulator and signals, then upgrade if it meets your needs.",
   },
   {
     question: "Can I use this with other brokers?",
-    answer: "Yes. While we're optimized for Trading 212, the signals work with any broker. Use them wherever you trade.",
+    answer: "Yes. While we're optimized for Trading 212 stocks, the signals work with any broker that offers these stocks. The simulator is independent and works with any trading strategy.",
   },
   {
     question: "Is this for beginners or pros?",
-    answer: "Both. Beginners love the simplicity and confidence scoring. Pros love the API and advanced workflows. Pick the plan that matches your needs.",
+    answer: "Both. Beginners benefit from the simple signal interface and paper trading simulator to learn. Experienced traders use it to validate ideas and test strategies before committing capital. Pick the plan that matches your needs.",
   },
 ];
 
@@ -138,7 +139,23 @@ export default function Home() {
   const { isAuthenticated, loading } = useAuth();
   const [, setLocation] = useLocation();
   const [expandedFaq, setExpandedFaq] = useState<number | null>(0);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const heroPrimaryAction = getPublicPrimaryAction(getPublicAudienceState(isAuthenticated), "hero");
+
+  // Show onboarding modal for new authenticated users
+  useEffect(() => {
+    if (isAuthenticated && !loading) {
+      const hasSeenOnboarding = localStorage.getItem('onboarding_completed');
+      if (!hasSeenOnboarding) {
+        setShowOnboarding(true);
+      }
+    }
+  }, [isAuthenticated, loading]);
+
+  const handleOnboardingComplete = () => {
+    localStorage.setItem('onboarding_completed', 'true');
+    setShowOnboarding(false);
+  };
 
   if (loading) {
     return (
@@ -157,6 +174,12 @@ export default function Home() {
       <div className="hero-orb right-[-7rem] top-24 h-80 w-80 bg-accent/25" />
 
       <PublicSiteHeader currentPath="/" />
+
+      <OnboardingModal
+        isOpen={showOnboarding}
+        onClose={() => setShowOnboarding(false)}
+        onComplete={handleOnboardingComplete}
+      />
 
       <main className="focus:outline-none">
         {/* HERO SECTION - REDESIGNED */}
@@ -179,7 +202,7 @@ export default function Home() {
                   </div>
 
                   <p className="lead-copy">
-                    AI-ranked trading signals plus an automated paper-trading simulator that scans wider stock baskets and executes virtual trades from buy and sell signals before you commit real money.
+                    Technical analysis-powered trading signals for Trading 212 stocks, plus a paper-trading simulator to test strategies risk-free before committing real capital.
                   </p>
                 </div>
 

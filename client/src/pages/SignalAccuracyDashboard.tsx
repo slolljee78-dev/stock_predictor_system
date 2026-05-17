@@ -1,10 +1,14 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, Target, BarChart3, ArrowLeft, Home } from "lucide-react";
+import { TrendingUp, TrendingDown, Target, BarChart3, ArrowLeft, Home, AlertCircle, Info } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
 import { DASHBOARD_HOME_PATH, navigateToDashboardMenu } from "@/lib/navigation";
+import { getSelectedPortfolio, loadTradingSimulatorState } from "@/lib/tradingSimulatorState";
+import { useEffect, useState } from "react";
+
+const getStorage = () => (typeof window !== "undefined" ? window.localStorage : undefined);
 
 export default function SignalAccuracyDashboard() {
   const { user } = useAuth();
@@ -12,6 +16,19 @@ export default function SignalAccuracyDashboard() {
   const { data: accuracyData, isLoading } = trpc.dashboard.getTrendData.useQuery(undefined, {
     enabled: !!user,
   });
+  
+  const [simulatorState, setSimulatorState] = useState(() => {
+    return loadTradingSimulatorState(getStorage());
+  });
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSimulatorState(loadTradingSimulatorState(getStorage()));
+    }, 30000); // Refresh every 30 seconds
+    return () => clearInterval(interval);
+  }, []);
+
+  const selectedPortfolio = getSelectedPortfolio(simulatorState);
 
   if (isLoading) {
     return (
@@ -34,28 +51,32 @@ export default function SignalAccuracyDashboard() {
 
   const metrics = [
     {
-      label: "Win Rate",
-      value: "75.5%",
-      icon: Target,
-      trend: "up",
-    },
-    {
-      label: "Total Signals",
-      value: "42",
+      label: "Total Trades Executed",
+      value: selectedPortfolio.trades.length.toString(),
       icon: BarChart3,
-      trend: "up",
+      trend: selectedPortfolio.trades.length > 0 ? "up" : "neutral",
+      description: "Trades executed in your simulator portfolio",
     },
     {
-      label: "Avg P&L",
-      value: "$125.50",
+      label: "Portfolio Return",
+      value: `${selectedPortfolio.totalReturnPercent.toFixed(2)}%`,
       icon: TrendingUp,
-      trend: "up",
+      trend: selectedPortfolio.totalReturnPercent > 0 ? "up" : "down",
+      description: "Total return on initial capital",
     },
     {
-      label: "Sharpe Ratio",
-      value: "1.85",
+      label: "Current Value",
+      value: `$${selectedPortfolio.currentValue.toFixed(2)}`,
+      icon: Target,
+      trend: selectedPortfolio.currentValue > selectedPortfolio.initialCapital ? "up" : "down",
+      description: "Current portfolio value",
+    },
+    {
+      label: "Cash Balance",
+      value: `$${selectedPortfolio.cash.toFixed(2)}`,
       icon: TrendingDown,
       trend: "neutral",
+      description: "Available cash for trades",
     },
   ];
 
@@ -79,12 +100,26 @@ export default function SignalAccuracyDashboard() {
       </div>
 
       <div>
-        <h1 className="text-4xl font-bold gradient-text mb-2">Signal Accuracy</h1>
+        <h1 className="text-4xl font-bold gradient-text mb-2">Simulator Performance</h1>
         <p className="text-muted-foreground">
-          Track your signal performance metrics and trading statistics
+          Track your paper trading performance from the simulator
         </p>
       </div>
 
+      {/* Disclaimer Banner */}
+      <Card className="border-amber-500/50 bg-amber-500/10">
+        <CardContent className="pt-6">
+          <div className="flex gap-3">
+            <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-amber-900 mb-1">Paper Trading Results</p>
+              <p className="text-sm text-amber-800">
+                These metrics reflect simulator performance only. Real trading results may differ significantly due to market conditions, execution prices, and other factors. Past performance does not guarantee future results.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {metrics.map((metric) => {
@@ -93,9 +128,12 @@ export default function SignalAccuracyDashboard() {
             <Card key={metric.label} className="relative overflow-hidden">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    {metric.label}
-                  </CardTitle>
+                  <div>
+                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                      {metric.label}
+                    </CardTitle>
+                    <p className="text-xs text-muted-foreground mt-1">{metric.description}</p>
+                  </div>
                   <Icon className="h-4 w-4 text-primary/60" />
                 </div>
               </CardHeader>
@@ -123,24 +161,49 @@ export default function SignalAccuracyDashboard() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Performance Summary</CardTitle>
+          <CardTitle>Portfolio Summary</CardTitle>
           <CardDescription>
-            Historical signal performance and accuracy trends
+            Overview of your simulator portfolio
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <div className="flex justify-between items-center p-4 bg-muted/50 rounded-lg">
-              <span className="text-sm font-medium">Buy Signals Accuracy</span>
-              <span className="text-lg font-bold">78.2%</span>
+              <span className="text-sm font-medium">Initial Capital</span>
+              <span className="text-lg font-bold">${selectedPortfolio.initialCapital.toFixed(2)}</span>
             </div>
             <div className="flex justify-between items-center p-4 bg-muted/50 rounded-lg">
-              <span className="text-sm font-medium">Sell Signals Accuracy</span>
-              <span className="text-lg font-bold">72.8%</span>
+              <span className="text-sm font-medium">Total Return</span>
+              <span className={`text-lg font-bold ${selectedPortfolio.totalReturn >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                ${selectedPortfolio.totalReturn.toFixed(2)}
+              </span>
             </div>
             <div className="flex justify-between items-center p-4 bg-muted/50 rounded-lg">
-              <span className="text-sm font-medium">Best Performing Stock</span>
-              <span className="text-lg font-bold">AAPL</span>
+              <span className="text-sm font-medium">Open Positions</span>
+              <span className="text-lg font-bold">{selectedPortfolio.positions.length}</span>
+            </div>
+            <div className="flex justify-between items-center p-4 bg-muted/50 rounded-lg">
+              <span className="text-sm font-medium">Total Trades</span>
+              <span className="text-lg font-bold">{selectedPortfolio.trades.length}</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Information Box */}
+      <Card className="border-blue-500/50 bg-blue-500/10">
+        <CardContent className="pt-6">
+          <div className="flex gap-3">
+            <Info className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-blue-900 mb-2">How Simulator Performance is Calculated</p>
+              <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside">
+                <li>Trades are executed at current market prices with 0.05% slippage</li>
+                <li>Commission is charged at 0.1% per trade</li>
+                <li>Positions are valued at current market prices (refreshed every 60 seconds)</li>
+                <li>Signals are generated from daily technical indicators (RSI, MACD, SMA, Bollinger Bands)</li>
+                <li>Auto-trading scans your selected universe and executes trades based on confidence thresholds</li>
+              </ul>
             </div>
           </div>
         </CardContent>
