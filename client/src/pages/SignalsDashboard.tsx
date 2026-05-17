@@ -11,6 +11,7 @@ import { useLocation } from 'wouter';
 import { DASHBOARD_HOME_PATH, navigateToDashboardMenu } from '@/lib/navigation';
 import { getSignalFilterFromSearch } from '@/lib/dashboardNavigation';
 import { PriceFreshnessIndicator } from '@/components/TickerSupportIndicator';
+import { HelpTooltip, HELP_CONTENT } from '@/components/HelpTooltip';
 
 interface SignalWithMetrics {
   ticker: string;
@@ -423,14 +424,16 @@ function SignalCard({
           {/* Ticker and Signal Type */}
           <div>
             <h3 className="text-lg font-bold text-foreground">{signal.ticker}</h3>
-            <div className="flex gap-2 mt-1 flex-wrap">
+                <div className="flex gap-2 mt-1 flex-wrap items-center">
               <Badge
                 variant={isGreen ? 'default' : 'destructive'}
                 className={isGreen ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}
               >
                 {signal.signalType.toUpperCase()}
               </Badge>
+              <HelpTooltip content={HELP_CONTENT.signalType.content} />
               <Badge variant="outline">Confidence: {signal.confidence}%</Badge>
+              <HelpTooltip content={HELP_CONTENT.confidence.content} />
               <PriceFreshnessIndicator
                 lastUpdateTime={signal.timestamp}
                 isStale={isStale}

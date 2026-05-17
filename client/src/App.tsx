@@ -24,6 +24,7 @@ import SignalAccuracyDashboard from "./pages/SignalAccuracyDashboard";
 import AlertPreferencesPage from "./pages/AlertPreferencesPage";
 import Analysis from "./pages/Analysis";
 import HowItWorks from "./pages/HowItWorks";
+import GettingStarted from "./pages/GettingStarted";
 
 function ScrollToTop() {
   const [location] = useLocation();
@@ -56,6 +57,7 @@ function Router() {
       <Route path="/alert-preferences" component={AlertPreferencesPage} />
       <Route path="/analysis" component={Analysis} />
       <Route path="/how-it-works" component={HowItWorks} />
+      <Route path="/getting-started" component={GettingStarted} />
       <Route path="/mobile" component={MobileAppShell} />
       <Route path="/watchlist/:watchlistId/settings" component={WatchlistSettings} />
       <Route path="/404" component={NotFound} />

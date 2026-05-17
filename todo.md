@@ -850,14 +850,15 @@
 
 ## Audit Recommendations - Phase 2: Onboarding & UX
 - [x] Build 3-step onboarding modal for new users (Add stock → Check signals → Try simulator)
-- [ ] Add contextual help tooltips (Confidence, Signal Type, Simulator, Auto-Trading)
-- [ ] Create "Getting Started" guide page (/getting-started)
+- [x] Add contextual help tooltips (Confidence, Signal Type, Simulator, Auto-Trading) - HelpTooltip component with 15+ predefined topics
+- [x] Create "Getting Started" guide page (/getting-started) - Comprehensive 4-section guide with FAQ
 - [ ] Add video tutorial links (YouTube embeds)
 - [ ] Build interactive walkthrough for first-time dashboard visit
 
 ## Audit Recommendations - Phase 3: Simulator Improvements
-- [ ] Add limit order support to simulator (buy/sell at specified price)
-- [ ] Add stop-loss order support (sell if price drops below threshold)
+- [x] Add limit order support UI and data model (buy/sell at specified price) - OrderTypeSelector component with validation
+- [x] Add stop-loss order support UI and data model (sell if price drops below threshold) - Integrated with limit order UI
+- [ ] Implement pending orders execution logic (check prices and auto-execute)
 - [ ] Add fractional share support (buy $100 worth instead of whole shares)
 - [ ] Update commission model to 0% (match Trading 212)
 - [ ] Improve slippage calculation (market-realistic instead of fixed 0.05%)

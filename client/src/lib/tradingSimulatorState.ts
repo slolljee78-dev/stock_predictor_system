@@ -1,5 +1,17 @@
 export type TradePriceSource = "live" | "fallback";
 
+export interface PendingOrder {
+  id: number;
+  ticker: string;
+  type: "buy" | "sell";
+  orderType: "limit" | "stop-loss";
+  quantity: number;
+  limitPrice?: number; // For limit orders
+  stopPrice?: number; // For stop-loss orders
+  createdAt: string;
+  status: "pending" | "cancelled";
+}
+
 export interface SimulatorPosition {
   ticker: string;
   quantity: number;
@@ -22,6 +34,10 @@ export interface SimulatorTrade {
   confidence?: number;
   reasoning?: string;
   riskProfile?: "conservative" | "balanced" | "aggressive";
+  orderType?: "market" | "limit" | "stop-loss"; // market (default), limit (buy/sell at or better price), stop-loss (sell if price drops below)
+  limitPrice?: number; // For limit orders: buy at or below this price, sell at or above
+  stopPrice?: number; // For stop-loss orders: trigger price to sell
+  status?: "pending" | "filled" | "cancelled"; // pending for limit/stop orders waiting to execute
 }
 
 export interface SimulatorPortfolio {
@@ -34,6 +50,7 @@ export interface SimulatorPortfolio {
   totalReturnPercent: number;
   positions: SimulatorPosition[];
   trades: SimulatorTrade[];
+  pendingOrders?: PendingOrder[]; // Limit and stop-loss orders waiting to execute
 }
 
 export interface TradingSimulatorState {

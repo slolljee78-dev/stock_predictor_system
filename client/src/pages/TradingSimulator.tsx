@@ -4,6 +4,8 @@ import { ArrowLeft, AlertCircle, BarChart3, CheckCircle2, DollarSign, History, H
 
 import { SimulatorAutoTrader } from "@/components/SimulatorAutoTrader";
 import { AdminViewModeToggle } from "@/components/AdminViewModeToggle";
+import { OrderTypeSelector, type OrderType } from "@/components/OrderTypeSelector";
+import { HelpTooltip, HELP_CONTENT } from "@/components/HelpTooltip";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -81,6 +83,9 @@ export default function TradingSimulator() {
     quantity: "",
     price: "",
   });
+  const [orderType, setOrderType] = useState<OrderType>("market");
+  const [limitPrice, setLimitPrice] = useState("");
+  const [stopPrice, setStopPrice] = useState("");
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [hasManualPriceOverride, setHasManualPriceOverride] = useState(false);
   const [tradeHistoryFilter, setTradeHistoryFilter] = useState<TradeHistoryFilter>("all");
@@ -333,6 +338,9 @@ export default function TradingSimulator() {
       }));
 
       setTradeForm({ ticker: "", quantity: "", price: "" });
+      setOrderType("market");
+      setLimitPrice("");
+      setStopPrice("");
       setHasManualPriceOverride(false);
       setFeedback({
         type: "success",
@@ -527,9 +535,12 @@ export default function TradingSimulator() {
           <CardContent className="grid gap-6 md:grid-cols-5">
             <div className="metric-card">
               <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className="metric-label">Portfolio Value</p>
-                  <p className="metric-value">{formatCurrency(selectedPortfolio.currentValue)}</p>
+                <div className="flex items-center gap-2">
+                  <div>
+                    <p className="metric-label">Portfolio Value</p>
+                    <p className="metric-value">{formatCurrency(selectedPortfolio.currentValue)}</p>
+                  </div>
+                  <HelpTooltip content={HELP_CONTENT.portfolio.content} />
                 </div>
                 <BarChart3 className="h-5 w-5 text-primary" />
               </div>
@@ -537,9 +548,12 @@ export default function TradingSimulator() {
 
             <div className="metric-card">
               <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className="metric-label">Cash Balance</p>
-                  <p className="metric-value">{formatCurrency(selectedPortfolio.cash)}</p>
+                <div className="flex items-center gap-2">
+                  <div>
+                    <p className="metric-label">Cash Balance</p>
+                    <p className="metric-value">{formatCurrency(selectedPortfolio.cash)}</p>
+                  </div>
+                  <HelpTooltip content="Available cash to place new trades" />
                 </div>
                 <DollarSign className="h-5 w-5 text-primary" />
               </div>
@@ -624,7 +638,7 @@ export default function TradingSimulator() {
         <div className="grid gap-6 lg:grid-cols-3">
           <Card className="premium-card border-0 bg-transparent shadow-none lg:col-span-2">
             <CardHeader>
-              <CardTitle className="text-xl font-semibold tracking-tight">Execute Trade</CardTitle>
+              <CardTitle className="text-xl font-semibold tracking-tight flex items-center gap-2">Execute Trade <HelpTooltip content={HELP_CONTENT.paperTrading.content} /></CardTitle>
               <CardDescription>
                 Choose a ticker to auto-load the latest live price. If the live feed is unavailable, you can still enter a manual fallback price and continue.
               </CardDescription>
@@ -677,6 +691,18 @@ export default function TradingSimulator() {
               <div className={`rounded-2xl border px-4 py-3 text-sm leading-6 ${livePriceData ? "border-cyan-500/20 bg-cyan-500/10 text-cyan-50" : livePriceUnavailable ? "border-amber-500/20 bg-amber-500/10 text-amber-50" : "border-white/10 bg-white/5 text-muted-foreground"}`}>
                 {priceFieldHint}
               </div>
+
+              <OrderTypeSelector
+                orderType={orderType}
+                onOrderTypeChange={setOrderType}
+                currentPrice={livePriceData?.price || (tradeForm.price ? parseFloat(tradeForm.price) : null)}
+                limitPrice={limitPrice}
+                onLimitPriceChange={setLimitPrice}
+                stopPrice={stopPrice}
+                onStopPriceChange={setStopPrice}
+                tradeType="buy"
+                isLoading={executeLiveTradeWithMarketPrice.isPending}
+              />
 
               <div className="flex gap-3">
                 <Button
