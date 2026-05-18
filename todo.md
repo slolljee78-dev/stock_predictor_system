@@ -852,8 +852,8 @@
 - [x] Build 3-step onboarding modal for new users (Add stock → Check signals → Try simulator)
 - [x] Add contextual help tooltips (Confidence, Signal Type, Simulator, Auto-Trading) - HelpTooltip component with 15+ predefined topics
 - [x] Create "Getting Started" guide page (/getting-started) - Comprehensive 4-section guide with FAQ
-- [ ] Add video tutorial links (YouTube embeds)
-- [ ] Build interactive walkthrough for first-time dashboard visit
+- [x] Add video tutorial links (YouTube embeds) - VideoTutorial component with 4 embedded videos
+- [x] Build interactive walkthrough for first-time dashboard visit - DashboardWalkthrough component with 5 steps
 
 ## Audit Recommendations - Phase 3: Simulator Improvements
 - [x] Add limit order support UI and data model (buy/sell at specified price) - OrderTypeSelector component with validation
@@ -861,7 +861,7 @@
 - [x] Implement pending orders execution logic (check prices and auto-execute) - pendingOrderExecutor.ts with 14 tests
 - [x] Add fractional share support (buy $100 worth instead of whole shares) - fractionalShares.ts with 18 tests
 - [x] Update commission model to 0% (match Trading 212) - Default 0% commission, configurable
-- [ ] Improve slippage calculation (market-realistic instead of fixed 0.05%)
+- [x] Improve slippage calculation (market-realistic instead of fixed 0.05%) - slippageCalculator.ts with 18 tests
 - [ ] Add dividend handling to long-term backtests
 - [ ] Add corporate action handling (splits, mergers)
 
@@ -882,8 +882,8 @@
 - [x] Launch monthly challenges ("Beat the market in 30 days") - 3 challenges (active, upcoming, completed)
 - [x] Create community page with leaderboard, challenges, and statistics
 - [x] Add signal sharing feature (Twitter, Reddit, Discord) - SignalSharing component with 4 platforms
+- [x] Build case studies page with real user stories - 4 detailed case studies with lessons learned
 - [ ] Expand to 50+ blog articles on trading signals and technical analysis
-- [ ] Build case studies page with real user stories (with permission)
 - [ ] Create YouTube channel with 10+ tutorials
 - [ ] Create affiliate program
 - [ ] Partner with trading blogs and YouTube channels

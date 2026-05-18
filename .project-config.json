@@ -1,0 +1,51 @@
+{
+  "build_command": "pnpm run build",
+  "capabilities": [
+    "server",
+    "db",
+    "user"
+  ],
+  "dev_command": "pnpm run dev",
+  "env_vars": {
+    "DATABASE_URL": "mysql://irvuEERniB6Vw7s.bec5f3955eab:X0hG9DFt8p48EMjVUyV7@gateway05.us-east-1.prod.aws.tidbcloud.com:4000/knJ3QkdJFvivzkyeUv8kpq?ssl={\"rejectUnauthorized\":true}"
+  },
+  "experiments": [
+    "no_db_push"
+  ],
+  "git_remote": {
+    "repo_url": "s3://vida-prod-gitrepo/webdev-git/310519663483836922/knJ3QkdJFvivzkyeUv8kpq",
+    "access_key_id": "ASIAZV3A2ECZGIUWJ2O6",
+    "secret_access_key": "SCX8XgxCIAS4nOoa6INl1OJW9ZE0g4pohdeqq8td",
+    "session_token": "IQoJb3JpZ2luX2VjEPD//////////wEaCXVzLWVhc3QtMSJHMEUCIQDQW0CtKrsKVcmd8z5tx1RpTpTaNbxjvYDUvRSoQok2OQIgNJ/TBCVR2jiGnPKT4JTHo0cC8OR0k6UVFsw/IV04UJkq/wMIuf//////////ARAEGgw2NjUzODYwOTg4NjYiDESZgEVbUCFtFfeQPSrTAyLbSON2sWHYIusI9d59vv123h89m7uVTd1/SYNnTsBrq+5Ew1cC7Ksk9dP9WT8lnDxb0Qqw6zrf2BkwwGZug/XBbSn22SpqehX/RlDwLS9q3VeAZUudC5lzGVGRfXIhXoYAOonfvKFKG/KckooZpBJ363DblIZpNytlnmyhQxpgydlNUeo6Z6Lky40VlHOynldheII9477rE0ocxyhNkTIFFTRa44Zegm6VQ6rvo0YWVYRGJEkIjQC+xltvcukVP7EdYCChzvyVhcqRACiZGyuytD4cQPhULmanlH4mzEtsAIvGs6tHuz+AVaif7bFUt0Th7Ksbz1vho5wosExGMPkmcxwBGb/Jnruis2o8/3rq3LjIAiBsMkeIgUGjk4jWI+KWSit/JExdhQqOG2hav2MGgxV6N6ScI2f6FzZwA3SVeVIWuXuRPlskJ6jikkKOAFa+30louSulRZ6bSnkxQZ0rbMciDYmapGFc/77MBzE4VVok3ZLSiFhOqP/UO9AHbIvA9q1ET/aWY24wQJum2IdHA9EyOVDbdkcCxgDo24eosnAmoO0lh1V0hxnyh04Rabk/qi+pFPJ92zofW0EIcaljcT3Fl3+n9vq5nEIw7zzlBLbyMPyDq9AGOp0BvmBiQgswfINMQMs/tUEugn05kyC3oR0LwvzBhAl2Wf3kWsY1+Plxp9IhhrShqL95A00Lkq4FICCkxJcQnbz5of96l3uJlb6v0B4k7hNpQtA0OUxCt1bFe+ruTSu6G/bswmvkap03/d/q7+CWZ+jVOZkoxE9cATKM0KD6ZHkKCDlqlgDzxuzyOwOr8ad5dMzEABcK1MrvtDhQHXoN8g==",
+    "expiration": "2026-05-18T19:38:36.000Z"
+  },
+  "name": "stock_predictor_system",
+  "path": "/home/ubuntu/stock_predictor_system",
+  "port": 3000,
+  "secrets": {
+    "ALPHA_VANTAGE_API_KEY": "8AYMBRF9YWJPOTBE#",
+    "BUILT_IN_FORGE_API_KEY": "aXDGHPEQsq695y3cvmvR8F",
+    "BUILT_IN_FORGE_API_URL": "https://forge.manus.ai",
+    "FINNHUB_API_KEY": "d7kvi51r01qiqbcvthh0d7kvi51r01qiqbcvthhg",
+    "JWT_SECRET": "cr2bLjE4MtxRoB6b43XZrW",
+    "OAUTH_SERVER_URL": "https://api.manus.im",
+    "OWNER_NAME": "Stuart Lolljee",
+    "OWNER_OPEN_ID": "AhytojZDcXPo37Ay524Jpd",
+    "STRIPE_ELITE_PRICE_ID": "price_1TM1WCE03VD1fIpiRroNfbAJ",
+    "STRIPE_PRO_PRICE_ID": "price_1TM1XfE03VD1fIpi590tgDRx",
+    "STRIPE_SECRET_KEY": "sk_test_51TLAH5EQgUtNfvPcb81L7UlZRF8kmlIqAhO1FHkxnGZ5duj8nE7GInU2RTM0CyosInvFlRpQsWWlQNiUvvAkwnDx000tLX1xDv",
+    "STRIPE_STARTER_PRICE_ID": "price_1TM1cnE03VD1fIpitMB0qeeO",
+    "STRIPE_WEBHOOK_SECRET": "whsec_o45RE88e3GCBG3MUklKDA69QxNLwtqaU",
+    "VITE_ANALYTICS_ENDPOINT": "https://manus-analytics.com",
+    "VITE_ANALYTICS_WEBSITE_ID": "15c56b5e-21a3-4d8c-8ec2-7f38809f8920",
+    "VITE_APP_ID": "knJ3QkdJFvivzkyeUv8kpq",
+    "VITE_APP_LOGO": "https://files.manuscdn.com/user_upload_by_module/web_dev_logo/310519663483836922/svIdUmCUbmPGnSlF.png",
+    "VITE_APP_TITLE": "Manus Stock Predictor",
+    "VITE_FRONTEND_FORGE_API_KEY": "A43Hdgy2os8BqrSDvoQcsa",
+    "VITE_FRONTEND_FORGE_API_URL": "https://forge.manus.ai",
+    "VITE_OAUTH_PORTAL_URL": "https://manus.im",
+    "VITE_STRIPE_PUBLISHABLE_KEY": "pk_test_51TLAH5EQgUtNfvPcfuehEZei6nY3ZZNcxwZXN5L4X7nicL7UqUI5dMv96UEnumQcZVmvfq1LF8Q5svjAG1RJ0LIO009uRurAzy"
+  },
+  "template_id": "web-db-user",
+  "test_command": "pnpm test"
+}

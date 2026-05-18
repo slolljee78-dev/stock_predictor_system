@@ -28,6 +28,7 @@ import GettingStarted from "./pages/GettingStarted";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import Community from "./pages/Community";
+import CaseStudies from "./pages/CaseStudies";
 
 function ScrollToTop() {
   const [location] = useLocation();
@@ -64,6 +65,7 @@ function Router() {
       <Route path="/blog" component={Blog} />
       <Route path="/blog/:slug" component={BlogPost} />
       <Route path="/community" component={Community} />
+      <Route path="/case-studies" component={CaseStudies} />
       <Route path="/mobile" component={MobileAppShell} />
       <Route path="/watchlist/:watchlistId/settings" component={WatchlistSettings} />
       <Route path="/404" component={NotFound} />
