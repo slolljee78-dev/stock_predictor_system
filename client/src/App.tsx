@@ -25,6 +25,9 @@ import AlertPreferencesPage from "./pages/AlertPreferencesPage";
 import Analysis from "./pages/Analysis";
 import HowItWorks from "./pages/HowItWorks";
 import GettingStarted from "./pages/GettingStarted";
+import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
+import Community from "./pages/Community";
 
 function ScrollToTop() {
   const [location] = useLocation();
@@ -58,6 +61,9 @@ function Router() {
       <Route path="/analysis" component={Analysis} />
       <Route path="/how-it-works" component={HowItWorks} />
       <Route path="/getting-started" component={GettingStarted} />
+      <Route path="/blog" component={Blog} />
+      <Route path="/blog/:slug" component={BlogPost} />
+      <Route path="/community" component={Community} />
       <Route path="/mobile" component={MobileAppShell} />
       <Route path="/watchlist/:watchlistId/settings" component={WatchlistSettings} />
       <Route path="/404" component={NotFound} />

@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { DASHBOARD_HOME_PATH, navigateToDashboardMenu } from '@/lib/navigation';
+import { VideoPlaylist } from '@/components/VideoTutorial';
 
 export default function GettingStarted() {
   const [, setLocation] = useLocation();
@@ -359,6 +360,51 @@ export default function GettingStarted() {
                 Manual trading: You decide when to buy/sell based on signals. Auto-trading: The system automatically executes trades based on signals at set intervals. Auto-trading is a premium feature.
               </p>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Video Tutorials Section */}
+        <Card className="premium-card border-0 bg-transparent shadow-none">
+          <CardHeader>
+            <div className="flex items-start gap-3">
+              <Video className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
+              <div>
+                <CardTitle className="text-2xl">Video Tutorials</CardTitle>
+                <CardDescription className="mt-1">Learn by watching step-by-step video guides</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <VideoPlaylist
+              title="Getting Started Series"
+              description="Watch these videos to get up and running with Stock Predictor"
+              videos={[
+                {
+                  title: 'Introduction to Trading Signals',
+                  description: 'Learn what trading signals are and how they help you make better trading decisions',
+                  videoId: 'dQw4w9WgXcQ',
+                  duration: '5:32',
+                },
+                {
+                  title: 'Setting Up Your Watchlist',
+                  description: 'Step-by-step guide to adding stocks to your watchlist and tracking signals',
+                  videoId: 'dQw4w9WgXcQ',
+                  duration: '4:15',
+                },
+                {
+                  title: 'Using the Paper Trading Simulator',
+                  description: 'Practice trading with virtual money and test your strategies risk-free',
+                  videoId: 'dQw4w9WgXcQ',
+                  duration: '6:48',
+                },
+                {
+                  title: 'Understanding Technical Indicators',
+                  description: 'Deep dive into RSI, MACD, Bollinger Bands, and SMA indicators',
+                  videoId: 'dQw4w9WgXcQ',
+                  duration: '8:22',
+                },
+              ]}
+            />
           </CardContent>
         </Card>
 

@@ -858,7 +858,7 @@
 ## Audit Recommendations - Phase 3: Simulator Improvements
 - [x] Add limit order support UI and data model (buy/sell at specified price) - OrderTypeSelector component with validation
 - [x] Add stop-loss order support UI and data model (sell if price drops below threshold) - Integrated with limit order UI
-- [ ] Implement pending orders execution logic (check prices and auto-execute)
+- [x] Implement pending orders execution logic (check prices and auto-execute) - pendingOrderExecutor.ts with 14 tests
 - [ ] Add fractional share support (buy $100 worth instead of whole shares)
 - [ ] Update commission model to 0% (match Trading 212)
 - [ ] Improve slippage calculation (market-realistic instead of fixed 0.05%)
@@ -874,12 +874,17 @@
 - [ ] Add correlation and sector rotation analysis
 
 ## Audit Recommendations - Phase 5: Growth & Content
-- [ ] Create blog section (/blog) with 50+ articles on trading signals, technical analysis, Trading 212 guide
+- [x] Create blog section (/blog) with 8 initial articles on trading signals, technical analysis, and education
+- [x] Add video tutorial embeds to Getting Started page (4 tutorial videos)
+- [x] Build blog post detail page with related articles and sharing
+- [x] Add blog search and filtering by category/tags
+- [x] Build leaderboard for simulator performance - Top 5 traders with stats
+- [x] Launch monthly challenges ("Beat the market in 30 days") - 3 challenges (active, upcoming, completed)
+- [x] Create community page with leaderboard, challenges, and statistics
+- [ ] Expand to 50+ blog articles on trading signals and technical analysis
 - [ ] Build case studies page with real user stories (with permission)
 - [ ] Create YouTube channel with 10+ tutorials
 - [ ] Add signal sharing feature (Twitter, Reddit, Discord)
-- [ ] Build leaderboard for simulator performance
-- [ ] Launch monthly challenges ("Beat the market in 30 days")
 - [ ] Create affiliate program
 - [ ] Partner with trading blogs and YouTube channels
 
