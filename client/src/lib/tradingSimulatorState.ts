@@ -14,18 +14,19 @@ export interface PendingOrder {
 
 export interface SimulatorPosition {
   ticker: string;
-  quantity: number;
+  quantity: number; // Can be fractional (e.g., 10.5 shares)
   entryPrice: number;
   currentPrice: number;
   unrealizedPnL: number;
   unrealizedPnLPercent: number;
+  isFractional?: boolean; // True if quantity has decimal places
 }
 
 export interface SimulatorTrade {
   id: number;
   ticker: string;
   type: "buy" | "sell";
-  quantity: number;
+  quantity: number; // Can be fractional (e.g., 10.5 shares)
   price: number;
   date: string;
   executedAt?: string;
@@ -38,6 +39,10 @@ export interface SimulatorTrade {
   limitPrice?: number; // For limit orders: buy at or below this price, sell at or above
   stopPrice?: number; // For stop-loss orders: trigger price to sell
   status?: "pending" | "filled" | "cancelled"; // pending for limit/stop orders waiting to execute
+  // Fractional share support
+  isFractional?: boolean; // True if quantity has decimal places
+  dollarAmount?: number; // For dollar-based orders (e.g., "buy $100 worth")
+  commission?: number; // Commission paid (0% for free trading)
 }
 
 export interface SimulatorPortfolio {

@@ -859,8 +859,8 @@
 - [x] Add limit order support UI and data model (buy/sell at specified price) - OrderTypeSelector component with validation
 - [x] Add stop-loss order support UI and data model (sell if price drops below threshold) - Integrated with limit order UI
 - [x] Implement pending orders execution logic (check prices and auto-execute) - pendingOrderExecutor.ts with 14 tests
-- [ ] Add fractional share support (buy $100 worth instead of whole shares)
-- [ ] Update commission model to 0% (match Trading 212)
+- [x] Add fractional share support (buy $100 worth instead of whole shares) - fractionalShares.ts with 18 tests
+- [x] Update commission model to 0% (match Trading 212) - Default 0% commission, configurable
 - [ ] Improve slippage calculation (market-realistic instead of fixed 0.05%)
 - [ ] Add dividend handling to long-term backtests
 - [ ] Add corporate action handling (splits, mergers)
@@ -881,10 +881,10 @@
 - [x] Build leaderboard for simulator performance - Top 5 traders with stats
 - [x] Launch monthly challenges ("Beat the market in 30 days") - 3 challenges (active, upcoming, completed)
 - [x] Create community page with leaderboard, challenges, and statistics
+- [x] Add signal sharing feature (Twitter, Reddit, Discord) - SignalSharing component with 4 platforms
 - [ ] Expand to 50+ blog articles on trading signals and technical analysis
 - [ ] Build case studies page with real user stories (with permission)
 - [ ] Create YouTube channel with 10+ tutorials
-- [ ] Add signal sharing feature (Twitter, Reddit, Discord)
 - [ ] Create affiliate program
 - [ ] Partner with trading blogs and YouTube channels
 
