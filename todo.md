@@ -917,7 +917,7 @@
 ## Remaining Medium-term Features
 - [ ] Upgrade to 15-minute intraday data (API changes needed)
 - [ ] Add earnings/news event filtering to signals
-- [ ] Build stock screener with advanced filters
+- [x] Build stock screener with advanced filters - StockScreener.tsx with 5 popular screeners
 - [ ] Create community forum with discussion threads
 - [ ] Add real-time news/sentiment analysis integration
 - [ ] Build mobile app companion
