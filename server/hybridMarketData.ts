@@ -356,10 +356,17 @@ export async function fetchMultipleMarketData(
 ): Promise<Map<string, MarketDataPoint>> {
   const results = new Map<string, MarketDataPoint>();
 
-  for (const ticker of tickers) {
+  // Use serial processing with a slight delay between batches to respect rate limits and reduce concurrent load
+  for (let i = 0; i < tickers.length; i++) {
+    const ticker = tickers[i];
     const data = await fetchMarketDataWithIndicators(ticker);
     if (data) {
       results.set(ticker, data);
+    }
+    
+    // Add a small delay between every 5 stocks to reduce burst load on APIs
+    if (i > 0 && i % 5 === 0 && i < tickers.length - 1) {
+      await new Promise(resolve => setTimeout(resolve, 2000));
     }
   }
 

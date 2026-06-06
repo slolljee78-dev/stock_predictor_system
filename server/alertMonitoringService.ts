@@ -58,7 +58,7 @@ class AlertMonitoringService {
 
   constructor(config: Partial<MonitoringConfig> = {}) {
     this.config = {
-      pollIntervalMs: config.pollIntervalMs || 30000,
+      pollIntervalMs: config.pollIntervalMs || 120000, // 2 minutes
       maxAlertsPerCycle: config.maxAlertsPerCycle || 100,
       enableBrowserNotifications: config.enableBrowserNotifications !== false,
       enableEmailNotifications: config.enableEmailNotifications || false,
