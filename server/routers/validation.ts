@@ -14,10 +14,11 @@ import {
   DEFAULT_VALIDATION_CONFIG,
   PaperTradingSession,
   TradeRecord,
+  getSessionById,
 } from "../paperTradingValidator";
-
-// Store active sessions in memory (in production, use database)
-const activeSessions = new Map<string, PaperTradingSession>();
+import { getDb } from "../db";
+import { validationSessions, validationDailyPerformance, validationTrades } from "../../drizzle/schema";
+import { eq, and } from "drizzle-orm";
 
 export const validationRouter = router({
   // Create a new validation session
@@ -37,8 +38,10 @@ export const validationRouter = router({
         dailyLossLimit: input.dailyLossLimit,
       };
 
-      const session = initializePaperTradingSession(config);
-      activeSessions.set(session.sessionId, session);
+      if (!ctx.session?.user?.id || !ctx.session?.user?.email) {
+        throw new Error("User not authenticated");
+      }
+      const session = await initializePaperTradingSession(ctx.session.user.id, ctx.session.user.email, config);
 
       return {
         sessionId: session.sessionId,
@@ -52,17 +55,24 @@ export const validationRouter = router({
   getSession: protectedProcedure
     .input(z.object({ sessionId: z.string() }))
     .query(async ({ input }) => {
-      const session = activeSessions.get(input.sessionId);
+      const session = await getSessionById(input.sessionId);
       if (!session) {
         throw new Error("Session not found");
       }
+
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      const sessionRecord = (await db.select().from(validationSessions).where(eq(validationSessions.sessionId, session.sessionId)))[0];
+      if (!sessionRecord) throw new Error("Validation session not found");
+
+      const allTradesFromDb = await db.select().from(validationTrades).where(eq(validationTrades.sessionId, sessionRecord.id));
 
       return {
         sessionId: session.sessionId,
         startingCapital: session.startingCapital,
         currentCapital: session.currentCapital,
         status: session.status,
-        totalTrades: session.allTrades.length,
+        totalTrades: allTradesFromDb.length,
         startDate: session.startDate.toISOString(),
       };
     }),
@@ -95,12 +105,7 @@ export const validationRouter = router({
       })
     )
     .mutation(async ({ input }) => {
-      const session = activeSessions.get(input.sessionId);
-      if (!session) {
-        throw new Error("Session not found");
-      }
-
-      const result = recordTrade(session, input.trade as TradeRecord, input.currentPrice);
+      const result = await recordTrade(input.sessionId, input.trade as TradeRecord, input.currentPrice);
       return result;
     }),
 
@@ -108,13 +113,32 @@ export const validationRouter = router({
   getDailyPerformance: protectedProcedure
     .input(z.object({ sessionId: z.string(), date: z.string() }))
     .query(async ({ input }) => {
-      const session = activeSessions.get(input.sessionId);
+      const session = await getSessionById(input.sessionId);
       if (!session) {
         throw new Error("Session not found");
       }
-
-      const daily = calculateDailyPerformance(session, input.date);
-      return daily;
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      const sessionRecord = (await db.select().from(validationSessions).where(eq(validationSessions.sessionId, session.sessionId)))[0];
+      if (!sessionRecord) throw new Error("Validation session not found");
+      const dailyPerformanceRecords = await db.select().from(validationDailyPerformance).where(and(eq(validationDailyPerformance.sessionId, sessionRecord.id), eq(validationDailyPerformance.date, input.date)));
+      if (dailyPerformanceRecords.length === 0) {
+        throw new Error("Daily performance not found for this date");
+      }
+      const daily = dailyPerformanceRecords[0];
+      return {
+        date: daily.date,
+        openingCapital: daily.openingCapital.toNumber(),
+        closingCapital: daily.closingCapital.toNumber(),
+        dailyPnL: daily.dailyPnL.toNumber(),
+        dailyPnLPercent: daily.dailyPnLPercent.toNumber(),
+        trades: daily.trades,
+        winningTrades: daily.winningTrades,
+        losingTrades: daily.losingTrades,
+        winRate: daily.winRate.toNumber(),
+        maxDailyDrawdown: daily.maxDailyDrawdown.toNumber(),
+        riskLimitHit: daily.riskLimitHit === 1,
+      };
     }),
 
   // Get monthly performance
@@ -128,12 +152,11 @@ export const validationRouter = router({
       })
     )
     .query(async ({ input }) => {
-      const session = activeSessions.get(input.sessionId);
+      const session = await getSessionById(input.sessionId);
       if (!session) {
         throw new Error("Session not found");
       }
-
-      const monthly = calculateMonthlyPerformance(session, input.month, input.startDate, input.endDate);
+      const monthly = await calculateMonthlyPerformance(session, input.month, input.startDate, input.endDate);
       return monthly;
     }),
 
@@ -141,12 +164,11 @@ export const validationRouter = router({
   getValidationReport: protectedProcedure
     .input(z.object({ sessionId: z.string() }))
     .query(async ({ input }) => {
-      const session = activeSessions.get(input.sessionId);
+      const session = await getSessionById(input.sessionId);
       if (!session) {
         throw new Error("Session not found");
       }
-
-      const report = generateValidationReport(session);
+      const report = await generateValidationReport(session);
       return report;
     }),
 
@@ -154,30 +176,77 @@ export const validationRouter = router({
   getTradeHistory: protectedProcedure
     .input(z.object({ sessionId: z.string(), limit: z.number().default(50) }))
     .query(async ({ input }) => {
-      const session = activeSessions.get(input.sessionId);
+      const session = await getSessionById(input.sessionId);
       if (!session) {
         throw new Error("Session not found");
       }
-
-      return session.allTrades.slice(-input.limit).reverse();
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      const sessionRecord = (await db.select().from(validationSessions).where(eq(validationSessions.sessionId, session.sessionId)))[0];
+      if (!sessionRecord) throw new Error("Validation session not found");
+      const allTradesFromDb = await db.select().from(validationTrades).where(eq(validationTrades.sessionId, sessionRecord.id));
+      const allTradesMapped: TradeRecord[] = allTradesFromDb.map(t => ({
+        tradeId: t.tradeId,
+        date: t.date,
+        time: t.time,
+        ticker: t.ticker,
+        type: t.type,
+        quantity: t.quantity,
+        entryPrice: t.entryPrice.toNumber(),
+        executionPrice: t.executionPrice.toNumber(),
+        commission: t.commission.toNumber(),
+        totalCost: t.totalCost.toNumber(),
+        pnl: t.pnl?.toNumber(),
+        pnlPercent: t.pnlPercent?.toNumber(),
+        signal: {
+          confidence: t.signalConfidence,
+          type: t.signalType,
+          reason: t.signalReason || "",
+        },
+      }));
+      return allTradesMapped.slice(-input.limit).reverse();
     }),
 
   // Get current metrics
   getMetrics: protectedProcedure
     .input(z.object({ sessionId: z.string() }))
     .query(async ({ input }) => {
-      const session = activeSessions.get(input.sessionId);
+      const session = await getSessionById(input.sessionId);
       if (!session) {
         throw new Error("Session not found");
       }
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      const sessionRecord = (await db.select().from(validationSessions).where(eq(validationSessions.sessionId, session.sessionId)))[0];
+      if (!sessionRecord) throw new Error("Validation session not found");
 
-      const allTrades = session.allTrades;
-      const winningTrades = allTrades.filter((t) => (t.pnl || 0) > 0).length;
-      const totalTrades = allTrades.length;
+      const allTradesFromDb = await db.select().from(validationTrades).where(eq(validationTrades.sessionId, sessionRecord.id));
+      const allTradesMapped: TradeRecord[] = allTradesFromDb.map(t => ({
+        tradeId: t.tradeId,
+        date: t.date,
+        time: t.time,
+        ticker: t.ticker,
+        type: t.type,
+        quantity: t.quantity,
+        entryPrice: t.entryPrice.toNumber(),
+        executionPrice: t.executionPrice.toNumber(),
+        commission: t.commission.toNumber(),
+        totalCost: t.totalCost.toNumber(),
+        pnl: t.pnl?.toNumber(),
+        pnlPercent: t.pnlPercent?.toNumber(),
+        signal: {
+          confidence: t.signalConfidence,
+          type: t.signalType,
+          reason: t.signalReason || "",
+        },
+      }));
+
+      const winningTrades = allTradesMapped.filter((t) => (t.pnl || 0) > 0).length;
+      const totalTrades = allTradesMapped.length;
       const winRate = totalTrades > 0 ? winningTrades / totalTrades : 0;
 
-      // Calculate Sharpe ratio
-      const dailyReturns = session.dailyPerformance.map((d) => d.dailyPnLPercent);
+      const dailyPerformanceRecords = await db.select().from(validationDailyPerformance).where(eq(validationDailyPerformance.sessionId, sessionRecord.id));
+      const dailyReturns = dailyPerformanceRecords.map((d) => d.dailyPnLPercent.toNumber());
       const avgReturn = dailyReturns.length > 0 ? dailyReturns.reduce((a, b) => a + b) / dailyReturns.length : 0;
       const variance =
         dailyReturns.length > 0
@@ -186,24 +255,21 @@ export const validationRouter = router({
       const stdDev = Math.sqrt(variance);
       const sharpeRatio = stdDev > 0 ? (avgReturn / stdDev) * Math.sqrt(252) : 0;
 
-      // Calculate max drawdown
       let maxDrawdown = 0;
       let peakCapital = session.startingCapital;
       let runningCapital = session.startingCapital;
-      for (const trade of allTrades) {
+      for (const trade of allTradesMapped) {
         runningCapital += trade.pnl || 0;
         peakCapital = Math.max(peakCapital, runningCapital);
         const drawdown = (peakCapital - runningCapital) / peakCapital;
         maxDrawdown = Math.max(maxDrawdown, drawdown);
       }
 
-      // Get today's P&L
       const today = new Date().toISOString().split("T")[0];
-      const todayTrades = allTrades.filter((t) => t.date === today);
+      const todayTrades = allTradesMapped.filter((t) => t.date === today);
       const dailyPnL = todayTrades.reduce((sum, t) => sum + (t.pnl || 0), 0);
 
-      // Calculate monthly return
-      const monthlyPnL = allTrades.reduce((sum, t) => sum + (t.pnl || 0), 0);
+      const monthlyPnL = allTradesMapped.reduce((sum, t) => sum + (t.pnl || 0), 0);
       const monthlyReturn = (monthlyPnL / session.startingCapital) * 100;
 
       return {
@@ -219,13 +285,16 @@ export const validationRouter = router({
 
   // List all sessions
   listSessions: protectedProcedure.query(async ({ ctx }) => {
-    return Array.from(activeSessions.values()).map((session) => ({
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    const sessions = await db.select().from(validationSessions).where(eq(validationSessions.userId, ctx.session.user.id));
+    return sessions.map((session) => ({
       sessionId: session.sessionId,
-      startingCapital: session.startingCapital,
-      currentCapital: session.currentCapital,
+      startingCapital: session.startingCapital.toNumber(),
+      currentCapital: session.currentCapital.toNumber(),
       status: session.status,
       startDate: session.startDate.toISOString(),
-      totalTrades: session.allTrades.length,
+      totalTrades: (await db.select().from(validationTrades).where(eq(validationTrades.sessionId, session.id))).length,
     }));
   }),
 

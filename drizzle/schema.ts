@@ -463,3 +463,99 @@ export const priceAlertHistory = mysqlTable("priceAlertHistory", {
 
 export type PriceAlertHistory = typeof priceAlertHistory.$inferSelect;
 export type InsertPriceAlertHistory = typeof priceAlertHistory.$inferInsert;
+
+/**
+ * Paper Trading Validation Sessions - tracks ongoing validation runs
+ */
+export const validationSessions = mysqlTable("validationSessions", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  sessionId: varchar("sessionId", { length: 255 }).notNull().unique(),
+  startDate: timestamp("startDate").notNull(),
+  startingCapital: decimal("startingCapital", { precision: 10, scale: 2 }).notNull(),
+  currentCapital: decimal("currentCapital", { precision: 10, scale: 2 }).notNull(),
+  config: text("config").notNull(), // JSON string of ValidationConfig
+  status: mysqlEnum("status", ["ACTIVE", "PAUSED", "COMPLETED"]).notNull(),
+  ownerEmail: varchar("ownerEmail", { length: 320 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ValidationSession = typeof validationSessions.$inferSelect;
+export type InsertValidationSession = typeof validationSessions.$inferInsert;
+
+/**
+ * Paper Trading Validation Trades - stores individual trades within a validation session
+ */
+export const validationTrades = mysqlTable("validationTrades", {
+  id: int("id").autoincrement().primaryKey(),
+  sessionId: int("sessionId").notNull().references(() => validationSessions.id, { onDelete: "cascade" }),
+  tradeId: varchar("tradeId", { length: 255 }).notNull(),
+  date: varchar("date", { length: 10 }).notNull(),
+  time: varchar("time", { length: 8 }).notNull(),
+  ticker: varchar("ticker", { length: 20 }).notNull(),
+  type: mysqlEnum("type", ["BUY", "SELL"]).notNull(),
+  quantity: int("quantity").notNull(),
+  entryPrice: decimal("entryPrice", { precision: 10, scale: 2 }).notNull(),
+  executionPrice: decimal("executionPrice", { precision: 10, scale: 2 }).notNull(),
+  commission: decimal("commission", { precision: 10, scale: 2 }).notNull(),
+  totalCost: decimal("totalCost", { precision: 10, scale: 2 }).notNull(),
+  pnl: decimal("pnl", { precision: 10, scale: 2 }),
+  pnlPercent: decimal("pnlPercent", { precision: 10, scale: 4 }),
+  signalConfidence: int("signalConfidence").notNull(),
+  signalType: varchar("signalType", { length: 20 }).notNull(),
+  signalReason: text("signalReason"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ValidationTrade = typeof validationTrades.$inferSelect;
+export type InsertValidationTrade = typeof validationTrades.$inferInsert;
+
+/**
+ * Paper Trading Validation Daily Performance - stores daily performance snapshots
+ */
+export const validationDailyPerformance = mysqlTable("validationDailyPerformance", {
+  id: int("id").autoincrement().primaryKey(),
+  sessionId: int("sessionId").notNull().references(() => validationSessions.id, { onDelete: "cascade" }),
+  date: varchar("date", { length: 10 }).notNull(),
+  openingCapital: decimal("openingCapital", { precision: 10, scale: 2 }).notNull(),
+  closingCapital: decimal("closingCapital", { precision: 10, scale: 2 }).notNull(),
+  dailyPnL: decimal("dailyPnL", { precision: 10, scale: 2 }).notNull(),
+  dailyPnLPercent: decimal("dailyPnLPercent", { precision: 10, scale: 4 }).notNull(),
+  trades: int("trades").notNull(),
+  winningTrades: int("winningTrades").notNull(),
+  losingTrades: int("losingTrades").notNull(),
+  winRate: decimal("winRate", { precision: 5, scale: 4 }).notNull(),
+  maxDailyDrawdown: decimal("maxDailyDrawdown", { precision: 5, scale: 4 }).notNull(),
+  riskLimitHit: int("riskLimitHit").notNull(), // 1 = true, 0 = false
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ValidationDailyPerformance = typeof validationDailyPerformance.$inferSelect;
+export type InsertValidationDailyPerformance = typeof validationDailyPerformance.$inferInsert;
+
+/**
+ * Paper Trading Validation Monthly Performance - stores monthly performance snapshots
+ */
+export const validationMonthlyPerformance = mysqlTable("validationMonthlyPerformance", {
+  id: int("id").autoincrement().primaryKey(),
+  sessionId: int("sessionId").notNull().references(() => validationSessions.id, { onDelete: "cascade" }),
+  month: int("month").notNull(),
+  startDate: varchar("startDate", { length: 10 }).notNull(),
+  endDate: varchar("endDate", { length: 10 }).notNull(),
+  openingCapital: decimal("openingCapital", { precision: 10, scale: 2 }).notNull(),
+  closingCapital: decimal("closingCapital", { precision: 10, scale: 2 }).notNull(),
+  monthlyReturn: decimal("monthlyReturn", { precision: 10, scale: 2 }).notNull(),
+  monthlyReturnPercent: decimal("monthlyReturnPercent", { precision: 10, scale: 4 }).notNull(),
+  targetReturn: decimal("targetReturn", { precision: 10, scale: 2 }).notNull(),
+  targetMet: int("targetMet").notNull(), // 1 = true, 0 = false
+  totalTrades: int("totalTrades").notNull(),
+  winRate: decimal("winRate", { precision: 5, scale: 4 }).notNull(),
+  sharpeRatio: decimal("sharpeRatio", { precision: 10, scale: 4 }).notNull(),
+  maxDrawdown: decimal("maxDrawdown", { precision: 5, scale: 4 }).notNull(),
+  daysRiskLimitHit: int("daysRiskLimitHit").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ValidationMonthlyPerformance = typeof validationMonthlyPerformance.$inferSelect;
+export type InsertValidationMonthlyPerformance = typeof validationMonthlyPerformance.$inferInsert;

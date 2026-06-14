@@ -52,6 +52,17 @@ async function startServer() {
     }
   });
 
+  app.post("/api/scheduled/process-weekly-reports", async (_req, res) => {
+    try {
+      const { processWeeklyReports } = await import("../weeklyReportProcessor");
+      await processWeeklyReports();
+      res.json({ success: true, message: "Weekly reports processed" });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to process weekly reports";
+      res.status(500).json({ success: false, error: message });
+    }
+  });
+
   // tRPC API
   app.use(
     "/api/trpc",
