@@ -1050,4 +1050,4 @@
 - [x] Diagnose and correct scheduled auto-trade runs that repeatedly return zero actionable buy or sell signals
 - [x] Explain no-trade outcomes with concrete thresholds and signal diagnostics in the Signal Engine
 - [x] Verify the latest mobile and Signal Engine checkpoint is live on vortextrade.manus.space
-- [ ] Export the current Vortextrade project to GitHub before the Manus backup
+- [x] Export the current Vortextrade project to GitHub before the Manus backup
