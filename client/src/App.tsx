@@ -31,6 +31,13 @@ import Community from "./pages/Community";
 import CaseStudies from "./pages/CaseStudies";
 import AffiliateDashboard from "./pages/AffiliateDashboard";
 import StockScreener from "./pages/StockScreener";
+import UserProfile from "./pages/UserProfile";
+import ReferralDashboard from "./pages/ReferralDashboard";
+import TodaysSignals from "./pages/TodaysSignals";
+import PublicStockPage from "./pages/PublicStockPage";
+import SignalCalculator from "./pages/SignalCalculator";
+import EmbedWidget from "./pages/EmbedWidget";
+import EmbedPage from "./pages/EmbedPage";
 
 function ScrollToTop() {
   const [location] = useLocation();
@@ -58,7 +65,7 @@ function Router() {
       <Route path="/backtesting" component={Backtesting} />
       <Route path="/signals" component={SignalsDashboard} />
       <Route path="/alerts" component={AlertNotificationCenter} />
-      <Route path="/alerts-center" component={AlertsCenter} />
+      <Route path="/alerts-center" component={AlertNotificationCenter} />
       <Route path="/signal-accuracy" component={SignalAccuracyDashboard} />
       <Route path="/alert-preferences" component={AlertPreferencesPage} />
       <Route path="/analysis" component={Analysis} />
@@ -70,6 +77,13 @@ function Router() {
       <Route path="/case-studies" component={CaseStudies} />
       <Route path="/affiliate" component={AffiliateDashboard} />
       <Route path="/screener" component={StockScreener} />
+      <Route path="/profile" component={UserProfile} />
+      <Route path="/referral" component={ReferralDashboard} />
+      <Route path="/signals/today" component={TodaysSignals} />
+      <Route path="/stocks/:ticker" component={PublicStockPage} />
+      <Route path="/tools/signal-calculator" component={SignalCalculator} />
+      <Route path="/embed/signals" component={EmbedWidget} />
+      <Route path="/embed" component={EmbedPage} />
       <Route path="/mobile" component={MobileAppShell} />
       <Route path="/watchlist/:watchlistId/settings" component={WatchlistSettings} />
       <Route path="/404" component={NotFound} />

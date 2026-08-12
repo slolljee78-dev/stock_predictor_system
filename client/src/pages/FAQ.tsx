@@ -29,7 +29,7 @@ const faqItems: FAQItem[] = [
     id: "top-1",
     category: "Before you start",
     featured: true,
-    question: "What does Stock Predictor actually do for a Trading 212 investor?",
+    question: "What does Vortextrade actually do for a Trading 212 investor?",
     answer:
       "It turns a large watchlist into a cleaner daily workflow. Instead of checking every chart yourself, you see ranked buy and sell ideas, review their confidence, and move into simulator or validation views before acting.",
   },
@@ -137,9 +137,9 @@ const faqItems: FAQItem[] = [
   {
     id: "trust-3",
     category: "Trust & responsible use",
-    question: "Is Stock Predictor regulated by the FCA or giving financial advice?",
+    question: "Is Vortextrade regulated by the FCA or giving financial advice?",
     answer:
-      "No. Stock Predictor is decision-support software for self-directed investors. It does not provide personal financial advice, it is not regulated by the FCA, and it should be used alongside your own research, judgment, and risk controls.",
+      "No. Vortextrade is decision-support software for self-directed investors. It does not provide personal financial advice, it is not regulated by the FCA, and it should be used alongside your own research, judgment, and risk controls.",
   },
   {
     id: "trust-4",
@@ -212,7 +212,7 @@ export default function FAQ() {
                   <div className="max-w-3xl rounded-3xl border border-amber-400/25 bg-amber-500/10 px-5 py-4 text-sm text-amber-50/90 shadow-[0_20px_50px_rgba(245,158,11,0.12)]">
                     <p className="font-semibold uppercase tracking-[0.16em] text-amber-200">Important risk notice</p>
                     <p className="mt-2 leading-6 text-amber-50/85">
-                      Stock Predictor provides market analysis, ranking tools, and paper-trading workflows for educational decision support. It does not provide financial advice or personal investment recommendations, and it is not regulated by the FCA.
+                      Vortextrade provides market analysis, ranking tools, and paper-trading workflows for educational decision support. It does not provide financial advice or personal investment recommendations, and it is not regulated by the FCA.
                     </p>
                   </div>
                 </div>

@@ -56,6 +56,20 @@ export interface AutoTradingRoundResponse {
     currentPrice: number;
     reasoning?: string;
   }>;
+  diagnostics: {
+    marketDataAvailable: number;
+    marketDataUnavailable: number;
+    directionalSignals: number;
+    holdSignals: number;
+    belowConfidenceSignals: number;
+    requiredConfidence: number;
+    closestSignal: {
+      ticker: string;
+      signalType: "buy" | "sell" | "hold";
+      confidence: number;
+      reasoning?: string;
+    } | null;
+  };
   executedTrades: ExecutedAutoTrade[];
 }
 
@@ -132,6 +146,15 @@ export async function executeAutoTradingRound(input: {
     },
   });
 
+  const requiredConfidence = typeof input.minConfidence === "number"
+    ? input.minConfidence
+    : DEFAULT_AUTO_TRADING_MIN_CONFIDENCE;
+  const directionalSignals = signals.filter((signal) => signal.signalType !== "hold");
+  const closestSignal = [...directionalSignals]
+    .sort((left, right) => right.confidence - left.confidence)[0]
+    ?? [...signals].sort((left, right) => right.confidence - left.confidence)[0]
+    ?? null;
+
   const executedTrades: ExecutedAutoTrade[] = [];
 
   for (const action of plannedRound.actions) {
@@ -173,6 +196,22 @@ export async function executeAutoTradingRound(input: {
     scannedTickers: trackedTickers,
     nextScanOffset: selectedUniverse.length > 0 ? (scanOffset + scanBatchSize) % selectedUniverse.length : 0,
     actionableSignals: plannedRound.actionableSignals,
+    diagnostics: {
+      marketDataAvailable: signals.length,
+      marketDataUnavailable: Math.max(0, trackedTickers.length - signals.length),
+      directionalSignals: directionalSignals.length,
+      holdSignals: signals.filter((signal) => signal.signalType === "hold").length,
+      belowConfidenceSignals: directionalSignals.filter((signal) => signal.confidence < requiredConfidence).length,
+      requiredConfidence,
+      closestSignal: closestSignal
+        ? {
+            ticker: closestSignal.ticker,
+            signalType: closestSignal.signalType,
+            confidence: closestSignal.confidence,
+            reasoning: closestSignal.reasoning,
+          }
+        : null,
+    },
     executedTrades,
   };
 }

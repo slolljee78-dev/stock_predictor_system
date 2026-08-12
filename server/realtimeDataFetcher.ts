@@ -89,10 +89,16 @@ export async function fetchRealtimePrices(tickers: string[]): Promise<
 > {
   const results = [];
 
-  for (const ticker of tickers) {
+  for (let i = 0; i < tickers.length; i++) {
+    const ticker = tickers[i];
     const data = await fetchRealtimePrice(ticker);
     if (data) {
       results.push(data);
+    }
+    
+    // Add 2-second pause after every 5 stocks to prevent API burst traffic (cost optimization)
+    if ((i + 1) % 5 === 0 && i < tickers.length - 1) {
+      await new Promise(resolve => setTimeout(resolve, 2000));
     }
   }
 

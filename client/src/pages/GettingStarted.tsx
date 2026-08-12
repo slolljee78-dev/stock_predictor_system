@@ -16,7 +16,7 @@ export default function GettingStarted() {
       id: 'signals',
       title: 'Understanding Trading Signals',
       icon: TrendingUp,
-      description: 'Learn how Stock Predictor generates buy, sell, and hold signals',
+      description: 'Learn how Vortextrade generates buy, sell, and hold signals',
       content: (
         <div className="space-y-4">
           <div>
@@ -35,7 +35,7 @@ export default function GettingStarted() {
               How are signals generated?
             </h4>
             <p className="text-sm text-muted-foreground mb-2">
-              Stock Predictor analyzes each stock using four key technical indicators:
+              Vortextrade analyzes each stock using four key technical indicators:
             </p>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li className="flex gap-2">
@@ -261,7 +261,7 @@ export default function GettingStarted() {
 
         {/* Title */}
         <div className="space-y-2">
-          <h1 className="text-4xl font-bold gradient-text">Getting Started with Stock Predictor</h1>
+          <h1 className="text-4xl font-bold gradient-text">Getting Started with Vortextrade</h1>
           <p className="text-lg text-muted-foreground">
             Learn how to use trading signals, build your watchlist, and practice trading with our paper trading simulator.
           </p>
@@ -377,7 +377,7 @@ export default function GettingStarted() {
           <CardContent>
             <VideoPlaylist
               title="Getting Started Series"
-              description="Watch these videos to get up and running with Stock Predictor"
+              description="Watch these videos to get up and running with Vortextrade"
               videos={[
                 {
                   title: 'Introduction to Trading Signals',

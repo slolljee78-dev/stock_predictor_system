@@ -15,7 +15,7 @@ export default function HowItWorks() {
         <div className="relative mx-auto max-w-4xl">
           <div className="space-y-6">
             <Badge variant="secondary" className="w-fit rounded-full px-4 py-2">
-              How Stock Predictor Works
+              How Vortextrade Works
             </Badge>
             <h1 className="text-5xl font-bold tracking-tight md:text-6xl">
               AI-Powered Trading Signals Explained
@@ -40,7 +40,7 @@ export default function HowItWorks() {
       <section className="px-4 py-16 sm:px-6 md:px-8 md:py-24">
         <div className="mx-auto max-w-6xl">
           <div className="mb-12 space-y-4 text-center">
-            <h2 className="text-3xl font-bold md:text-4xl">The Stock Predictor Process</h2>
+            <h2 className="text-3xl font-bold md:text-4xl">The Vortextrade Process</h2>
             <p className="text-lg text-muted-foreground">Five steps to AI-powered trading signals</p>
           </div>
 

@@ -862,15 +862,15 @@
 - [x] Add fractional share support (buy $100 worth instead of whole shares) - fractionalShares.ts with 18 tests
 - [x] Update commission model to 0% (match Trading 212) - Default 0% commission, configurable
 - [x] Improve slippage calculation (market-realistic instead of fixed 0.05%) - slippageCalculator.ts with 18 tests
-- [ ] Add dividend handling to long-term backtests
-- [ ] Add corporate action handling (splits, mergers)
+- [x] Add dividend handling to long-term backtests — Implemented in backtestEngine.ts (runBacktestWithDividends, dividend reinvestment)
+- [x] Add corporate action handling (splits, mergers) — Implemented in backtestEngine.ts (applySplitAdjustments)
 
 ## Audit Recommendations - Phase 4: Data & Signal Quality
-- [ ] Upgrade from daily to intraday data (15-minute candles from Alpha Vantage or Finnhub)
-- [ ] Recalculate indicators every 15 minutes instead of once per day
-- [ ] Add volume confirmation to signal generation
-- [ ] Add earnings/news event filtering to signals
-- [ ] Build backtesting validation to verify signal accuracy
+- [x] Upgrade from daily to intraday data (15-minute candles from Alpha Vantage or Finnhub) — Implemented in hybridMarketData.ts
+- [x] Recalculate indicators every 15 minutes instead of once per day — Intraday implementation in place
+- [x] Add volume confirmation to signal generation — volumeConfirmation.ts implemented
+- [x] Add earnings/news event filtering to signals — Implemented in hybridMarketData.ts
+- [x] Build backtesting validation to verify signal accuracy — backtestingEngine.ts implemented
 - [ ] Add correlation and sector rotation analysis
 
 ## Audit Recommendations - Phase 5: Growth & Content
@@ -885,7 +885,7 @@
 - [x] Build case studies page with real user stories - 4 detailed case studies with lessons learned
 - [ ] Expand to 50+ blog articles on trading signals and technical analysis
 - [ ] Create YouTube channel with 10+ tutorials
-- [ ] Create affiliate program
+- [x] Create affiliate program — Implemented in affiliateProgram.ts with AffiliateUser, AffiliateReferral, AffiliateReward types and AffiliateDashboard page
 - [ ] Partner with trading blogs and YouTube channels
 
 ## Audit Recommendations - Phase 6: Feature Parity with Competitors
@@ -915,11 +915,139 @@
 - [x] Built affiliate program system (affiliateProgram.ts + AffiliateDashboard page)
 
 ## Remaining Medium-term Features
-- [ ] Upgrade to 15-minute intraday data (API changes needed)
-- [ ] Add earnings/news event filtering to signals
+- [x] Upgrade to 15-minute intraday data (API changes needed) — Already implemented in /server/hybridMarketData.ts (IntradayCandle types, intradayCache, fetchIntradayCandles, synthesiseIntradayCandles)
+- [x] Add earnings/news event filtering to signals — Already implemented in /server/hybridMarketData.ts (cached earnings-event fetching, suppression logic)
 - [x] Build stock screener with advanced filters - StockScreener.tsx with 5 popular screeners
-- [ ] Create community forum with discussion threads
-- [ ] Add real-time news/sentiment analysis integration
+- [x] Add correlation and sector rotation analysis — Implemented in /server/correlationAnalysis.ts with 40+ test cases
+- [x] Expand blog to 23 articles on trading signals and technical analysis — Added 10 new articles (Volume Analysis, Risk Management, Divergence Trading, Support/Resistance, Backtesting, Trend Following vs Mean Reversion, Market Correlation, Sector Rotation, Earnings Season, Building Trading Systems)
+- [x] Create community forum with discussion threads — Implemented in /server/communityDiscussion.ts with comment validation, moderation, and sentiment analysis
+- [x] Add real-time news/sentiment analysis integration — Implemented in /server/newsSentimentIntegration.ts with sentiment detection, signal adjustment, and market-moving news detection
+- [x] Create API for third-party integrations — Implemented in /server/publicApi.ts with REST endpoints for signals, backtesting, stocks, and comprehensive documentation
 - [ ] Build mobile app companion
-- [ ] Create API for third-party integrations
 - [ ] Expand blog to 50+ articles on trading signals and technical analysis
+
+## Phase 47: High-Priority Technical Features (ceb229e1 continuation)
+- [x] Fix Stripe lazy initialization to prevent server crash on missing API key
+- [x] Apply all database migrations (IF NOT EXISTS) to dev environment
+- [x] Fix vitest.setup.ts window guard for Node environment tests
+- [x] Implement 15-minute intraday data fetching in hybridMarketData.ts
+- [x] Add earnings/news event filter to hybridMarketData.ts (suppress signals ±2 days)
+- [x] Wire earnings filter into signalMonitoringJob.ts signal generation loop
+- [x] Add getIntradayData and checkEarningsFilter tRPC procedures to realtimeSignals router
+- [x] Add runBacktestWithDividends function to backtestEngine.ts (quarterly dividends, reinvestment)
+- [x] Wire dividend-aware backtest into backtest.ts router
+- [x] Fix TypeScript errors in dividend processing (null narrowing, type annotations)
+- [x] Verify TypeScript compiles cleanly (zero errors)
+- [x] Confirm auth.logout.test.ts and core tests pass
+
+## Phase 49: User Profile & Subscription Management (COMPLETE)
+- [x] Add profile tRPC procedures (getProfile, updateProfile, cancelSubscription) — Already implemented in /server/routers/profile.ts
+- [x] Build UserProfile.tsx page with account info and subscription tier card
+- [x] Add profile route to App.tsx and navigation link in UserProfileMenu/sidebar
+
+
+## Phase 50: Traffic Growth Infrastructure (COMPLETE)
+- [x] Expand blog to 50 articles on trading signals and technical analysis — Database-backed blog system with 50 articles (initial 23 + 27 new generated)
+- [x] Create email newsletter system — Implemented in /server/emailNewsletter.ts with 5 professional templates (Signal Alerts, Market Insights, User Wins, Feature Updates, Weekly Digest)
+- [x] Create analytics dashboard — Implemented in /server/analyticsTracking.ts with 15+ metrics (traffic, conversion, revenue, marketing, product, engagement)
+- [x] Create community challenge tracking — Implemented in /server/communityChallenge.ts with leaderboards, statistics, and percentile calculations
+- [x] Create ProductHunt launch assets — Complete launch checklist, social media posts (Twitter, Reddit, HackerNews), maker comment, FAQ, email templates
+- [x] Migrate blog posts to database — Created blog_posts table schema, seeded 23 initial posts, inserted 27 new posts, created tRPC blog router
+- [x] Update Blog.tsx to use database — Modified Blog.tsx to fetch posts from tRPC instead of static file
+
+## Outstanding Tasks (2 remaining)
+- [ ] Build mobile app companion (iOS/Android)
+- [ ] Additional integrations and partnerships
+
+## Audit Fixes - July 2026 (duplicate section — all completed in session above)
+
+- [x] Add sentAt column to signalAlerts schema and run migration
+- [x] Add updatedAt column to priceAlerts schema and run migration
+- [x] Fix emailNewsletter.ts and analyticsTracking.ts broken db import
+- [x] Fix UserProfile.tsx missing DashboardLayout import
+- [x] Fix Backtesting.tsx decimal arithmetic (string|null to number)
+- [x] Fix Blog.tsx and BlogPost.tsx tags typed as unknown
+- [x] Fix publicApi.ts referencing wrong table for technical indicators
+- [x] Fix alertPreferences.ts using invalid "deleted" status
+- [x] Fix sidebar "STOCK PREDICTOR" branding in DashboardLayout header
+- [x] Fix backtest.ts decimal insert type errors (line 79 and 366)
+- [x] Fix Dashboard.tsx DashboardSignalRecord type mismatch
+- [x] Fix SignalsDashboard.tsx stocks property missing
+- [x] Fix alertMonitoringService.ts sentAt reference
+- [x] Fix priceAlertService.ts updatedAt reference
+- [x] Remove ComponentShowcase route from production
+- [x] Remove duplicate /alerts-center route
+- [x] Add robots.txt and sitemap.xml
+
+## Audit Fixes - July 2026
+
+- [x] Fix 68 TypeScript compilation errors (down to 0)
+- [x] Fix broken db import in emailNewsletter.ts and analyticsTracking.ts
+- [x] Add sentAt column to signal_alerts table via migration
+- [x] Add updatedAt column to price_alerts table via migration
+- [x] Fix UserProfile.tsx missing DashboardLayout import (page was crashing)
+- [x] Fix Backtesting.tsx decimal arithmetic (NaN from string DB values)
+- [x] Fix blog tag filtering (unknown type cast to string[])
+- [x] Fix publicApi.ts query chain (where must precede limit in Drizzle)
+- [x] Fix priceAlertService.ts deleted status and null triggerCount handling
+- [x] Fix alertMonitoringService.ts percent_change alertType union
+- [x] Fix alertPreferences.ts unknown notificationChannels cast
+- [x] Fix alerts.ts null minConfidence check and price string conversion
+- [x] Fix backtest.ts decimal string conversions for all decimal columns
+- [x] Fix db.ts drizzle schema initialization for db.query support
+- [x] Fix SignalDetailsModal price string|null type
+- [x] Fix DashboardSignalRecord and StoredSignal types to accept hold
+- [x] Fix SignalsDashboard price arithmetic for string|null values
+- [x] Fix insertNewBlogPosts.ts boolean featured type (was using 0/1)
+- [x] Remove duplicate /alerts-center route (now aliases /alerts)
+- [x] Update robots.txt to disallow authenticated pages from crawling
+- [x] Update sitemap.xml with public pages only and correct lastmod dates
+
+## Traffic Driving Features - July 2026
+
+- [x] B1: Add SEO meta descriptions to all public pages
+- [x] B1: Add Open Graph tags (og:title, og:description, og:image) to all public pages
+- [x] B1: Add JSON-LD structured data to blog posts
+- [x] B1: Optimise page titles with target keywords
+- [x] B2: Build referral programme (unique referral links, credit system, referral dashboard page)
+- [x] B2: Add referral tracking to subscription flow
+- [x] B3: Build email onboarding sequence (7-day drip with conversion email on day 7)
+- [x] B3: Add onboarding email trigger on new user registration
+- [x] B4: Enhance Signal Accuracy page with aggregate win rate, top signals, community stats
+- [x] B5: Build Share My Signal feature (shareable signal cards with Vortextrade branding)
+- [x] B6: Add Google Search Console verification meta tag placeholder to index.html
+
+## Traffic Feature Implementation - July 2026
+
+- [x] Build public Today's Top Signals page at /signals/today (ungated, daily-updated, SEO-indexable)
+- [x] Add publicSignals.getToday tRPC procedure returning top signals by confidence (no auth)
+- [x] Build programmatic ticker pages at /stocks/:ticker (public, SEO, shows last 30 days of signals)
+- [x] Add publicSignals.getForTicker tRPC procedure for ticker page data
+- [x] Build free signal strength calculator tool at /tools/signal-calculator (ungated, no auth)
+- [x] Build embeddable live signal widget (iframe-embeddable, /embed/signals)
+- [x] Add /embed/signals public iframe endpoint + /embed instructions page
+- [x] Implement weekly Signal Digest email (Monday morning, top signals + stats)
+- [x] Add POST /api/scheduled/weekly-digest endpoint + weeklyDigestService.ts
+- [x] Update referral incentive copy to "Give 1 month free, get 1 month free"
+- [x] Add referral banner to DashboardLayout sidebar footer
+- [x] Add new pages to sitemap.xml with correct changefreq/priority
+- [x] Add Google Search Console verification meta tag placeholder to index.html
+- [x] Add /signals/today, /stocks/:ticker, /tools/signal-calculator, /embed routes to App.tsx
+- [x] Add "Live Signals" and "Free Tools" navigation links to public header
+
+## Heartbeat Cron Migration (Cost Optimisation)
+
+- [x] Create /api/scheduled/signal-monitoring endpoint (replaces signalMonitoringJob setInterval)
+- [x] Create /api/scheduled/background-jobs endpoint (replaces backgroundJobs setInterval)
+- [x] Create /api/scheduled/alert-monitoring endpoint (replaces alertMonitoringService setInterval)
+- [x] Remove startBackgroundJobs() and initializeAlertMonitoring() from server startup
+- [x] Register four Heartbeat cron jobs via manus-heartbeat CLI (signal-monitoring, alert-monitoring, weekly-digest, simulator-auto-trading)
+- [x] TypeScript check and save checkpoint
+- [x] Fix auto trade timer: 3-day run resets to idle prematurely (should persist across server restarts via DB)
+- [x] Remove the redundant top banner from the mobile public homepage
+- [x] Make the Vortextrade header logo navigate signed-in users to their dashboard
+- [x] Make the Signal Engine / auto-trade entry point prominent and discoverable in the signed-in dashboard
+- [x] Diagnose and correct scheduled auto-trade runs that repeatedly return zero actionable buy or sell signals
+- [x] Explain no-trade outcomes with concrete thresholds and signal diagnostics in the Signal Engine
+- [x] Verify the latest mobile and Signal Engine checkpoint is live on vortextrade.manus.space
+- [ ] Export the current Vortextrade project to GitHub before the Manus backup

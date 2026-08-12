@@ -4,8 +4,8 @@
  */
 
 import { getDb } from "./db";
-import { priceAlerts, stocks } from "../drizzle/schema";
-import { eq, and } from "drizzle-orm";
+import { priceAlerts, stocks, users } from "../drizzle/schema";
+import { eq, and, gte } from "drizzle-orm";
 import { fetchStockPriceWithCache } from "./liveMarketData";
 import { triggerPriceAlert, checkPriceAlerts } from "./priceAlertService";
 
@@ -34,7 +34,7 @@ export interface AlertCheckResult {
   ticker: string;
   currentPrice: number;
   targetPrice: number;
-  alertType: "above" | "below";
+  alertType: "above" | "below" | "percent_change";
   triggered: boolean;
   notificationChannels: string[];
 }
@@ -58,7 +58,7 @@ class AlertMonitoringService {
 
   constructor(config: Partial<MonitoringConfig> = {}) {
     this.config = {
-      pollIntervalMs: config.pollIntervalMs || 120000, // 2 minutes
+      pollIntervalMs: config.pollIntervalMs || 120000, // 2 minutes (optimized for cost reduction)
       maxAlertsPerCycle: config.maxAlertsPerCycle || 100,
       enableBrowserNotifications: config.enableBrowserNotifications !== false,
       enableEmailNotifications: config.enableEmailNotifications || false,
@@ -168,7 +168,10 @@ class AlertMonitoringService {
         return;
       }
 
-      // Get all active alerts with their stock information
+      // Cost optimization: Only poll alerts from active users (last 7 days)
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      
+      // Get all active alerts with their stock information, filtered by active users
       const activeAlerts = await db
         .select({
           id: priceAlerts.id,
@@ -182,7 +185,11 @@ class AlertMonitoringService {
         })
         .from(priceAlerts)
         .innerJoin(stocks, eq(priceAlerts.stockId, stocks.id))
-        .where(eq(priceAlerts.status, "active"))
+        .innerJoin(users, eq(priceAlerts.userId, users.id))
+        .where(and(
+          eq(priceAlerts.status, "active"),
+          gte(users.lastSignedIn, sevenDaysAgo) // Only active users
+        ))
         .limit(this.config.maxAlertsPerCycle);
 
       this.stats.activeAlertCount = activeAlerts.length;
@@ -373,4 +380,56 @@ export async function initializeAlertMonitoring(
  */
 export function shutdownAlertMonitoring(): void {
   alertMonitoringService.stop();
+}
+
+/**
+ * Run a single alert monitoring cycle without starting the polling loop.
+ * Called by the Heartbeat cron endpoint instead of the in-process setInterval.
+ */
+export async function runAlertMonitoringOnce(): Promise<{
+  alertsChecked: number;
+  alertsTriggered: number;
+  notificationsSent: number;
+}> {
+  const tempService = new AlertMonitoringService({
+    maxAlertsPerCycle: 100,
+    enableBrowserNotifications: true,
+    enableEmailNotifications: false,
+  });
+  // Access the private checkAlerts method via a one-shot start/stop cycle
+  // We run it as a standalone instance so it doesn't conflict with any existing state
+  let resolved = false;
+  return new Promise(async (resolve) => {
+    // Directly invoke the internal logic by calling start() and immediately stopping
+    // after the first check completes. We capture stats after the check.
+    await tempService.start();
+    // Give the check up to 60 seconds to complete
+    const timeout = setTimeout(() => {
+      if (!resolved) {
+        resolved = true;
+        tempService.stop();
+        const stats = tempService.getStats();
+        resolve({
+          alertsChecked: stats.activeAlertCount,
+          alertsTriggered: stats.totalAlertsTriggered,
+          notificationsSent: stats.totalNotificationsSent,
+        });
+      }
+    }, 60000);
+    // Poll until the check has completed (totalChecks > 0 means at least one cycle ran)
+    const poll = setInterval(() => {
+      const stats = tempService.getStats();
+      if (stats.totalChecks > 0 && !resolved) {
+        resolved = true;
+        clearTimeout(timeout);
+        clearInterval(poll);
+        tempService.stop();
+        resolve({
+          alertsChecked: stats.activeAlertCount,
+          alertsTriggered: stats.totalAlertsTriggered,
+          notificationsSent: stats.totalNotificationsSent,
+        });
+      }
+    }, 500);
+  });
 }

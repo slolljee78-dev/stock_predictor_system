@@ -41,6 +41,7 @@ import {
   isWatchlistRefreshing,
 } from "@/lib/watchlistRefresh";
 import {
+  canUseAutoTrading,
   canViewPremiumSignalDetails,
   getSignalUpgradeMessage,
 } from "@/lib/subscriptionAccess";
@@ -61,6 +62,7 @@ import {
   BarChart3,
   BellRing,
   BrainCircuit,
+  Bot,
   CheckCircle2,
   Clock3,
   Plus,
@@ -146,6 +148,7 @@ export default function Dashboard() {
   const signals = signalsQuery.data ?? [];
   const watchlistStatuses = watchlistStatusesQuery.data ?? [];
   const hasPremiumSignalAccess = canViewPremiumSignalDetails(effectiveUser);
+  const hasAutoTradingAccess = canUseAutoTrading(effectiveUser);
   const signalUpgradeMessage = getSignalUpgradeMessage(effectiveUser);
   const premiumPreviewUsage = getPreviewUsage(watchlist.length, 3);
   const isRefreshingWatchlist = isWatchlistRefreshing([
@@ -510,6 +513,33 @@ export default function Dashboard() {
                 </button>
               );
             })}
+          </div>
+        </section>
+
+        <section className="dashboard-frame relative overflow-hidden border border-cyan-400/25 bg-[radial-gradient(circle_at_top_right,rgba(34,211,238,0.18),transparent_38%),linear-gradient(135deg,rgba(14,116,144,0.16),rgba(30,41,59,0.20))] px-4 py-4 sm:px-6 sm:py-5 md:px-8 md:py-6">
+          <div className="absolute -right-16 -top-16 h-52 w-52 rounded-full bg-cyan-300/10 blur-3xl" />
+          <div className="relative flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+            <div className="max-w-3xl space-y-2">
+              <div className="flex items-center gap-2 text-cyan-200">
+                <Bot className="h-5 w-5" />
+                <p className="text-xs font-bold uppercase tracking-[0.2em]">Flagship feature</p>
+              </div>
+              <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">Signal Engine — timed auto-trading</h2>
+              <p className="text-sm leading-6 text-muted-foreground sm:text-base">
+                {hasAutoTradingAccess
+                  ? "Start a 1-day, 3-day, or 7-day paper-trading run. The engine records every scan, recommendation, and executed virtual trade so you can review the outcome later."
+                  : "Explore the timed paper-trading workflow and upgrade when you are ready to unlock automated scans and virtual trade execution."}
+              </p>
+            </div>
+            <Button
+              type="button"
+              size="lg"
+              className="pill-button pill-button-primary shrink-0"
+              onClick={() => setLocation(hasAutoTradingAccess ? "/simulator#signal-engine" : "/pricing")}
+            >
+              {hasAutoTradingAccess ? "Open Signal Engine" : "View plans"}
+              <ArrowRight className="h-4 w-4" />
+            </Button>
           </div>
         </section>
 

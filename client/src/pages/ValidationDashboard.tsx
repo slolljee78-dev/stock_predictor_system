@@ -215,12 +215,12 @@ export default function ValidationDashboard() {
               </div>
               <span className="text-xs font-semibold text-muted-foreground">BACKGROUND STATUS</span>
             </div>
-            <div className="metric-value text-2xl">{latestAutoTrade ? "Auto activity recorded" : "Manual only"}</div>
+            <div className="metric-value text-2xl">{latestAutoTrade ? "Signal engine activity" : "Manual only"}</div>
             <div className="metric-label">{selectedPortfolio.trades.length} total trade{selectedPortfolio.trades.length === 1 ? "" : "s"}</div>
             <div className="mt-2 text-xs text-muted-foreground">
               {latestAutoTrade
                 ? `Latest auto-trade: ${latestAutoTrade.ticker} ${latestAutoTrade.type.toUpperCase()} on ${formatDateTime(latestAutoTrade.executedAt)}`
-                : "No scheduled or auto-trader activity has been recorded in this portfolio yet."}
+                : "No scheduled or signal engine activity has been recorded in this portfolio yet."}
             </div>
           </div>
         </div>

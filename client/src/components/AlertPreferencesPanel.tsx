@@ -47,7 +47,16 @@ export function AlertPreferencesPanel({ stockId, ticker, onClose }: AlertPrefere
   // Load preferences when fetched
   useEffect(() => {
     if (prefs) {
-      setPreferences(prefs);
+      setPreferences(prev => ({
+        ...prev,
+        minBuyConfidence: prefs.minBuyConfidence ?? prev.minBuyConfidence,
+        minSellConfidence: prefs.minSellConfidence ?? prev.minSellConfidence,
+        enableBuyAlerts: prefs.enableBuyAlerts ?? prev.enableBuyAlerts,
+        enableSellAlerts: prefs.enableSellAlerts ?? prev.enableSellAlerts,
+        enableSentimentAlerts: prefs.enableSentimentAlerts ?? prev.enableSentimentAlerts,
+        notificationChannels: (prefs.notificationChannels as ('in_app' | 'email' | 'push')[]) ?? prev.notificationChannels,
+        enablePushNotifications: prefs.enablePushNotifications ?? prev.enablePushNotifications,
+      }));
     }
   }, [prefs]);
 

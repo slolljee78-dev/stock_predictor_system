@@ -24,17 +24,17 @@ describe('FAQ Component', () => {
   it('should have at least 20 FAQ items', () => {
     const faqItems = [
       // Getting Started
-      { id: 'gs-1', question: 'What is Stock Predictor?' },
+      { id: 'gs-1', question: 'What is Vortextrade?' },
       { id: 'gs-2', question: 'Do I need trading experience?' },
-      { id: 'gs-3', question: 'Is Stock Predictor available on mobile?' },
-      { id: 'gs-4', question: 'What markets does Stock Predictor cover?' },
+      { id: 'gs-3', question: 'Is Vortextrade available on mobile?' },
+      { id: 'gs-4', question: 'What markets does Vortextrade cover?' },
       // Trading & Signals
-      { id: 'ts-1', question: 'How often does Stock Predictor generate signals?' },
+      { id: 'ts-1', question: 'How often does Vortextrade generate signals?' },
       { id: 'ts-2', question: 'What does the confidence score mean?' },
       { id: 'ts-3', question: 'Can I trade on signals immediately?' },
       { id: 'ts-4', question: 'What\'s the average win rate?' },
       // Risk Management
-      { id: 'rm-1', question: 'How does Stock Predictor protect my portfolio?' },
+      { id: 'rm-1', question: 'How does Vortextrade protect my portfolio?' },
       { id: 'rm-2', question: 'What\'s the maximum daily loss limit?' },
       { id: 'rm-3', question: 'What\'s the Sharpe ratio?' },
       { id: 'rm-4', question: 'What\'s the maximum drawdown?' },
@@ -123,8 +123,8 @@ describe('FAQ Component', () => {
     const faqItem = {
       id: 'gs-1',
       category: 'Getting Started',
-      question: 'What is Stock Predictor?',
-      answer: 'Stock Predictor is an advanced AI-powered trading intelligence platform...'
+      question: 'What is Vortextrade?',
+      answer: 'Vortextrade is an advanced AI-powered trading intelligence platform...'
     };
     
     expect(faqItem.question).toBeTruthy();
@@ -135,7 +135,7 @@ describe('FAQ Component', () => {
 
   it('should support search functionality', () => {
     const faqItems = [
-      { question: 'What is Stock Predictor?', answer: 'AI-powered trading platform' },
+      { question: 'What is Vortextrade?', answer: 'AI-powered trading platform' },
       { question: 'What does confidence score mean?', answer: 'Model certainty about direction' },
       { question: 'How do I search?', answer: 'Use the search box' },
     ];
@@ -152,7 +152,7 @@ describe('FAQ Component', () => {
 
   it('should support category filtering', () => {
     const faqItems = [
-      { category: 'Getting Started', question: 'What is Stock Predictor?' },
+      { category: 'Getting Started', question: 'What is Vortextrade?' },
       { category: 'Trading & Signals', question: 'What does confidence score mean?' },
       { category: 'Risk Management', question: 'How does protection work?' },
     ];
@@ -166,7 +166,7 @@ describe('FAQ Component', () => {
 
   it('should support combined search and category filtering', () => {
     const faqItems = [
-      { category: 'Getting Started', question: 'What is Stock Predictor?' },
+      { category: 'Getting Started', question: 'What is Vortextrade?' },
       { category: 'Trading & Signals', question: 'What does confidence score mean?' },
       { category: 'Trading & Signals', question: 'How often are signals generated?' },
       { category: 'Risk Management', question: 'How does protection work?' },
@@ -186,7 +186,7 @@ describe('FAQ Component', () => {
 
   it('should handle empty search results', () => {
     const faqItems = [
-      { question: 'What is Stock Predictor?' },
+      { question: 'What is Vortextrade?' },
       { question: 'What does confidence score mean?' },
     ];
     

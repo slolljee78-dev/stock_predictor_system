@@ -255,7 +255,7 @@ export async function fetchMarketData(ticker: string): Promise<MarketData | null
  * Cache for storing recent prices to reduce API calls
  */
 const priceCache = new Map<string, { price: StockPrice; timestamp: number }>();
-const CACHE_DURATION = 300000; // 5 minute cache
+const CACHE_DURATION = 60000; // 1 minute cache
 
 /**
  * Fetch stock price with caching

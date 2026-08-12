@@ -3,7 +3,8 @@ import { trpc } from '@/lib/trpc';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { TrendingUp, TrendingDown, AlertCircle, RefreshCw, ArrowLeft, Home, Filter } from 'lucide-react';
+import { TrendingUp, TrendingDown, AlertCircle, RefreshCw, ArrowLeft, Home, Filter, Share2 } from 'lucide-react';
+import { ShareSignalCard } from '@/components/ShareSignalCard';
 import { SignalDetailsModal } from '@/components/SignalDetailsModal';
 import { SignalFilters, SignalFilterOptions, DEFAULT_FILTERS } from '@/components/SignalFilters';
 import { applyQuickFilter, getQuickFilterValue } from '@/lib/signalQuickFilters';
@@ -17,7 +18,7 @@ interface SignalWithMetrics {
   ticker: string;
   signalType: 'buy' | 'sell' | 'hold';
   confidence: number;
-  price: number;
+  price: number | string | null;
   change: number;
   changePercent: number;
   rsi: number | null;
@@ -121,7 +122,7 @@ export default function SignalsDashboard() {
       case 'confidence':
         return b.confidence - a.confidence;
       case 'price':
-        return b.price - a.price;
+        return (parseFloat(String(b.price ?? 0)) || 0) - (parseFloat(String(a.price ?? 0)) || 0);
       case 'time':
         return b.timestamp - a.timestamp;
       case 'rsi':
@@ -222,7 +223,7 @@ export default function SignalsDashboard() {
                         <p className="text-xs text-muted-foreground">{signal.confidence}% confidence buy idea</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-semibold text-emerald-300">${signal.price.toFixed(2)}</p>
+                        <p className="text-sm font-semibold text-emerald-300">${parseFloat(String(signal.price ?? 0)).toFixed(2)}</p>
                         <p className="text-xs text-muted-foreground">{new Date(signal.timestamp).toLocaleTimeString()}</p>
                       </div>
                     </div>
@@ -254,7 +255,7 @@ export default function SignalsDashboard() {
                         <p className="text-xs text-muted-foreground">{signal.confidence}% confidence sell idea</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-semibold text-rose-300">${signal.price.toFixed(2)}</p>
+                        <p className="text-sm font-semibold text-rose-300">${parseFloat(String(signal.price ?? 0)).toFixed(2)}</p>
                         <p className="text-xs text-muted-foreground">{new Date(signal.timestamp).toLocaleTimeString()}</p>
                       </div>
                     </div>
@@ -412,6 +413,7 @@ function SignalCard({
 }) {
   const isPositive = signal.changePercent >= 0;
   const isGreen = signal.signalType === 'buy';
+  const [shareOpen, setShareOpen] = React.useState(false);
 
   // Calculate freshness state
   const isStale = Date.now() - signal.timestamp > 3600000; // Stale if older than 1 hour
@@ -445,7 +447,7 @@ function SignalCard({
 
         {/* Price and Change */}
         <div className="text-right">
-          <p className="text-2xl font-bold text-foreground">${signal.price.toFixed(2)}</p>
+          <p className="text-2xl font-bold text-foreground">${parseFloat(String(signal.price ?? 0)).toFixed(2)}</p>
           <div className={`flex items-center gap-1 text-sm ${isPositive ? 'text-green-500' : 'text-red-500'}`}>
             {isPositive ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
             <span>
@@ -478,11 +480,21 @@ function SignalCard({
           <Button size="sm" variant="outline" className="flex-1" onClick={onDetailsClick}>
             Details
           </Button>
+          <Button size="sm" variant="outline" className="gap-1 px-3" onClick={() => setShareOpen(true)}>
+            <Share2 className="w-3.5 h-3.5" />
+            Share
+          </Button>
           <Button size="sm" className="flex-1">
             Trade
           </Button>
         </div>
       </div>
+
+      <ShareSignalCard
+        signal={signal}
+        isOpen={shareOpen}
+        onClose={() => setShareOpen(false)}
+      />
     </div>
   );
 }

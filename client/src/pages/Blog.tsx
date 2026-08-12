@@ -5,15 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import {
-  BLOG_POSTS,
-  getFeaturedPosts,
-  getAllCategories,
-  getAllTags,
-  getPostsByCategory,
-  getPostsByTag,
-  BlogPost,
-} from '@/lib/blogData';
+import { trpc } from '@/lib/trpc';
+import { BlogPost } from '@/lib/blogData';
 
 export default function Blog() {
   const [, setLocation] = useLocation();
@@ -21,8 +14,22 @@ export default function Blog() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
+  const { data: blogPosts = [], isLoading } = trpc.blog.getBlogPosts.useQuery();
+
   // Filter posts based on search, category, and tag
-  let filteredPosts = BLOG_POSTS;
+  let filteredPosts = blogPosts.filter((post: BlogPost) => {
+    const matchesSearch = searchQuery
+      ? post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        post.excerpt.toLowerCase().includes(searchQuery.toLowerCase())
+      : true;
+    const matchesCategory = selectedCategory
+      ? post.category === selectedCategory
+      : true;
+    const matchesTag = selectedTag
+      ? post.tags.includes(selectedTag)
+      : true;
+    return matchesSearch && matchesCategory && matchesTag;
+  });
 
   if (searchQuery) {
     filteredPosts = filteredPosts.filter(
@@ -45,9 +52,9 @@ export default function Blog() {
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
   );
 
-  const categories = getAllCategories();
-  const tags = getAllTags();
-  const featuredPosts = getFeaturedPosts();
+  const categories = Array.from(new Set(blogPosts.map((post: BlogPost) => post.category)));
+  const tags = Array.from(new Set(blogPosts.flatMap((post: BlogPost) => post.tags)));
+  const featuredPosts = blogPosts.filter((post: BlogPost) => post.featured);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -107,9 +114,9 @@ export default function Blog() {
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Header */}
         <div className="space-y-4">
-          <h1 className="text-4xl font-bold gradient-text">Stock Predictor Blog</h1>
+          <h1 className="text-4xl font-bold gradient-text">Vortextrade Blog</h1>
           <p className="text-lg text-muted-foreground">
-            Learn trading strategies, technical analysis, and how to use Stock Predictor to improve your trading
+            Learn trading strategies, technical analysis, and how to use Vortextrade to improve your trading
           </p>
         </div>
 
@@ -165,7 +172,7 @@ export default function Blog() {
         </div>
 
         {/* Featured Posts (only show when no filters applied) */}
-        {!searchQuery && !selectedCategory && !selectedTag && (
+        {!isLoading && !searchQuery && !selectedCategory && !selectedTag && featuredPosts.length > 0 && (
           <div className="space-y-4">
             <h2 className="text-2xl font-bold">Featured Articles</h2>
             <div className="grid gap-6 md:grid-cols-3">
@@ -183,11 +190,16 @@ export default function Blog() {
               {searchQuery || selectedCategory || selectedTag ? 'Search Results' : 'All Articles'}
             </h2>
             <span className="text-sm text-muted-foreground">
-              {filteredPosts.length} article{filteredPosts.length !== 1 ? 's' : ''}
+              {isLoading ? 'Loading...' : `${filteredPosts.length} article${filteredPosts.length !== 1 ? 's' : ''}`}
             </span>
           </div>
 
-          {filteredPosts.length === 0 ? (
+          {isLoading ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+              <p className="mt-4 text-muted-foreground">Loading articles...</p>
+            </div>
+          ) : filteredPosts.length === 0 ? (
             <Card className="premium-card">
               <CardContent className="pt-8 text-center">
                 <p className="text-muted-foreground">No articles found. Try adjusting your filters.</p>

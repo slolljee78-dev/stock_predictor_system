@@ -44,7 +44,7 @@ export const alertsRouter = router({
           input.signalType === 'buy' ? pref.enableBuyAlerts : pref.enableSellAlerts;
 
         // Skip if alerts disabled or confidence below threshold
-        if (!alertsEnabled || input.confidence < minConfidence) {
+        if (!alertsEnabled || input.confidence < (minConfidence ?? 0)) {
           return {
             success: false,
             message: `Alert not created: ${alertsEnabled ? 'confidence below threshold' : 'alerts disabled'}`,
@@ -59,9 +59,10 @@ export const alertsRouter = router({
         stockId: input.stockId,
         signalType: input.signalType,
         confidence: input.confidence,
-        price: input.price,
+        price: String(input.price),
         status: 'pending',
         notificationChannels: JSON.stringify(input.notificationChannels),
+        sentAt: null,
       });
 
       return {

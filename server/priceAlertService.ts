@@ -188,7 +188,7 @@ export async function deletePriceAlert(alertId: number, userId: number) {
     if (!db) throw new Error("Database not available");
     await db
       .update(priceAlerts)
-      .set({ status: "deleted" })
+      .set({ status: "cancelled" })
       .where(and(eq(priceAlerts.id, alertId), eq(priceAlerts.userId, userId)));
 
     return { success: true, message: "Price alert deleted" };
@@ -271,7 +271,7 @@ export async function triggerPriceAlert(
     await db
       .update(priceAlerts)
       .set({
-        triggerCount: alertData.triggerCount + 1,
+        triggerCount: (alertData.triggerCount ?? 0) + 1,
         lastTriggeredPrice: currentPrice.toString(),
         lastTriggeredAt: new Date(),
       })
@@ -307,12 +307,12 @@ export async function getPriceAlertHistory(userId: number, limit: number = 50) {
         alertType: priceAlertHistory.alertType,
         notificationChannels: priceAlertHistory.notificationChannels,
         notificationSent: priceAlertHistory.notificationSent,
-        createdAt: priceAlertHistory.createdAt,
+        triggeredAt: priceAlertHistory.triggeredAt,
       })
       .from(priceAlertHistory)
       .innerJoin(stocks, eq(priceAlertHistory.stockId, stocks.id))
       .where(eq(priceAlertHistory.userId, userId))
-      .orderBy(priceAlertHistory.createdAt)
+      .orderBy(priceAlertHistory.triggeredAt)
       .limit(limit);
 
     return history;

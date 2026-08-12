@@ -32,12 +32,12 @@ export default function AffiliateDashboard() {
   };
 
   const handleShare = (platform: string) => {
-    const text = `Join Stock Predictor - Get premium AI trading signals! Use my link: ${referralLink}`;
+    const text = `Join Vortextrade - Get premium AI trading signals! Use my link: ${referralLink}`;
     const urls: Record<string, string> = {
       twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`,
       facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink)}`,
       linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(referralLink)}`,
-      email: `mailto:?subject=Stock Predictor - AI Trading Signals&body=${encodeURIComponent(text)}`,
+      email: `mailto:?subject=Vortextrade - AI Trading Signals&body=${encodeURIComponent(text)}`,
     };
 
     if (urls[platform]) {
@@ -52,7 +52,7 @@ export default function AffiliateDashboard() {
         <div className="container mx-auto px-4 py-12">
           <h1 className="text-4xl font-bold mb-4">Affiliate Program</h1>
           <p className="text-lg text-muted-foreground max-w-2xl">
-            Earn commissions by referring traders to Stock Predictor. Get paid for every successful signup and ongoing revenue share.
+            Earn commissions by referring traders to Vortextrade. Get paid for every successful signup and ongoing revenue share.
           </p>
         </div>
       </div>
@@ -279,7 +279,7 @@ export default function AffiliateDashboard() {
             </div>
 
             <div>
-              <h4 className="font-semibold mb-1">Can I promote Stock Predictor on paid ads?</h4>
+              <h4 className="font-semibold mb-1">Can I promote Vortextrade on paid ads?</h4>
               <p className="text-sm text-muted-foreground">
                 Yes! We encourage it. Just follow our brand guidelines and disclose the affiliate relationship.
               </p>

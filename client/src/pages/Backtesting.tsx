@@ -547,8 +547,8 @@ export function Backtesting() {
                     <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
                       <div>
                         <p className="text-sm text-muted-foreground">Total Return</p>
-                        <p className={`text-lg font-semibold ${backtest.totalReturn >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          {(backtest.totalReturn / 100).toFixed(2)}%
+                        <p className={`text-lg font-semibold ${parseFloat(backtest.totalReturn ?? '0') >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {(parseFloat(backtest.totalReturn ?? '0') / 100).toFixed(2)}%
                         </p>
                       </div>
                       <div>
@@ -557,7 +557,7 @@ export function Backtesting() {
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Sharpe Ratio</p>
-                        <p className="text-lg font-semibold">{(backtest.sharpeRatio / 100).toFixed(2)}</p>
+                        <p className="text-lg font-semibold">{(parseFloat(backtest.sharpeRatio ?? '0') / 100).toFixed(2)}</p>
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Max Drawdown</p>

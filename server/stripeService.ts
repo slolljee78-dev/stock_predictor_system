@@ -1,9 +1,15 @@
 import Stripe from 'stripe';
 import { SUBSCRIPTION_PRODUCTS, SubscriptionTier } from './products';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2026-03-25.dahlia',
-});
+// Lazy initialization — prevents crash on startup when STRIPE_SECRET_KEY is absent
+let _stripe: Stripe | null = null;
+function getStripe(): Stripe {
+  if (_stripe) return _stripe;
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key) throw new Error('Stripe is not configured: STRIPE_SECRET_KEY is missing.');
+  _stripe = new Stripe(key, { apiVersion: '2026-03-25.dahlia' as any });
+  return _stripe;
+}
 
 export interface CreateCheckoutSessionParams {
   userId: string;
@@ -24,7 +30,7 @@ export async function createCheckoutSession(params: CreateCheckoutSessionParams)
     throw new Error(`Stripe price ID not configured for tier: ${tier}`);
   }
 
-  const session = await stripe.checkout.sessions.create({
+  const session = await getStripe().checkout.sessions.create({
     payment_method_types: ['card'],
     mode: 'subscription',
     customer_email: userEmail,
@@ -57,14 +63,14 @@ export async function createCheckoutSession(params: CreateCheckoutSessionParams)
  * Get subscription details from Stripe
  */
 export async function getSubscription(subscriptionId: string) {
-  return stripe.subscriptions.retrieve(subscriptionId);
+  return getStripe().subscriptions.retrieve(subscriptionId);
 }
 
 /**
  * Cancel a subscription
  */
 export async function cancelSubscription(subscriptionId: string) {
-  return stripe.subscriptions.update(subscriptionId, {
+  return getStripe().subscriptions.update(subscriptionId, {
     cancel_at_period_end: true,
   });
 }
@@ -73,7 +79,7 @@ export async function cancelSubscription(subscriptionId: string) {
  * Get customer subscriptions
  */
 export async function getCustomerSubscriptions(customerId: string) {
-  return stripe.subscriptions.list({
+  return getStripe().subscriptions.list({
     customer: customerId,
     limit: 10,
   });
@@ -83,7 +89,7 @@ export async function getCustomerSubscriptions(customerId: string) {
  * Create a customer in Stripe
  */
 export async function createCustomer(email: string, name: string) {
-  return stripe.customers.create({
+  return getStripe().customers.create({
     email,
     name,
   });
@@ -94,7 +100,7 @@ export async function createCustomer(email: string, name: string) {
  */
 export async function getOrCreateCustomer(email: string, name: string) {
   // Search for existing customer
-  const customers = await stripe.customers.list({
+  const customers = await getStripe().customers.list({
     email,
     limit: 1,
   });
@@ -114,7 +120,7 @@ export function constructWebhookEvent(body: Buffer, signature: string) {
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
   
   try {
-    return stripe.webhooks.constructEvent(body, signature, webhookSecret);
+    return getStripe().webhooks.constructEvent(body, signature, webhookSecret);
   } catch (error) {
     throw new Error(`Webhook signature verification failed: ${error}`);
   }

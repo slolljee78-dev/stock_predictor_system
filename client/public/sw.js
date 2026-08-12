@@ -1,9 +1,9 @@
 /**
- * Service Worker for Stock Predictor PWA
+ * Service Worker for Vortextrade PWA
  * Handles offline caching, background sync, and push notifications
  */
 
-const CACHE_NAME = 'stock-predictor-v2-premium-homepage';
+const CACHE_NAME = 'vortextrade-v2-premium-homepage';
 const URLS_TO_CACHE = [
   '/',
   '/mobile',
@@ -128,7 +128,7 @@ self.addEventListener('push', event => {
     notificationData = event.data.json();
   } catch (e) {
     notificationData = {
-      title: 'Stock Predictor Alert',
+      title: 'Vortextrade Alert',
       body: event.data.text(),
     };
   }
@@ -153,7 +153,7 @@ self.addEventListener('push', event => {
   };
 
   event.waitUntil(
-    self.registration.showNotification(notificationData.title || 'Stock Predictor', options)
+    self.registration.showNotification(notificationData.title || 'Vortextrade', options)
   );
 });
 

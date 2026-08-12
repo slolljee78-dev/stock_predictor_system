@@ -56,7 +56,7 @@ export function UserProfileMenu() {
           <span>Dashboard</span>
         </DropdownMenuItem>
 
-        <DropdownMenuItem disabled className="gap-2">
+        <DropdownMenuItem onClick={() => setLocation("/profile")} className="gap-2">
           <User className="h-4 w-4" />
           <span>Profile</span>
         </DropdownMenuItem>

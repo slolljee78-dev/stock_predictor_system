@@ -30,89 +30,77 @@ export interface RealtimeSignal {
 export function generateRealtimeSignal(marketData: MarketDataPoint): RealtimeSignal {
   const { indicators, price, ticker, timestamp } = marketData;
 
-  // Analyze each indicator
   const signals: SignalType[] = [];
   const triggerIndicators: string[] = [];
-  let totalConfidence = 0;
-  let indicatorCount = 0;
+  let buyScore = 0;
+  let sellScore = 0;
+
+  const addDirectionalSignal = (signal: Exclude<SignalType, "hold">, weight: number, label: string) => {
+    signals.push(signal);
+    triggerIndicators.push(label);
+    if (signal === "buy") {
+      buyScore += weight;
+    } else {
+      sellScore += weight;
+    }
+  };
 
   // RSI Analysis (Oversold/Overbought)
   if (indicators.rsi14 !== null) {
-    indicatorCount++;
     if (indicators.rsi14 < 30) {
-      signals.push('buy');
-      triggerIndicators.push('RSI Oversold');
-      totalConfidence += 40;
+      addDirectionalSignal("buy", 40, "RSI Oversold");
     } else if (indicators.rsi14 > 70) {
-      signals.push('sell');
-      triggerIndicators.push('RSI Overbought');
-      totalConfidence += 40;
+      addDirectionalSignal("sell", 40, "RSI Overbought");
     } else if (indicators.rsi14 < 50) {
-      signals.push('sell');
-      triggerIndicators.push('RSI Downtrend');
-      totalConfidence += 20;
+      addDirectionalSignal("sell", 20, "RSI Downtrend");
     } else {
-      signals.push('buy');
-      triggerIndicators.push('RSI Uptrend');
-      totalConfidence += 20;
+      addDirectionalSignal("buy", 20, "RSI Uptrend");
     }
   }
 
   // MACD Analysis
   if (indicators.macd !== null && indicators.macdSignal !== null) {
-    indicatorCount++;
     const macdHistogram = indicators.macd - indicators.macdSignal;
 
     if (macdHistogram > 0 && indicators.macd > 0) {
-      signals.push('buy');
-      triggerIndicators.push('MACD Bullish');
-      totalConfidence += 30;
+      addDirectionalSignal("buy", 30, "MACD Bullish");
     } else if (macdHistogram < 0 && indicators.macd < 0) {
-      signals.push('sell');
-      triggerIndicators.push('MACD Bearish');
-      totalConfidence += 30;
+      addDirectionalSignal("sell", 30, "MACD Bearish");
     } else if (macdHistogram > 0) {
-      signals.push('buy');
-      triggerIndicators.push('MACD Crossover');
-      totalConfidence += 25;
+      addDirectionalSignal("buy", 25, "MACD Crossover");
     } else {
-      signals.push('sell');
-      triggerIndicators.push('MACD Crossunder');
-      totalConfidence += 25;
+      addDirectionalSignal("sell", 25, "MACD Crossunder");
     }
   }
 
   // Moving Average Analysis
   const smaSignal = analyzeSMA(indicators, price.close);
   if (smaSignal.signal) {
-    signals.push(smaSignal.signal);
-    triggerIndicators.push(smaSignal.reason);
-    totalConfidence += 25;
-    indicatorCount++;
+    addDirectionalSignal(smaSignal.signal, 25, smaSignal.reason);
   }
 
   // Bollinger Bands Analysis
   const bbSignal = analyzeBollingerBands(indicators, price.close);
   if (bbSignal.signal) {
-    signals.push(bbSignal.signal);
-    triggerIndicators.push(bbSignal.reason);
-    totalConfidence += 20;
-    indicatorCount++;
+    addDirectionalSignal(bbSignal.signal, 20, bbSignal.reason);
   }
 
   // Determine final signal
-  const buyCount = signals.filter(s => s === 'buy').length;
-  const sellCount = signals.filter(s => s === 'sell').length;
-
   let finalSignal: SignalType = 'hold';
-  if (buyCount > sellCount) {
+  if (buyScore > sellScore) {
     finalSignal = 'buy';
-  } else if (sellCount > buyCount) {
+  } else if (sellScore > buyScore) {
     finalSignal = 'sell';
   }
 
-  // Calculate confidence
-  const confidence = indicatorCount > 0 ? Math.min(100, Math.round((totalConfidence / indicatorCount) * 1.2)) : 0;
+  // Confidence represents directional consensus, not the average of all
+  // indicator weights. Averaging made fully-aligned signals score only 27–29%,
+  // so the default 30% Signal Engine threshold almost never admitted a trade.
+  // 115 is the maximum available weighted evidence (40 RSI + 30 MACD + 25 SMA
+  // + 20 Bollinger Bands). Mixed signals correctly reduce confidence to zero.
+  const confidence = finalSignal === "hold"
+    ? 0
+    : Math.min(95, Math.round((Math.abs(buyScore - sellScore) / 115) * 100));
 
   // Generate reasoning
   const reasoning = generateReasoning(finalSignal, triggerIndicators, indicators, price.close);
@@ -144,7 +132,7 @@ export function generateRealtimeSignal(marketData: MarketDataPoint): RealtimeSig
 function analyzeSMA(
   indicators: TechnicalIndicators,
   currentPrice: number
-): { signal: SignalType | null; reason: string } {
+): { signal: Exclude<SignalType, "hold"> | null; reason: string } {
   if (!indicators.sma20 || !indicators.sma50) {
     return { signal: null, reason: '' };
   }
@@ -176,7 +164,7 @@ function analyzeSMA(
 function analyzeBollingerBands(
   indicators: TechnicalIndicators,
   currentPrice: number
-): { signal: SignalType | null; reason: string } {
+): { signal: Exclude<SignalType, "hold"> | null; reason: string } {
   if (!indicators.bb20Upper || !indicators.bb20Lower) {
     return { signal: null, reason: '' };
   }

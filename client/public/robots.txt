@@ -6,6 +6,20 @@ Disallow: /private
 Disallow: /user-data
 Disallow: /*.json$
 Disallow: /*?*sort=
+Disallow: /dashboard
+Disallow: /signals
+Disallow: /simulator
+Disallow: /backtesting
+Disallow: /alerts
+Disallow: /alerts-center
+Disallow: /alert-preferences
+Disallow: /signal-accuracy
+Disallow: /validation
+Disallow: /affiliate
+Disallow: /profile
+Disallow: /screener
+Disallow: /watchlist
+Disallow: /mobile
 
 # Allow crawling of sitemap
 Sitemap: https://vortextrade.manus.space/sitemap.xml

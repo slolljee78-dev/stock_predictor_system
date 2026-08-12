@@ -56,7 +56,7 @@ export function startBackgroundJobs() {
   // Start real-time signal monitoring job
   console.log('[Background Jobs] Initializing signal monitoring...');
   startSignalMonitoring({
-    interval: 2 * 60 * 60 * 1000, // 2 hours (optimized for cost and API limits)
+    interval: 2 * 60 * 60 * 1000, // 2 hours (optimized for cost reduction and API rate limits)
     confidenceThreshold: 25, // Lowered to 25 to generate signals from technical indicators alone
     maxStocksPerRun: 10, // 10 stocks per run = ~10 API calls/hour = ~240 calls/day max (well under 25 limit)
     notifyOnSignal: true,
@@ -76,7 +76,7 @@ export function startBackgroundJobs() {
     if (isMarketHours) {
       await generateSignalsForWatchlists();
     }
-  }, 15 * 60 * 1000); // 15 minutes (optimized for cost)
+  }, 15 * 60 * 1000); // 15 minutes (optimized for cost reduction)
 
   // Cleanup on process exit
   process.on('exit', () => {

@@ -260,10 +260,26 @@ function summarizeRound(round: AutoTradingRoundResponse) {
   const buyCount = round.executedTrades.filter((trade) => trade.type === "BUY").length;
   const sellCount = round.executedTrades.filter((trade) => trade.type === "SELL").length;
   const actionableCount = round.actionableSignals.length;
+  const diagnostics = round.diagnostics;
+  const closestSignal = diagnostics.closestSignal;
 
-  return round.executedTrades.length > 0
-    ? `Scheduled simulator found ${actionableCount} actionable signal${actionableCount === 1 ? "" : "s"} and executed ${round.executedTrades.length} virtual trade${round.executedTrades.length === 1 ? "" : "s"} across ${round.scannedCount} scanned stocks (${buyCount} buys, ${sellCount} sells).`
-    : `Scheduled simulator scanned ${round.scannedCount} stocks, found ${actionableCount} actionable signal${actionableCount === 1 ? "" : "s"}, but no trade cleared the current confidence, sizing, and position rules.`;
+  if (round.executedTrades.length > 0) {
+    return `Scheduled simulator evaluated ${diagnostics.marketDataAvailable}/${round.scannedCount} stocks, found ${actionableCount} actionable signal${actionableCount === 1 ? "" : "s"}, and executed ${round.executedTrades.length} virtual trade${round.executedTrades.length === 1 ? "" : "s"} (${buyCount} buys, ${sellCount} sells).`;
+  }
+
+  if (diagnostics.marketDataAvailable === 0) {
+    return `Scheduled simulator could not evaluate any of ${round.scannedCount} stocks because market data was unavailable. No recommendation or virtual trade was produced.`;
+  }
+
+  if (actionableCount === 0 && closestSignal && closestSignal.signalType !== "hold") {
+    return `Scheduled simulator evaluated ${diagnostics.marketDataAvailable}/${round.scannedCount} stocks. The closest ${closestSignal.signalType.toUpperCase()} setup was ${closestSignal.ticker} at ${closestSignal.confidence}% confidence, below the ${diagnostics.requiredConfidence}% threshold.`;
+  }
+
+  if (actionableCount === 0) {
+    return `Scheduled simulator evaluated ${diagnostics.marketDataAvailable}/${round.scannedCount} stocks. The technical indicators were mixed, so no buy or sell recommendation cleared the ${diagnostics.requiredConfidence}% threshold.`;
+  }
+
+  return `Scheduled simulator found ${actionableCount} actionable signal${actionableCount === 1 ? "" : "s"}, but no compatible virtual trade could be placed with the current cash balance, open positions, and per-round limits.`;
 }
 
 function createRoundHistoryEntry(round: AutoTradingRoundResponse, summary: string): ScheduledSimulatorRoundLogEntry {
@@ -502,7 +518,9 @@ export async function processScheduledSimulatorRuns(options?: { userId?: number;
       const roundHistoryEntry = createRoundHistoryEntry(round, summary);
       const updatedRoundHistory = [roundHistoryEntry, ...record.roundHistory].slice(0, 14);
       const nextRunAt = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-      const completed = record.endsAt ? nextRunAt.getTime() >= new Date(record.endsAt).getTime() : false;
+      // Mark completed only when the current time has passed endsAt (not when nextRunAt would pass it)
+      // This prevents premature completion where the last round marks the run done one day early.
+      const completed = record.endsAt ? now.getTime() >= new Date(record.endsAt).getTime() : false;
 
       await connection.execute(
         `

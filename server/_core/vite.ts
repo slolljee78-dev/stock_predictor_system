@@ -42,6 +42,12 @@ export async function setupVite(app: Express, server: Server) {
       // Strip out Vite client injection to prevent WebSocket errors
       page = page.replace(/<script[^>]*src="\/@vite\/client"[^>]*><\/script>/g, "");
       page = page.replace(/<script[^>]*type="module"[^>]*src="\/@vite\/client"[^>]*><\/script>/g, "");
+      // Replace any stale branding injected by VITE_APP_TITLE env var
+      page = page
+        .replace(/Stock Predictor/g, "Vortextrade")
+        .replace(/STOCK PREDICTOR/g, "VORTEXTRADE")
+        .replace(/stock predictor/g, "vortextrade")
+        .replace(/Manus Stock Predictor/g, "Vortextrade");
       // Force browser to reload HTML and not use cache
       res.status(200).set({
         "Content-Type": "text/html",
@@ -67,10 +73,30 @@ export function serveStatic(app: Express) {
     );
   }
 
-  app.use(express.static(distPath));
+  // Serve all static assets EXCEPT index.html so that all HTML requests
+  // always pass through the branding rewrite handler below.
+  app.use(express.static(distPath, { index: false }));
 
-  // fall through to index.html if the file doesn't exist
+  // All routes (including /) fall through here so we can rewrite stale branding
+  // injected by the VITE_APP_TITLE env var before serving the HTML.
   app.use("*", (_req, res) => {
-    res.sendFile(path.resolve(distPath, "index.html"));
+    const indexPath = path.resolve(distPath, "index.html");
+    if (!fs.existsSync(indexPath)) {
+      return res.status(404).send("Not found");
+    }
+    let html = fs.readFileSync(indexPath, "utf-8");
+    // Replace any remaining Stock Predictor references with Vortextrade
+    html = html
+      .replace(/Stock Predictor/g, "Vortextrade")
+      .replace(/STOCK PREDICTOR/g, "VORTEXTRADE")
+      .replace(/stock predictor/g, "vortextrade")
+      .replace(/Manus Stock Predictor/g, "Vortextrade")
+      .replace(/stockpredictor/g, "vortextrade");
+    res.set({
+      "Content-Type": "text/html",
+      "Cache-Control": "no-cache, no-store, must-revalidate",
+      "Pragma": "no-cache",
+      "Expires": "0",
+    }).send(html);
   });
 }

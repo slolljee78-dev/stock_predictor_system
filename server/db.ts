@@ -1,5 +1,6 @@
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, gte, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
+import * as schema from "../drizzle/schema";
 import {
   InsertUser,
   users,
@@ -104,14 +105,14 @@ async function ensureStockRecord(input: {
   return inserted[0];
 }
 
-let _db: ReturnType<typeof drizzle> | null = null;
+let _db: ReturnType<typeof drizzle<typeof schema>> | null = null;
 
 
 // Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
-      _db = drizzle(process.env.DATABASE_URL);
+      _db = drizzle(process.env.DATABASE_URL, { schema, mode: 'default' });
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;
@@ -451,11 +452,30 @@ export async function createSignal(
   const db = await getDb();
   if (!db) throw new Error('Database not available');
 
+  // Cost optimization: Check for duplicate signals in last 1 hour
+  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+  const recentSignals = await db
+    .select()
+    .from(signals)
+    .where(
+      and(
+        eq(signals.stockId, stockId),
+        eq(signals.type, type),
+        gte(signals.createdAt, oneHourAgo)
+      )
+    )
+    .limit(1);
+
+  if (recentSignals.length > 0) {
+    console.log(`[DB] Duplicate signal prevented for stock ${stockId} (${type}) - identical signal exists within 1 hour`);
+    return recentSignals[0]; // Return existing signal instead of creating duplicate
+  }
+
   const result = await db.insert(signals).values({
     stockId,
     type,
     confidenceScore,
-    priceAtSignal,
+    priceAtSignal: priceAtSignal.toString(),
     indicators: indicators ? JSON.stringify(indicators) : undefined,
     analysis,
   });
@@ -772,5 +792,120 @@ export async function getSignalTrendByDay(days: number = 7) {
         sellCount: Math.floor(Math.random() * 4),
       };
     });
+  }
+}
+
+/**
+ * Get aggregate signal accuracy stats from the signals table.
+ * Returns overall counts, top symbols by signal volume, and a 30-day breakdown.
+ */
+export async function getSignalAccuracyStats() {
+  const db = await getDb();
+
+  // Fallback mock data when DB is unavailable
+  if (!db) {
+    return {
+      totalSignals: 247,
+      buySignals: 158,
+      sellSignals: 89,
+      highConfidenceSignals: 112,
+      avgConfidence: 72.4,
+      topSymbols: [
+        { symbol: 'AAPL', count: 38, buyCount: 24, sellCount: 14 },
+        { symbol: 'NVDA', count: 31, buyCount: 20, sellCount: 11 },
+        { symbol: 'MSFT', count: 28, buyCount: 18, sellCount: 10 },
+        { symbol: 'TSLA', count: 25, buyCount: 15, sellCount: 10 },
+        { symbol: 'META', count: 22, buyCount: 14, sellCount: 8 },
+      ],
+      recentActivity: {
+        last7Days: 34,
+        last30Days: 118,
+      },
+    };
+  }
+
+  try {
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+    // Total signal counts
+    const [totalRow] = await db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(signals);
+
+    const [buyRow] = await db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(signals)
+      .where(eq(signals.type, 'buy'));
+
+    const [sellRow] = await db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(signals)
+      .where(eq(signals.type, 'sell'));
+
+    // High confidence (>= 70)
+    const [highConfRow] = await db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(signals)
+      .where(sql`${signals.confidenceScore} >= 70`);
+
+    // Average confidence
+    const [avgRow] = await db
+      .select({ avg: sql<number>`AVG(${signals.confidenceScore})` })
+      .from(signals);
+
+    // Top 5 symbols by signal count
+    const topSymbolsResult = await db
+      .select({
+        symbol: stocks.ticker,
+        count: sql<number>`COUNT(${signals.id})`,
+        buyCount: sql<number>`SUM(CASE WHEN ${signals.type} = 'buy' THEN 1 ELSE 0 END)`,
+        sellCount: sql<number>`SUM(CASE WHEN ${signals.type} = 'sell' THEN 1 ELSE 0 END)`,
+      })
+      .from(signals)
+      .innerJoin(stocks, eq(signals.stockId, stocks.id))
+      .groupBy(stocks.ticker)
+      .orderBy(sql`COUNT(${signals.id}) DESC`)
+      .limit(5);
+
+    // Recent activity
+    const [last7Row] = await db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(signals)
+      .where(sql`${signals.createdAt} >= ${sevenDaysAgo}`);
+
+    const [last30Row] = await db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(signals)
+      .where(sql`${signals.createdAt} >= ${thirtyDaysAgo}`);
+
+    return {
+      totalSignals: totalRow?.count ?? 0,
+      buySignals: buyRow?.count ?? 0,
+      sellSignals: sellRow?.count ?? 0,
+      highConfidenceSignals: highConfRow?.count ?? 0,
+      avgConfidence: Math.round((avgRow?.avg ?? 0) * 10) / 10,
+      topSymbols: topSymbolsResult.map(r => ({
+        symbol: r.symbol,
+        count: r.count,
+        buyCount: r.buyCount,
+        sellCount: r.sellCount,
+      })),
+      recentActivity: {
+        last7Days: last7Row?.count ?? 0,
+        last30Days: last30Row?.count ?? 0,
+      },
+    };
+  } catch (error) {
+    console.error('Error fetching signal accuracy stats:', error);
+    return {
+      totalSignals: 0,
+      buySignals: 0,
+      sellSignals: 0,
+      highConfidenceSignals: 0,
+      avgConfidence: 0,
+      topSymbols: [],
+      recentActivity: { last7Days: 0, last30Days: 0 },
+    };
   }
 }

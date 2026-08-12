@@ -3,7 +3,7 @@
  * Scheduled background job that monitors stocks and generates real-time signals
  */
 
-import { fetchMarketDataWithIndicators, fetchMultipleMarketData } from './hybridMarketData';
+import { fetchMarketDataWithIndicators, fetchMultipleMarketData, checkEventFilter } from './hybridMarketData';
 import { generateRealtimeSignal, validateSignalStrength } from './realtimeSignalGenerator';
 import {
   sendBuySignalNotification,
@@ -12,7 +12,7 @@ import {
 } from './notificationDelivery';
 import { getDb, createSignal } from './db';
 import { watchlists, stocks, users } from '../drizzle/schema';
-import { eq } from 'drizzle-orm';
+import { eq, sql, inArray } from 'drizzle-orm';
 
 export interface MonitoringConfig {
   interval: number; // milliseconds
@@ -23,7 +23,7 @@ export interface MonitoringConfig {
 }
 
 const DEFAULT_CONFIG: MonitoringConfig = {
-  interval: 300000, // 5 minutes
+  interval: 3600000, // 1 hour (reduced from 5 minutes for cost optimization)
   confidenceThreshold: 60,
   maxStocksPerRun: 50,
   notifyOnSignal: true,
@@ -32,6 +32,11 @@ const DEFAULT_CONFIG: MonitoringConfig = {
 
 let monitoringJob: NodeJS.Timeout | null = null;
 let isRunning = false;
+
+// Watchlist cache (cost optimization: reduce DB queries)
+const watchlistCache = new Map<number, string[]>();
+const CACHE_TTL_MS = 60 * 60 * 1000; // 60 minutes (increased from 30 for cost optimization)
+let lastCacheRefresh = 0;
 
 /**
  * Start the signal monitoring job
@@ -79,6 +84,16 @@ export async function runSignalMonitoring(config: MonitoringConfig): Promise<voi
   const startTime = Date.now();
 
   try {
+    // Cost optimization: Only enable sentiment updates during market hours (9:30 AM - 4:00 PM EST)
+    const now = new Date();
+    const estHours = now.getHours() - 5; // Convert to EST
+    const isMarketHours = estHours >= 9 && estHours < 16;
+    const shouldUpdateSentiment = config.updateSentiment && isMarketHours;
+    
+    if (!isMarketHours && config.updateSentiment) {
+      console.log('[Signal Monitor] Sentiment updates disabled outside market hours');
+    }
+
     console.log('[Signal Monitor] Starting monitoring cycle');
 
     // Get database connection
@@ -98,11 +113,8 @@ export async function runSignalMonitoring(config: MonitoringConfig): Promise<voi
 
     for (const userRecord of usersWithWatchlists) {
       try {
-        // Get user details
-        const userDetails = await db.select().from(users).where(eq(users.id, userRecord.userId)).limit(1);
-        if (!userDetails || userDetails.length === 0) continue;
-
-        const user = userDetails[0];
+        // Cost optimization: Lazy-load user details - only fetch when needed
+        const userId = userRecord.userId;
 
         // Get user's watchlist from database
         const watchlistRecords = await db
@@ -123,12 +135,32 @@ export async function runSignalMonitoring(config: MonitoringConfig): Promise<voi
         const marketDataMap = await fetchMultipleMarketData(tickers);
         console.log(`[Signal Monitor] Fetched market data for ${marketDataMap.size} stocks`);
 
+        // Batch query all stock IDs for tickers (cost optimization: reduce DB queries)
+        const stockRecordsMap = new Map<string, number>();
+        if (tickers.length > 0) {
+          const allStockRecords = await db
+            .select({ id: stocks.id, ticker: stocks.ticker })
+            .from(stocks)
+            .where(inArray(stocks.ticker, tickers));
+          
+          for (const record of allStockRecords) {
+            stockRecordsMap.set(record.ticker, record.id);
+          }
+        }
+
         // Generate signals and send notifications
         for (const [ticker, marketData] of Array.from(marketDataMap.entries())) {
           try {
             // Generate signal
             const signal = generateRealtimeSignal(marketData);
             console.log(`[Signal Monitor] Generated signal for ${ticker}: ${signal.signalType} (confidence: ${signal.confidence})`);
+
+            // ── Earnings / news event filter ──────────────────────────────
+            const eventFilter = await checkEventFilter(ticker);
+            if (eventFilter.shouldSuppress) {
+              console.log(`[Signal Monitor] Signal for ${ticker} SUPPRESSED: ${eventFilter.reason}`);
+              continue;
+            }
 
             // Check if signal is strong enough
             if (!validateSignalStrength(signal, config.confidenceThreshold)) {
@@ -138,19 +170,16 @@ export async function runSignalMonitoring(config: MonitoringConfig): Promise<voi
 
             totalSignalsGenerated++;
 
-            // Find the stock ID for this ticker
-            const stockRecords = await db
-              .select({ id: stocks.id })
-              .from(stocks)
-              .where(eq(stocks.ticker, ticker))
-              .limit(1);
-
-            if (stockRecords.length === 0) {
+            // Get stock ID from pre-fetched map (cost optimization: no individual DB query)
+            const stockId = stockRecordsMap.get(ticker);
+            if (!stockId) {
               console.warn(`[Signal Monitor] Stock not found for ticker ${ticker}`);
               continue;
             }
 
-            const stockId = stockRecords[0].id;
+            // Fetch user email once for both notifications and sentiment (cost optimization: lazy-load)
+            const userDetails = await db.select({ email: users.email }).from(users).where(eq(users.id, userId)).limit(1);
+            const userEmail = userDetails?.[0]?.email || '';
 
             // Persist signal to database
             try {
@@ -180,8 +209,8 @@ export async function runSignalMonitoring(config: MonitoringConfig): Promise<voi
                         technicalIndicators: signal.technicalData,
                       },
                       {
-                        userId: user.id.toString(),
-                        userEmail: user.email || '',
+                        userId: userId.toString(),
+                        userEmail: userEmail,
                         channels: {
                           email: true,
                           push: true,
@@ -198,8 +227,8 @@ export async function runSignalMonitoring(config: MonitoringConfig): Promise<voi
                         technicalIndicators: signal.technicalData,
                       },
                       {
-                        userId: user.id.toString(),
-                        userEmail: user.email || '',
+                        userId: userId.toString(),
+                        userEmail: userEmail,
                         channels: {
                           email: true,
                           push: true,
@@ -213,14 +242,14 @@ export async function runSignalMonitoring(config: MonitoringConfig): Promise<voi
               }
             }
 
-            // Update sentiment if enabled
-            if (config.updateSentiment) {
+            // Update sentiment if enabled and during market hours (cost optimization)
+            if (shouldUpdateSentiment) {
               try {
                 await updateAndNotifySentiment(
                   ticker,
                   {
-                    userId: user.id.toString(),
-                    userEmail: user.email || '',
+                    userId: userId.toString(),
+                    userEmail: userEmail,
                     channels: {
                       email: true,
                       push: true,

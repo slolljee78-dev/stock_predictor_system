@@ -135,7 +135,7 @@ export default function CaseStudies() {
         <div className="container mx-auto px-4 py-12">
           <h1 className="text-4xl font-bold mb-4">Trading Case Studies</h1>
           <p className="text-lg text-muted-foreground max-w-2xl">
-            Learn from real trading strategies and outcomes. These case studies showcase different approaches to using Stock Predictor signals.
+            Learn from real trading strategies and outcomes. These case studies showcase different approaches to using Vortextrade signals.
           </p>
         </div>
       </div>
@@ -241,7 +241,7 @@ export default function CaseStudies() {
                 <CardTitle className="text-base">How realistic are these case studies?</CardTitle>
               </CardHeader>
               <CardContent className="text-sm text-muted-foreground">
-                These case studies are based on realistic trading scenarios using Stock Predictor signals. However, they represent historical examples and past performance does not guarantee future results.
+                These case studies are based on realistic trading scenarios using Vortextrade signals. However, they represent historical examples and past performance does not guarantee future results.
               </CardContent>
             </Card>
 

@@ -83,7 +83,7 @@ export default function MobileAppShell() {
     <div className="flex flex-col h-screen bg-background">
       {/* Header */}
       <div className="border-b border-border/50 bg-card/50 px-4 py-3 flex items-center justify-between">
-        <h1 className="text-lg font-bold">Stock Predictor</h1>
+        <h1 className="text-lg font-bold">Vortextrade</h1>
         <button
           onClick={() => setMenuOpen(!menuOpen)}
           className="p-1 hover:bg-muted rounded"

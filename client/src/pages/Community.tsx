@@ -51,7 +51,7 @@ export default function Community() {
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Header */}
         <div className="space-y-4">
-          <h1 className="text-4xl font-bold gradient-text">Stock Predictor Community</h1>
+          <h1 className="text-4xl font-bold gradient-text">Vortextrade Community</h1>
           <p className="text-lg text-muted-foreground">
             Compete with other traders, join challenges, and climb the leaderboard
           </p>
@@ -346,7 +346,7 @@ export default function Community() {
               <CardContent className="space-y-3">
                 <ol className="space-y-2 text-sm text-muted-foreground list-decimal list-inside">
                   <li>Create a portfolio in the Trading Simulator</li>
-                  <li>Start trading using Stock Predictor signals</li>
+                  <li>Start trading using Vortextrade signals</li>
                   <li>Join an active challenge to compete with other traders</li>
                   <li>Climb the leaderboard and win prizes</li>
                   <li>Share your strategies with the community</li>

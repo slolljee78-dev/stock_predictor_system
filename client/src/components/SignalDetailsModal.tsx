@@ -15,7 +15,7 @@ interface SignalDetailsModalProps {
     ticker: string;
     signalType: 'buy' | 'sell' | 'hold';
     confidence: number;
-    price: number;
+    price: number | string | null;
     change: number;
     changePercent: number;
     rsi: number | null;
@@ -39,6 +39,7 @@ export function SignalDetailsModal({ isOpen, onClose, signal }: SignalDetailsMod
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const numericPrice = parseFloat(String(signal.price ?? 0)) || 0;
   const isPositive = signal.changePercent >= 0;
   const isGreen = signal.signalType === 'buy';
 
@@ -73,7 +74,7 @@ export function SignalDetailsModal({ isOpen, onClose, signal }: SignalDetailsMod
             <div className="grid grid-cols-2 gap-4">
               <div className="border border-border rounded-lg p-4">
                 <p className="text-sm text-muted-foreground mb-1">Current Price</p>
-                <p className="text-2xl font-bold text-foreground">${signal.price.toFixed(2)}</p>
+                <p className="text-2xl font-bold text-foreground">${numericPrice.toFixed(2)}</p>
               </div>
 
               <div className="border border-border rounded-lg p-4">
@@ -188,11 +189,11 @@ export function SignalDetailsModal({ isOpen, onClose, signal }: SignalDetailsMod
             <div className="border border-border rounded-lg p-4">
               <PriceChart
                 data={[
-                  { time: '9:30', price: signal.price * 0.98, sma20: signal.price * 0.97, sma50: signal.price * 0.96 },
-                  { time: '10:00', price: signal.price * 0.99, sma20: signal.price * 0.975, sma50: signal.price * 0.965 },
-                  { time: '10:30', price: signal.price, sma20: signal.price * 0.98, sma50: signal.price * 0.97 },
-                  { time: '11:00', price: signal.price * 1.01, sma20: signal.price * 0.985, sma50: signal.price * 0.975 },
-                  { time: '11:30', price: signal.price * 1.02, sma20: signal.price * 0.99, sma50: signal.price * 0.98 },
+                  { time: '9:30', price: numericPrice * 0.98, sma20: numericPrice * 0.97, sma50: numericPrice * 0.96 },
+                  { time: '10:00', price: numericPrice * 0.99, sma20: numericPrice * 0.975, sma50: numericPrice * 0.965 },
+                  { time: '10:30', price: numericPrice, sma20: numericPrice * 0.98, sma50: numericPrice * 0.97 },
+                  { time: '11:00', price: numericPrice * 1.01, sma20: numericPrice * 0.985, sma50: numericPrice * 0.975 },
+                  { time: '11:30', price: numericPrice * 1.02, sma20: numericPrice * 0.99, sma50: numericPrice * 0.98 },
                 ]}
                 height={300}
               />

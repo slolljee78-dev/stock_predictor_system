@@ -1,7 +1,7 @@
 /** @vitest-environment jsdom */
 
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 const setLocation = vi.fn();
@@ -23,6 +23,7 @@ vi.mock("wouter", () => ({
 
 describe("PublicSiteHeader", () => {
   afterEach(() => {
+    cleanup();
     setLocation.mockReset();
     authState.isAuthenticated = false;
   });
@@ -48,5 +49,15 @@ describe("PublicSiteHeader", () => {
     render(React.createElement(PublicSiteHeader, { currentPath: "/faq" }));
 
     expect(screen.getByRole("button", { name: /open dashboard/i })).not.toBeNull();
+  });
+
+  it("takes an authenticated user to the dashboard when they select the Vortextrade logo", async () => {
+    authState.isAuthenticated = true;
+    const { PublicSiteHeader } = await import("../client/src/components/PublicSiteHeader.tsx");
+
+    render(React.createElement(PublicSiteHeader, { currentPath: "/" }));
+    fireEvent.click(screen.getByRole("button", { name: "Open Vortextrade dashboard" }));
+
+    expect(setLocation).toHaveBeenCalledWith("/dashboard");
   });
 });

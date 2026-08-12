@@ -6,6 +6,7 @@
 import { z } from 'zod';
 import { publicProcedure, protectedProcedure, router } from '../_core/trpc';
 import { fetchMarketDataWithIndicators, fetchMultipleMarketData } from '../realtimeMarketData';
+import { fetchIntradayMarketData, checkEventFilter } from '../hybridMarketData';
 import { generateRealtimeSignal, validateSignalStrength, filterSignalsByConfidence } from '../realtimeSignalGenerator';
 import { monitorSpecificStocks } from '../signalMonitoringJob';
 
@@ -294,6 +295,55 @@ export const realtimeSignalsRouter = router({
           error: error instanceof Error ? error.message : 'Unknown error',
           overview: [],
           count: 0,
+        };
+      }
+    }),
+
+  /**
+   * Get 15-minute intraday candles with technical indicators for a ticker.
+   * Falls back to synthesised candles when Finnhub returns no data.
+   */
+  getIntradayData: publicProcedure
+    .input(
+      z.object({
+        ticker: z.string().min(1).max(10),
+        lookbackHours: z.number().min(1).max(24).optional().default(8),
+      })
+    )
+    .query(async ({ input }) => {
+      try {
+        const data = await fetchIntradayMarketData(input.ticker);
+        if (!data) {
+          return { success: false, error: `No intraday data for ${input.ticker}`, data: null };
+        }
+        return { success: true, data };
+      } catch (error) {
+        console.error('[Signals] Error fetching intraday data:', error);
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown error',
+          data: null,
+        };
+      }
+    }),
+
+  /**
+   * Check whether a signal for a ticker should be suppressed due to an
+   * upcoming or recent earnings / high-impact news event.
+   */
+  checkEarningsFilter: publicProcedure
+    .input(z.object({ ticker: z.string().min(1).max(10) }))
+    .query(async ({ input }) => {
+      try {
+        const result = await checkEventFilter(input.ticker);
+        return { success: true, ...result };
+      } catch (error) {
+        return {
+          success: false,
+          shouldSuppress: false,
+          reason: null,
+          daysToEvent: null,
+          error: error instanceof Error ? error.message : 'Unknown error',
         };
       }
     }),

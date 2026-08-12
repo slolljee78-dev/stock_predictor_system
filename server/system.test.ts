@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { calculateAllIndicators } from './indicators';
 
-describe('Stock Predictor System E2E Tests', () => {
+describe('Vortextrade System E2E Tests', () => {
   describe('Technical Indicators', () => {
     it('should calculate indicators without errors', () => {
       const prices = Array.from({ length: 30 }, (_, i) => 100 + i * 0.5);

@@ -14,6 +14,10 @@ import { realtimeSignalsRouter } from './routers/realtimeSignals';
 import { signalNotificationsRouter } from './routers/signalNotifications';
 import { priceAlertsRouter } from "./routers/priceAlerts";
 import { alertMonitoringRouter } from "./routers/alertMonitoring";
+import { profileRouter } from "./routers/profile";
+import { blogRouter } from "./routers/blog";
+import { referralRouter } from "./routers/referral";
+import { publicSignalsRouter } from "./routers/publicSignals";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -31,6 +35,9 @@ export const appRouter = router({
   automation: automationRouter,
   priceAlerts: priceAlertsRouter,
   alertMonitoring: alertMonitoringRouter,
+  profile: profileRouter,
+  blog: blogRouter,
+  referral: referralRouter,
 
   stocks: router({
     search: publicProcedure
@@ -386,9 +393,11 @@ export const appRouter = router({
 
     getScheduledAutoTradingRun: protectedProcedure.query(async ({ ctx }) => {
       const { assertAutoTradingAccess } = await import('./subscriptionAccess');
-      const { getScheduledSimulatorRun, processScheduledSimulatorRuns } = await import('./scheduledSimulatorRuns');
+      const { getScheduledSimulatorRun } = await import('./scheduledSimulatorRuns');
       assertAutoTradingAccess(ctx.user);
-      await processScheduledSimulatorRuns({ userId: ctx.user.id, limit: 1 });
+      // Read-only: processing is handled exclusively by the Heartbeat cron
+      // (/api/scheduled/simulator-auto-trading every 6h) to avoid double-execution
+      // and premature completion when the user simply opens the page.
       return getScheduledSimulatorRun(ctx.user.id);
     }),
 
@@ -457,6 +466,15 @@ export const appRouter = router({
       return getSignalTrendByDay(7);
     }),
   }),
+
+  signalAccuracy: router({
+    getStats: publicProcedure.query(async () => {
+      const { getSignalAccuracyStats } = await import('./db');
+      return getSignalAccuracyStats();
+    }),
+  }),
+
+  publicSignals: publicSignalsRouter,
 
   backtest: backtestRouter,
   sentiment: sentimentRouter,

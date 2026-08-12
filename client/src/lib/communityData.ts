@@ -89,7 +89,7 @@ export const CHALLENGES: Challenge[] = [
   {
     id: 'challenge-001',
     title: 'May Trading Challenge: Beat the Market',
-    description: 'Trade using Stock Predictor signals and see if you can beat the S&P 500 return for May.',
+    description: 'Trade using Vortextrade signals and see if you can beat the S&P 500 return for May.',
     startDate: '2026-05-01',
     endDate: '2026-05-31',
     status: 'active',
@@ -97,7 +97,7 @@ export const CHALLENGES: Challenge[] = [
     prize: '$500 Amazon Gift Card for 1st place',
     participants: 342,
     rules: [
-      'Use only Stock Predictor signals for trading ideas',
+      'Use only Vortextrade signals for trading ideas',
       'Minimum 5 trades required',
       'Maximum 50 trades allowed',
       'Paper trading only (simulator)',

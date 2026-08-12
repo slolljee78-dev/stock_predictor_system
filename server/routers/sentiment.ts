@@ -79,7 +79,7 @@ export const sentimentRouter = router({
         description: article.description,
         url: article.url,
         source: article.source,
-        sentimentScore: article.sentimentScore / 100,
+        sentimentScore: (article.sentimentScore ?? 0) / 100,
         publishedAt: article.publishedAt,
       }));
     }),
@@ -210,31 +210,35 @@ export const sentimentRouter = router({
         .orderBy(desc(newsArticles.publishedAt));
 
       // Sort by sentiment score
-      const sorted = articles.sort((a: any, b: any) => Math.abs(b.sentimentScore) - Math.abs(a.sentimentScore));
+      const sorted = articles.sort((a: any, b: any) => {
+        const scoreA = a.sentimentScore ?? 0;
+        const scoreB = b.sentimentScore ?? 0;
+        return Math.abs(scoreB) - Math.abs(scoreA);
+      });
 
       // Get top positive and negative
       const topPositive = sorted
-        .filter(a => a.sentimentScore > 0)
+        .filter(a => (a.sentimentScore ?? 0) > 0)
         .slice(0, input.limit)
         .map(a => ({
           id: a.id,
           title: a.title,
           url: a.url,
           source: a.source,
-          sentimentScore: a.sentimentScore / 100,
+          sentimentScore: (a.sentimentScore ?? 0) / 100,
           publishedAt: a.publishedAt,
           type: 'positive' as const,
         }));
 
       const topNegative = sorted
-        .filter(a => a.sentimentScore < 0)
+        .filter(a => (a.sentimentScore ?? 0) < 0)
         .slice(0, input.limit)
         .map(a => ({
           id: a.id,
           title: a.title,
           url: a.url,
           source: a.source,
-          sentimentScore: a.sentimentScore / 100,
+          sentimentScore: (a.sentimentScore ?? 0) / 100,
           publishedAt: a.publishedAt,
           type: 'negative' as const,
         }));

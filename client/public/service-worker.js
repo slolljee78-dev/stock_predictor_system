@@ -4,7 +4,7 @@
  */
 
 // Cache version
-const CACHE_VERSION = 'stock-predictor-v1';
+const CACHE_VERSION = 'vortextrade-v1';
 
 // Install event - cache assets
 self.addEventListener('install', event => {
@@ -43,17 +43,17 @@ self.addEventListener('push', event => {
     notificationData = event.data.json();
   } catch (e) {
     notificationData = {
-      title: 'Stock Predictor Alert',
+      title: 'Vortextrade Alert',
       body: event.data.text(),
     };
   }
 
   const {
-    title = 'Stock Predictor',
+    title = 'Vortextrade',
     body = 'New alert received',
     icon = '/logo.png',
     badge = '/badge.png',
-    tag = 'stock-predictor-notification',
+    tag = 'vortextrade-notification',
     data = {},
     actions = [],
   } = notificationData;

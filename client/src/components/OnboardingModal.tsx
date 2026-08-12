@@ -45,7 +45,7 @@ export function OnboardingModal({ isOpen, onClose, onComplete }: OnboardingModal
         <DialogHeader>
           <div className="flex items-center justify-between">
             <div>
-              <DialogTitle className="text-2xl">Welcome to Stock Predictor</DialogTitle>
+              <DialogTitle className="text-2xl">Welcome to Vortextrade</DialogTitle>
               <DialogDescription className="mt-2">
                 Let's get you started with AI-powered trading signals in 3 easy steps
               </DialogDescription>

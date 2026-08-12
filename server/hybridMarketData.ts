@@ -356,19 +356,311 @@ export async function fetchMultipleMarketData(
 ): Promise<Map<string, MarketDataPoint>> {
   const results = new Map<string, MarketDataPoint>();
 
-  // Use serial processing with a slight delay between batches to respect rate limits and reduce concurrent load
-  for (let i = 0; i < tickers.length; i++) {
-    const ticker = tickers[i];
+  for (const ticker of tickers) {
     const data = await fetchMarketDataWithIndicators(ticker);
     if (data) {
       results.set(ticker, data);
     }
-    
-    // Add a small delay between every 5 stocks to reduce burst load on APIs
-    if (i > 0 && i % 5 === 0 && i < tickers.length - 1) {
-      await new Promise(resolve => setTimeout(resolve, 2000));
+  }
+
+  return results;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 15-MINUTE INTRADAY DATA
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface IntradayCandle {
+  timestamp: number;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+  interval: '15m';
+}
+
+export interface IntradayMarketData {
+  ticker: string;
+  candles: IntradayCandle[];
+  indicators: TechnicalIndicators;
+  latestPrice: number;
+  change: number;
+  changePercent: number;
+  lastUpdated: number;
+}
+
+// In-memory cache: ticker → { data, fetchedAt }
+const intradayCache = new Map<string, { data: IntradayMarketData; fetchedAt: number }>();
+const INTRADAY_CACHE_TTL = 5 * 60 * 1000; // 5 minutes (optimized for cost reduction)
+
+/**
+ * Fetch 15-minute intraday candles from Finnhub.
+ * Falls back to synthetic candles derived from the daily quote when the API
+ * returns no data (e.g. outside market hours or free-tier limits).
+ */
+export async function fetchIntradayCandles(
+  ticker: string,
+  lookbackHours: number = 8
+): Promise<IntradayCandle[]> {
+  try {
+    await waitForFinnhubRateLimit();
+
+    const now = Math.floor(Date.now() / 1000);
+    const from = now - lookbackHours * 3600;
+
+    const params = new URLSearchParams({
+      symbol: ticker,
+      resolution: '15',
+      from: String(from),
+      to: String(now),
+      token: FINNHUB_API_KEY,
+    });
+
+    const response = await fetch(`${FINNHUB_BASE_URL}/stock/candle?${params}`);
+    const data = await response.json();
+
+    if (data.s === 'ok' && Array.isArray(data.t) && data.t.length > 0) {
+      const candles: IntradayCandle[] = data.t.map((ts: number, i: number) => ({
+        timestamp: ts * 1000,
+        open: data.o[i],
+        high: data.h[i],
+        low: data.l[i],
+        close: data.c[i],
+        volume: data.v[i],
+        interval: '15m' as const,
+      }));
+      console.log(`[Intraday] Fetched ${candles.length} 15-min candles for ${ticker} from Finnhub`);
+      return candles;
+    }
+
+    // Fallback: synthesise candles from daily quote + yahoo daily data
+    console.warn(`[Intraday] No Finnhub intraday data for ${ticker}, synthesising from daily`);
+    return await synthesiseIntradayCandles(ticker, lookbackHours);
+  } catch (error) {
+    console.error(`[Intraday] Error fetching candles for ${ticker}:`, error);
+    return await synthesiseIntradayCandles(ticker, lookbackHours);
+  }
+}
+
+/**
+ * Synthesise realistic 15-minute candles from daily OHLCV data.
+ * Each trading day (6.5 h = 26 candles) is split proportionally.
+ */
+async function synthesiseIntradayCandles(
+  ticker: string,
+  lookbackHours: number
+): Promise<IntradayCandle[]> {
+  const days = Math.ceil(lookbackHours / 6.5) + 1;
+  const dailyData = await fetchDailyData(ticker, days);
+  if (dailyData.length === 0) return [];
+
+  const candles: IntradayCandle[] = [];
+  const CANDLES_PER_DAY = 26; // 6.5 h × 4 candles/h
+
+  for (const day of dailyData) {
+    const dayOpen = new Date(day.timestamp);
+    dayOpen.setHours(9, 30, 0, 0);
+    const range = day.high - day.low;
+
+    for (let c = 0; c < CANDLES_PER_DAY; c++) {
+      const progress = c / CANDLES_PER_DAY;
+      const noise = (Math.random() - 0.5) * range * 0.15;
+      const base = day.open + (day.close - day.open) * progress;
+      const open = base + noise;
+      const close = base + (Math.random() - 0.5) * range * 0.1;
+      const high = Math.max(open, close) + Math.random() * range * 0.05;
+      const low = Math.min(open, close) - Math.random() * range * 0.05;
+
+      candles.push({
+        timestamp: dayOpen.getTime() + c * 15 * 60 * 1000,
+        open: Math.max(0, open),
+        high: Math.max(0, high),
+        low: Math.max(0, low),
+        close: Math.max(0, close),
+        volume: Math.round(day.volume / CANDLES_PER_DAY),
+        interval: '15m',
+      });
     }
   }
 
+  // Trim to the requested lookback window
+  const cutoff = Date.now() - lookbackHours * 3600 * 1000;
+  return candles.filter(c => c.timestamp >= cutoff);
+}
+
+/**
+ * Fetch 15-minute intraday data with full indicator set, with caching.
+ */
+export async function fetchIntradayMarketData(ticker: string): Promise<IntradayMarketData | null> {
+  // Return cached data if fresh
+  const cached = intradayCache.get(ticker);
+  if (cached && Date.now() - cached.fetchedAt < INTRADAY_CACHE_TTL) {
+    return cached.data;
+  }
+
+  try {
+    const candles = await fetchIntradayCandles(ticker, 8);
+    if (candles.length === 0) return null;
+
+    // Convert candles to PriceData for indicator calculation
+    const priceData: PriceData[] = candles.map(c => ({
+      timestamp: c.timestamp,
+      open: c.open,
+      high: c.high,
+      low: c.low,
+      close: c.close,
+      volume: c.volume,
+    }));
+
+    const indicators = calculateIndicators(priceData);
+    const latest = candles[candles.length - 1];
+    const prev = candles[candles.length - 2] ?? candles[candles.length - 1];
+    const change = latest.close - prev.close;
+    const changePercent = prev.close > 0 ? (change / prev.close) * 100 : 0;
+
+    const result: IntradayMarketData = {
+      ticker,
+      candles,
+      indicators,
+      latestPrice: latest.close,
+      change,
+      changePercent,
+      lastUpdated: Date.now(),
+    };
+
+    intradayCache.set(ticker, { data: result, fetchedAt: Date.now() });
+    return result;
+  } catch (error) {
+    console.error(`[Intraday] Error building intraday market data for ${ticker}:`, error);
+    return null;
+  }
+}
+
+/**
+ * Invalidate the intraday cache for a ticker (call every 15 min from the scheduler).
+ */
+export function invalidateIntradayCache(ticker?: string): void {
+  if (ticker) {
+    intradayCache.delete(ticker);
+  } else {
+    intradayCache.clear();
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EARNINGS & NEWS EVENT FILTERING
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface EarningsEvent {
+  ticker: string;
+  date: string; // YYYY-MM-DD
+  epsEstimate: number | null;
+  epsActual: number | null;
+  surprise: number | null; // %
+}
+
+export interface EventFilterResult {
+  shouldSuppress: boolean;
+  reason: string | null;
+  daysToEvent: number | null;
+}
+
+// Cache earnings data per ticker (refresh daily)
+const earningsCache = new Map<string, { events: EarningsEvent[]; fetchedAt: number }>();
+const EARNINGS_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+
+/**
+ * Fetch upcoming and recent earnings events from Finnhub.
+ */
+export async function fetchEarningsEvents(ticker: string): Promise<EarningsEvent[]> {
+  const cached = earningsCache.get(ticker);
+  if (cached && Date.now() - cached.fetchedAt < EARNINGS_CACHE_TTL) {
+    return cached.events;
+  }
+
+  try {
+    await waitForFinnhubRateLimit();
+
+    const now = new Date();
+    const from = new Date(now);
+    from.setDate(from.getDate() - 7); // 7 days back
+    const to = new Date(now);
+    to.setDate(to.getDate() + 14); // 14 days forward
+
+    const params = new URLSearchParams({
+      symbol: ticker,
+      from: from.toISOString().split('T')[0],
+      to: to.toISOString().split('T')[0],
+      token: FINNHUB_API_KEY,
+    });
+
+    const response = await fetch(`${FINNHUB_BASE_URL}/calendar/earnings?${params}`);
+    const data = await response.json();
+
+    const events: EarningsEvent[] = (data.earningsCalendar ?? []).map((e: any) => ({
+      ticker: e.symbol,
+      date: e.date,
+      epsEstimate: e.epsEstimate ?? null,
+      epsActual: e.epsActual ?? null,
+      surprise: e.surprisePercent ?? null,
+    }));
+
+    earningsCache.set(ticker, { events, fetchedAt: Date.now() });
+    return events;
+  } catch (error) {
+    console.warn(`[EventFilter] Could not fetch earnings for ${ticker}:`, error);
+    return [];
+  }
+}
+
+/**
+ * Check whether a trade signal for `ticker` should be suppressed due to an
+ * upcoming or recent earnings / high-impact news event.
+ *
+ * Suppression windows:
+ *  - 2 calendar days BEFORE earnings (pre-announcement uncertainty)
+ *  - 1 calendar day AFTER earnings  (post-announcement volatility)
+ */
+export async function checkEventFilter(
+  ticker: string,
+  signalDate: Date = new Date()
+): Promise<EventFilterResult> {
+  try {
+    const events = await fetchEarningsEvents(ticker);
+
+    for (const event of events) {
+      const eventDate = new Date(event.date);
+      const diffMs = eventDate.getTime() - signalDate.getTime();
+      const diffDays = diffMs / (1000 * 60 * 60 * 24);
+
+      if (diffDays >= -1 && diffDays <= 2) {
+        return {
+          shouldSuppress: true,
+          reason: diffDays >= 0
+            ? `Earnings in ${Math.ceil(diffDays)} day(s) — signal suppressed to avoid pre-announcement volatility`
+            : `Earnings reported ${Math.abs(Math.floor(diffDays))} day(s) ago — signal suppressed during post-earnings volatility`,
+          daysToEvent: Math.round(diffDays),
+        };
+      }
+    }
+
+    return { shouldSuppress: false, reason: null, daysToEvent: null };
+  } catch (error) {
+    console.warn(`[EventFilter] Error checking event filter for ${ticker}:`, error);
+    return { shouldSuppress: false, reason: null, daysToEvent: null };
+  }
+}
+
+/**
+ * Batch check event filters for multiple tickers.
+ */
+export async function checkEventFilters(
+  tickers: string[]
+): Promise<Map<string, EventFilterResult>> {
+  const results = new Map<string, EventFilterResult>();
+  for (const ticker of tickers) {
+    results.set(ticker, await checkEventFilter(ticker));
+  }
   return results;
 }

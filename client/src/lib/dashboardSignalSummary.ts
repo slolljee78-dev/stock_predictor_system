@@ -1,8 +1,11 @@
 export interface DashboardSignalRecord {
   ticker: string;
-  type: "buy" | "sell";
+  type: "buy" | "sell" | "hold";
   createdAt: string | number | Date;
   confidenceScore?: number;
+  signalId?: number;
+  stockId?: number;
+  priceAtSignal?: string | null;
 }
 
 export interface DailySignalSummary {

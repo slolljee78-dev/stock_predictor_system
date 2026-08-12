@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, decimal } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, decimal, boolean, json, bigint } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -20,228 +20,39 @@ export const users = mysqlTable("users", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
-  
-  // Subscription fields for Stripe integration
-  subscriptionTier: varchar("subscriptionTier", { length: 20 }).default("free"),
-  subscriptionStatus: varchar("subscriptionStatus", { length: 20 }).default("inactive"),
   stripeCustomerId: varchar("stripeCustomerId", { length: 255 }),
   stripeSubscriptionId: varchar("stripeSubscriptionId", { length: 255 }),
+  subscriptionTier: mysqlEnum("subscriptionTier", ["free", "STARTER", "PRO", "ELITE"]).default("free"),
+  subscriptionStatus: varchar("subscriptionStatus", { length: 50 }),
   subscriptionStartedAt: timestamp("subscriptionStartedAt"),
-  subscriptionEndedAt: timestamp("subscriptionEndedAt"),
 });
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
 /**
- * Stock data table - stores Trading 212 listed stocks and ETFs
- * Includes technical metadata for accurate identification across data sources
+ * Watchlist table - stocks users are tracking
  */
-export const stocks = mysqlTable("stocks", {
+export const watchlistItems = mysqlTable("watchlist_items", {
   id: int("id").autoincrement().primaryKey(),
-  /** Stock ticker symbol (e.g., AAPL, VUAG) */
-  ticker: varchar("ticker", { length: 20 }).notNull().unique(),
-  /** Full company/fund name */
-  name: text("name").notNull(),
-  /** ISIN code for unique identification */
-  isin: varchar("isin", { length: 12 }).unique(),
-  /** CUSIP for US securities */
-  cusip: varchar("cusip", { length: 9 }).unique(),
-  /** Stock type: equity or etf */
-  type: mysqlEnum("type", ["equity", "etf"]).notNull(),
-  /** Primary exchange (NASDAQ, NYSE, LSE, etc.) */
-  exchange: varchar("exchange", { length: 20 }).notNull(),
-  /** Currency of trading */
-  currency: varchar("currency", { length: 3 }).default("USD").notNull(),
-  /** Market cap in millions (for equities) */
-  marketCap: int("marketCap"),
-  /** Sector classification */
-  sector: varchar("sector", { length: 50 }),
-  /** Industry classification */
-  industry: varchar("industry", { length: 50 }),
-  /** Last price update timestamp */
-  lastUpdated: timestamp("lastUpdated").defaultNow().onUpdateNow(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  userId: int("userId").notNull(),
+  symbol: varchar("symbol", { length: 10 }).notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  addedAt: timestamp("addedAt").defaultNow().notNull(),
 });
 
-export type Stock = typeof stocks.$inferSelect;
-export type InsertStock = typeof stocks.$inferInsert;
+export type WatchlistItem = typeof watchlistItems.$inferSelect;
+export type InsertWatchlistItem = typeof watchlistItems.$inferInsert;
 
 /**
- * Historical price data - OHLCV data for technical analysis
- * Partitioned by ticker for efficient querying
- */
-export const priceHistory = mysqlTable("priceHistory", {
-  id: int("id").autoincrement().primaryKey(),
-  /** Foreign key to stocks table */
-  stockId: int("stockId").notNull().references(() => stocks.id, { onDelete: "cascade" }),
-  /** Trading date */
-  date: timestamp("date").notNull(),
-  /** Opening price */
-  open: int("open").notNull(), // Stored as cents to avoid float precision issues
-  /** High price */
-  high: int("high").notNull(),
-  /** Low price */
-  low: int("low").notNull(),
-  /** Closing price */
-  close: int("close").notNull(),
-  /** Trading volume */
-  volume: int("volume").notNull(),
-  /** Adjusted close for splits/dividends */
-  adjClose: int("adjClose"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-});
-
-export type PriceHistory = typeof priceHistory.$inferSelect;
-export type InsertPriceHistory = typeof priceHistory.$inferInsert;
-
-/**
- * User watchlist - tracks stocks users are monitoring
- */
-export const watchlists = mysqlTable("watchlists", {
-  id: int("id").autoincrement().primaryKey(),
-  /** Foreign key to users table */
-  userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
-  /** Foreign key to stocks table */
-  stockId: int("stockId").notNull().references(() => stocks.id, { onDelete: "cascade" }),
-  /** User's custom label for this watchlist entry */
-  label: varchar("label", { length: 100 }),
-  /** Alert preferences for this stock */
-  alertOnBuy: int("alertOnBuy").default(1).notNull(), // 1 = true, 0 = false
-  alertOnSell: int("alertOnSell").default(1).notNull(),
-  /** Minimum confidence score threshold for alerts (0-100) */
-  minConfidenceThreshold: int("minConfidenceThreshold").default(25).notNull(),
-  /** Email notification enabled for this stock */
-  emailNotifications: int("emailNotifications").default(1).notNull(),
-  /** In-app notification enabled for this stock */
-  inAppNotifications: int("inAppNotifications").default(1).notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
-
-export type Watchlist = typeof watchlists.$inferSelect;
-export type InsertWatchlist = typeof watchlists.$inferInsert;
-
-/**
- * Trading signals - ML-generated buy/sell recommendations
- */
-export const signals = mysqlTable("signals", {
-  id: int("id").autoincrement().primaryKey(),
-  /** Foreign key to stocks table */
-  stockId: int("stockId").notNull().references(() => stocks.id, { onDelete: "cascade" }),
-  /** Signal type: buy or sell */
-  type: mysqlEnum("type", ["buy", "sell"]).notNull(),
-  /** Confidence score (0-100) */
-  confidenceScore: int("confidenceScore").notNull(),
-  /** Price at signal generation */
-  priceAtSignal: int("priceAtSignal").notNull(), // Stored as cents
-  /** Technical indicators used in analysis (JSON) */
-  indicators: text("indicators"), // JSON: {rsi, macd, bbands, sma, ema}
-  /** LLM analysis summary */
-  analysis: text("analysis"),
-  /** Signal status: active, triggered, expired */
-  status: mysqlEnum("status", ["active", "triggered", "expired"]).default("active").notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  expiresAt: timestamp("expiresAt"),
-});
-
-export type Signal = typeof signals.$inferSelect;
-export type InsertSignal = typeof signals.$inferInsert;
-
-/**
- * Alert history - tracks sent alerts to users
- */
-export const alerts = mysqlTable("alerts", {
-  id: int("id").autoincrement().primaryKey(),
-  /** Foreign key to users table */
-  userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
-  /** Foreign key to signals table */
-  signalId: int("signalId").notNull().references(() => signals.id, { onDelete: "cascade" }),
-  /** Foreign key to stocks table */
-  stockId: int("stockId").notNull().references(() => stocks.id, { onDelete: "cascade" }),
-  /** Alert channel: email, in-app, or both */
-  channel: mysqlEnum("channel", ["email", "inApp", "both"]).notNull(),
-  /** Alert status: pending, sent, failed */
-  status: mysqlEnum("status", ["pending", "sent", "failed"]).default("pending").notNull(),
-  /** Error message if delivery failed */
-  errorMessage: text("errorMessage"),
-  /** When the alert was actually sent */
-  sentAt: timestamp("sentAt"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-});
-
-export type Alert = typeof alerts.$inferSelect;
-export type InsertAlert = typeof alerts.$inferInsert;
-
-/**
- * In-app notifications - stores unread notifications for users
- */
-export const notifications = mysqlTable("notifications", {
-  id: int("id").autoincrement().primaryKey(),
-  /** Foreign key to users table */
-  userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
-  /** Foreign key to signals table */
-  signalId: int("signalId").notNull().references(() => signals.id, { onDelete: "cascade" }),
-  /** Stock ticker for quick reference */
-  ticker: varchar("ticker", { length: 20 }).notNull(),
-  /** Notification title */
-  title: varchar("title", { length: 255 }).notNull(),
-  /** Notification message */
-  message: text("message").notNull(),
-  /** Read status */
-  isRead: int("isRead").default(0).notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  readAt: timestamp("readAt"),
-});
-
-export type Notification = typeof notifications.$inferSelect;
-export type InsertNotification = typeof notifications.$inferInsert;
-
-/**
- * User preferences - stores user-specific settings
- */
-export const userPreferences = mysqlTable("userPreferences", {
-  id: int("id").autoincrement().primaryKey(),
-  /** Foreign key to users table */
-  userId: int("userId").notNull().unique().references(() => users.id, { onDelete: "cascade" }),
-  /** Global email notifications enabled */
-  emailNotificationsEnabled: int("emailNotificationsEnabled").default(1).notNull(),
-  /** Global in-app notifications enabled */
-  inAppNotificationsEnabled: int("inAppNotificationsEnabled").default(1).notNull(),
-  /** Default minimum confidence threshold (0-100) */
-  defaultMinConfidence: int("defaultMinConfidence").default(60).notNull(),
-  /** Email address for alerts (can differ from login email) */
-  alertEmail: varchar("alertEmail", { length: 320 }),
-  /** Preferred chart type: candlestick or line */
-  preferredChartType: mysqlEnum("preferredChartType", ["candlestick", "line"]).default("candlestick").notNull(),
-  /** Theme preference: light or dark */
-  theme: mysqlEnum("theme", ["light", "dark"]).default("dark").notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
-
-export type UserPreferences = typeof userPreferences.$inferSelect;
-export type InsertUserPreferences = typeof userPreferences.$inferInsert;
-/**
- * User portfolios - tracks trading portfolios for leaderboard and comparison
+ * Portfolio table - user's paper trading portfolio
  */
 export const portfolios = mysqlTable("portfolios", {
   id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  userId: int("userId").notNull(),
   name: varchar("name", { length: 255 }).notNull(),
-  description: text("description"),
-  startingCapital: int("startingCapital").notNull(),
-  currentCapital: int("currentCapital").notNull(),
-  totalReturn: int("totalReturn").notNull().default(0),
-  winRate: int("winRate").notNull().default(0),
-  sharpeRatio: int("sharpeRatio").notNull().default(0),
-  maxDrawdown: int("maxDrawdown").notNull().default(0),
-  totalTrades: int("totalTrades").notNull().default(0),
-  winningTrades: int("winningTrades").notNull().default(0),
-  profitFactor: int("profitFactor").notNull().default(0),
-  status: mysqlEnum("status", ["active", "paused", "completed"]).default("active").notNull(),
-  startDate: timestamp("startDate").notNull(),
-  endDate: timestamp("endDate"),
+  cashBalance: decimal("cashBalance", { precision: 15, scale: 2 }).notNull().default("10000"),
+  totalValue: decimal("totalValue", { precision: 15, scale: 2 }).notNull().default("10000"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -250,128 +61,290 @@ export type Portfolio = typeof portfolios.$inferSelect;
 export type InsertPortfolio = typeof portfolios.$inferInsert;
 
 /**
- * Backtesting runs - stores historical backtests performed by users
+ * Positions table - individual stock holdings in a portfolio
  */
-export const backtestRuns = mysqlTable("backtestRuns", {
+export const positions = mysqlTable("positions", {
   id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
-  name: varchar("name", { length: 255 }).notNull(),
-  startDate: timestamp("startDate").notNull(),
-  endDate: timestamp("endDate").notNull(),
-  initialCapital: int("initialCapital").notNull(),
-  stockIds: text("stockIds").notNull(),
-  filterSettings: text("filterSettings"),
-  finalCapital: int("finalCapital").notNull(),
-  totalReturn: int("totalReturn").notNull(),
-  winRate: int("winRate").notNull(),
-  sharpeRatio: int("sharpeRatio").notNull(),
-  maxDrawdown: int("maxDrawdown").notNull(),
-  totalTrades: int("totalTrades").notNull().default(0),
-  winningTrades: int("winningTrades").notNull().default(0),
-  avgWin: int("avgWin").notNull().default(0),
-  avgLoss: int("avgLoss").notNull().default(0),
-  profitFactor: int("profitFactor").notNull().default(0),
-  status: mysqlEnum("status", ["running", "completed", "failed"]).default("running").notNull(),
-  errorMessage: text("errorMessage"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  completedAt: timestamp("completedAt"),
-});
-
-export type BacktestRun = typeof backtestRuns.$inferSelect;
-export type InsertBacktestRun = typeof backtestRuns.$inferInsert;
-
-/**
- * Backtest trades - individual trades executed during a backtest
- */
-export const backtestTrades = mysqlTable("backtestTrades", {
-  id: int("id").autoincrement().primaryKey(),
-  backtestRunId: int("backtestRunId").notNull().references(() => backtestRuns.id, { onDelete: "cascade" }),
-  stockId: int("stockId").notNull().references(() => stocks.id, { onDelete: "cascade" }),
-  type: mysqlEnum("type", ["buy", "sell"]).notNull(),
-  entryDate: timestamp("entryDate").notNull(),
-  entryPrice: int("entryPrice").notNull(),
-  exitDate: timestamp("exitDate").notNull(),
-  exitPrice: int("exitPrice").notNull(),
-  quantity: int("quantity").notNull(),
-  profitLoss: int("profitLoss").notNull(),
-  returnPercent: int("returnPercent").notNull(),
-  exitReason: varchar("exitReason", { length: 50 }).notNull(),
-  signalConfidence: int("signalConfidence").notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-});
-
-export type BacktestTrade = typeof backtestTrades.$inferSelect;
-export type InsertBacktestTrade = typeof backtestTrades.$inferInsert;
-
-
-/**
- * Sentiment analysis data - stores aggregated sentiment scores for stocks
- * Updated periodically from news sources
- */
-export const stockSentiment = mysqlTable("stockSentiment", {
-  id: int("id").autoincrement().primaryKey(),
-  stockId: int("stockId").notNull().references(() => stocks.id, { onDelete: "cascade" }),
-  /** Sentiment score from -1 (very negative) to 1 (very positive) */
-  sentimentScore: int("sentimentScore").notNull(), // Stored as integer (-100 to 100)
-  /** Confidence level of sentiment analysis (0-100) */
-  confidence: int("confidence").notNull(),
-  /** Number of articles analyzed */
-  articleCount: int("articleCount").notNull().default(0),
-  /** Classification: very_negative, negative, neutral, positive, very_positive */
-  classification: varchar("classification", { length: 20 }).notNull(),
-  /** Date of sentiment analysis */
-  analysisDate: timestamp("analysisDate").notNull(),
+  portfolioId: int("portfolioId").notNull(),
+  symbol: varchar("symbol", { length: 10 }).notNull(),
+  shares: decimal("shares", { precision: 18, scale: 8 }).notNull(), // Support fractional shares
+  averageCost: decimal("averageCost", { precision: 15, scale: 2 }).notNull(),
+  currentPrice: decimal("currentPrice", { precision: 15, scale: 2 }).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
-export type StockSentiment = typeof stockSentiment.$inferSelect;
-export type InsertStockSentiment = typeof stockSentiment.$inferInsert;
+export type Position = typeof positions.$inferSelect;
+export type InsertPosition = typeof positions.$inferInsert;
 
 /**
- * News articles - stores news articles used for sentiment analysis
+ * Orders table - buy/sell orders in paper trading
  */
-export const newsArticles = mysqlTable("newsArticles", {
+export const orders = mysqlTable("orders", {
   id: int("id").autoincrement().primaryKey(),
-  stockId: int("stockId").notNull().references(() => stocks.id, { onDelete: "cascade" }),
-  /** Article title */
-  title: text("title").notNull(),
-  /** Article description/summary */
-  description: text("description"),
-  /** Full article content */
-  content: text("content"),
-  /** Article URL */
-  url: varchar("url", { length: 2048 }).notNull().unique(),
-  /** News source (e.g., Reuters, Bloomberg) */
-  source: varchar("source", { length: 100 }).notNull(),
-  /** Sentiment score for this article (-100 to 100) */
-  sentimentScore: int("sentimentScore").notNull(),
-  /** Publication date */
-  publishedAt: timestamp("publishedAt").notNull(),
+  portfolioId: int("portfolioId").notNull(),
+  symbol: varchar("symbol", { length: 10 }).notNull(),
+  type: mysqlEnum("type", ["buy", "sell"]).notNull(),
+  quantity: decimal("quantity", { precision: 18, scale: 8 }).notNull(), // Fractional shares
+  price: decimal("price", { precision: 15, scale: 2 }).notNull(),
+  status: mysqlEnum("status", ["pending", "executed", "cancelled"]).default("pending").notNull(),
+  orderType: mysqlEnum("orderType", ["market", "limit", "stop"]).default("market").notNull(),
+  stopPrice: decimal("stopPrice", { precision: 15, scale: 2 }),
+  executedAt: timestamp("executedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
-export type NewsArticle = typeof newsArticles.$inferSelect;
-export type InsertNewsArticle = typeof newsArticles.$inferInsert;
+export type Order = typeof orders.$inferSelect;
+export type InsertOrder = typeof orders.$inferInsert;
 
 /**
- * Signal alerts - tracks buy/sell signals that trigger alerts
+ * Trades table - executed trades history
  */
-export const signalAlerts = mysqlTable("signalAlerts", {
+export const trades = mysqlTable("trades", {
   id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
-  stockId: int("stockId").notNull().references(() => stocks.id, { onDelete: "cascade" }),
-  /** Signal type: buy or sell */
-  signalType: mysqlEnum("signalType", ["buy", "sell"]).notNull(),
-  /** Confidence score (0-100) */
+  portfolioId: int("portfolioId").notNull(),
+  symbol: varchar("symbol", { length: 10 }).notNull(),
+  type: mysqlEnum("type", ["buy", "sell"]).notNull(),
+  quantity: decimal("quantity", { precision: 18, scale: 8 }).notNull(),
+  price: decimal("price", { precision: 15, scale: 2 }).notNull(),
+  commission: decimal("commission", { precision: 10, scale: 2 }).default("0"),
+  executedAt: timestamp("executedAt").defaultNow().notNull(),
+});
+
+export type Trade = typeof trades.$inferSelect;
+export type InsertTrade = typeof trades.$inferInsert;
+
+/**
+ * Backtests table - backtest configurations and results
+ */
+export const backtests = mysqlTable("backtests", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  symbol: varchar("symbol", { length: 10 }).notNull(),
+  strategy: varchar("strategy", { length: 50 }).notNull(),
+  startDate: timestamp("startDate").notNull(),
+  endDate: timestamp("endDate").notNull(),
+  initialCapital: decimal("initialCapital", { precision: 15, scale: 2 }).notNull(),
+  finalValue: decimal("finalValue", { precision: 15, scale: 2 }),
+  totalReturn: decimal("totalReturn", { precision: 10, scale: 2 }),
+  sharpeRatio: decimal("sharpeRatio", { precision: 10, scale: 4 }),
+  maxDrawdown: decimal("maxDrawdown", { precision: 10, scale: 2 }),
+  winRate: decimal("winRate", { precision: 10, scale: 2 }),
+  totalTrades: int("totalTrades"),
+  dividendIncome: decimal("dividendIncome", { precision: 15, scale: 2 }).default("0"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Backtest = typeof backtests.$inferSelect;
+export type InsertBacktest = typeof backtests.$inferInsert;
+
+/**
+ * Intraday data table - 15-minute candle data for charting
+ */
+export const intradayData = mysqlTable("intraday_data", {
+  id: int("id").autoincrement().primaryKey(),
+  symbol: varchar("symbol", { length: 10 }).notNull(),
+  timestamp: timestamp("timestamp").notNull(),
+  open: decimal("open", { precision: 15, scale: 2 }).notNull(),
+  high: decimal("high", { precision: 15, scale: 2 }).notNull(),
+  low: decimal("low", { precision: 15, scale: 2 }).notNull(),
+  close: decimal("close", { precision: 15, scale: 2 }).notNull(),
+  volume: int("volume").notNull(),
+});
+
+export type IntradayData = typeof intradayData.$inferSelect;
+export type InsertIntradayData = typeof intradayData.$inferInsert;
+
+/**
+ * Technical indicators table - SMA, EMA, RSI values
+ */
+export const technicalIndicators = mysqlTable("technical_indicators", {
+  id: int("id").autoincrement().primaryKey(),
+  symbol: varchar("symbol", { length: 10 }).notNull(),
+  timestamp: timestamp("timestamp").notNull(),
+  sma20: decimal("sma20", { precision: 15, scale: 2 }),
+  sma50: decimal("sma50", { precision: 15, scale: 2 }),
+  ema12: decimal("ema12", { precision: 15, scale: 2 }),
+  ema26: decimal("ema26", { precision: 15, scale: 2 }),
+  rsi14: decimal("rsi14", { precision: 10, scale: 2 }),
+});
+
+export type TechnicalIndicator = typeof technicalIndicators.$inferSelect;
+export type InsertTechnicalIndicator = typeof technicalIndicators.$inferInsert;
+
+/**
+ * Events table - earnings and news events for filtering
+ */
+export const events = mysqlTable("events", {
+  id: int("id").autoincrement().primaryKey(),
+  symbol: varchar("symbol", { length: 10 }).notNull(),
+  eventType: mysqlEnum("eventType", ["earnings", "news", "dividend", "split"]).notNull(),
+  eventDate: timestamp("eventDate").notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  impact: mysqlEnum("impact", ["low", "medium", "high"]).default("medium"),
+});
+
+export type Event = typeof events.$inferSelect;
+export type InsertEvent = typeof events.$inferInsert;
+
+/**
+ * Trade signals table - AI-generated trading signals
+ */
+export const tradeSignals = mysqlTable("trade_signals", {
+  id: int("id").autoincrement().primaryKey(),
+  symbol: varchar("symbol", { length: 10 }).notNull(),
+  signalType: mysqlEnum("signalType", ["buy", "sell", "hold"]).notNull(),
+  confidence: decimal("confidence", { precision: 5, scale: 2 }).notNull(), // 0-100
+  reasoning: text("reasoning"),
+  technicalFactors: json("technicalFactors"),
+  suppressedByEvent: boolean("suppressedByEvent").default(false),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type TradeSignal = typeof tradeSignals.$inferSelect;
+export type InsertTradeSignal = typeof tradeSignals.$inferInsert;
+
+/**
+ * Dividends table - dividend payments for portfolio tracking
+ */
+export const dividends = mysqlTable("dividends", {
+  id: int("id").autoincrement().primaryKey(),
+  symbol: varchar("symbol", { length: 10 }).notNull(),
+  exDate: timestamp("exDate").notNull(),
+  paymentDate: timestamp("paymentDate").notNull(),
+  dividendPerShare: decimal("dividendPerShare", { precision: 10, scale: 4 }).notNull(),
+});
+
+export type Dividend = typeof dividends.$inferSelect;
+export type InsertDividend = typeof dividends.$inferInsert;
+
+// ─── Missing tables required by server/db.ts and server/routers/* ─────────────
+
+/**
+ * stocks table - master list of tracked stocks
+ */
+export const stocks = mysqlTable("stocks", {
+  id: int("id").autoincrement().primaryKey(),
+  ticker: varchar("ticker", { length: 10 }).notNull().unique(),
+  name: varchar("name", { length: 255 }).notNull(),
+  exchange: varchar("exchange", { length: 50 }).notNull(),
+  type: mysqlEnum("type", ["equity", "etf"]).notNull().default("equity"),
+  currency: varchar("currency", { length: 10 }).notNull().default("USD"),
+  sector: varchar("sector", { length: 100 }),
+  industry: varchar("industry", { length: 100 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Stock = typeof stocks.$inferSelect;
+export type InsertStock = typeof stocks.$inferInsert;
+
+/**
+ * priceHistory table - daily OHLCV data per stock
+ */
+export const priceHistory = mysqlTable("price_history", {
+  id: int("id").autoincrement().primaryKey(),
+  stockId: int("stockId").notNull(),
+  date: timestamp("date").notNull(),
+  open: int("open").notNull(),   // stored as cents
+  high: int("high").notNull(),
+  low: int("low").notNull(),
+  close: int("close").notNull(),
+  volume: int("volume").notNull(),
+  adjClose: int("adjClose"),
+});
+
+export type PriceHistory = typeof priceHistory.$inferSelect;
+export type InsertPriceHistory = typeof priceHistory.$inferInsert;
+
+/**
+ * watchlists table - per-user stock watchlist with alert preferences
+ */
+export const watchlists = mysqlTable("watchlists", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  stockId: int("stockId").notNull(),
+  label: varchar("label", { length: 100 }),
+  alertOnBuy: int("alertOnBuy").default(1).notNull(),
+  alertOnSell: int("alertOnSell").default(1).notNull(),
+  minConfidenceThreshold: int("minConfidenceThreshold").default(60),
+  emailNotifications: int("emailNotifications").default(0),
+  inAppNotifications: int("inAppNotifications").default(1),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Watchlist = typeof watchlists.$inferSelect;
+export type InsertWatchlist = typeof watchlists.$inferInsert;
+
+/**
+ * signals table - AI-generated buy/sell signals per stock
+ */
+export const signals = mysqlTable("signals", {
+  id: int("id").autoincrement().primaryKey(),
+  stockId: int("stockId").notNull(),
+  type: mysqlEnum("type", ["buy", "sell", "hold"]).notNull(),
+  confidenceScore: int("confidenceScore").notNull(),
+  priceAtSignal: decimal("priceAtSignal", { precision: 15, scale: 2 }),
+  indicators: json("indicators"),
+  analysis: text("analysis"),
+  status: mysqlEnum("status", ["active", "expired", "triggered"]).default("active").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Signal = typeof signals.$inferSelect;
+export type InsertSignal = typeof signals.$inferInsert;
+
+/**
+ * notifications table - in-app notifications for signal alerts
+ */
+export const notifications = mysqlTable("notifications", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  signalId: int("signalId"),
+  ticker: varchar("ticker", { length: 10 }),
+  title: varchar("title", { length: 255 }).notNull(),
+  message: text("message"),
+  isRead: int("isRead").default(0).notNull(),
+  readAt: timestamp("readAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Notification = typeof notifications.$inferSelect;
+export type InsertNotification = typeof notifications.$inferInsert;
+
+/**
+ * userPreferences table - per-user app preferences
+ */
+export const userPreferences = mysqlTable("user_preferences", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().unique(),
+  preferredExchanges: json("preferredExchanges"),
+  preferredSectors: json("preferredSectors"),
+  riskTolerance: mysqlEnum("riskTolerance", ["low", "medium", "high"]).default("medium"),
+  defaultTimeframe: varchar("defaultTimeframe", { length: 20 }).default("1y"),
+  autoRefresh: int("autoRefresh").default(1),
+  showTechnicalIndicators: int("showTechnicalIndicators").default(1),
+  showSentiment: int("showSentiment").default(1),
+  notificationFrequency: mysqlEnum("notificationFrequency", ["realtime", "daily", "weekly"]).default("realtime"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type UserPreference = typeof userPreferences.$inferSelect;
+export type InsertUserPreference = typeof userPreferences.$inferInsert;
+
+/**
+ * signalAlerts table - user-created alert rules for signals
+ */
+export const signalAlerts = mysqlTable("signal_alerts", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  stockId: int("stockId").notNull(),
+  signalType: mysqlEnum("signalType", ["buy", "sell", "hold"]).notNull(),
   confidence: int("confidence").notNull(),
-  /** Price at signal generation */
-  price: int("price").notNull(),
-  /** Alert status: pending, sent, dismissed */
-  status: mysqlEnum("status", ["pending", "sent", "dismissed"]).notNull().default("pending"),
-  /** Channels notified: in_app, email, push */
-  notificationChannels: varchar("notificationChannels", { length: 100 }).notNull(), // JSON array
-  /** Timestamp when alert was sent */
+  price: decimal("price", { precision: 15, scale: 2 }),
+  status: mysqlEnum("status", ["pending", "sent", "dismissed"]).default("pending").notNull(),
+  notificationChannels: json("notificationChannels"),
   sentAt: timestamp("sentAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
@@ -380,57 +353,40 @@ export type SignalAlert = typeof signalAlerts.$inferSelect;
 export type InsertSignalAlert = typeof signalAlerts.$inferInsert;
 
 /**
- * Alert preferences - user preferences for stock alerts
+ * alertPreferences table - per-stock alert configuration for a user
  */
-export const alertPreferences = mysqlTable("alertPreferences", {
+export const alertPreferences = mysqlTable("alert_preferences", {
   id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
-  stockId: int("stockId").notNull().references(() => stocks.id, { onDelete: "cascade" }),
-  /** Minimum confidence threshold for buy signals (0-100) */
-  minBuyConfidence: int("minBuyConfidence").notNull().default(60),
-  /** Minimum confidence threshold for sell signals (0-100) */
-  minSellConfidence: int("minSellConfidence").notNull().default(60),
-  /** Enable buy signal alerts */
-  enableBuyAlerts: int("enableBuyAlerts").notNull().default(1), // Boolean as int
-  /** Enable sell signal alerts */
-  enableSellAlerts: int("enableSellAlerts").notNull().default(1),
-  /** Enable sentiment alerts */
-  enableSentimentAlerts: int("enableSentimentAlerts").notNull().default(1),
-  /** Notification channels: in_app, email, push (JSON array) */
-  notificationChannels: varchar("notificationChannels", { length: 100 }).notNull().default('["in_app"]'),
-  /** Enable push notifications */
-  enablePushNotifications: int("enablePushNotifications").notNull().default(0),
+  userId: int("userId").notNull(),
+  stockId: int("stockId").notNull(),
+  minBuyConfidence: int("minBuyConfidence").default(60),
+  minSellConfidence: int("minSellConfidence").default(60),
+  enableBuyAlerts: int("enableBuyAlerts").default(1),
+  enableSellAlerts: int("enableSellAlerts").default(1),
+  enableSentimentAlerts: int("enableSentimentAlerts").default(0),
+  notificationChannels: json("notificationChannels"),
+  enablePushNotifications: int("enablePushNotifications").default(0),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
-export type AlertPreferences = typeof alertPreferences.$inferSelect;
-export type InsertAlertPreferences = typeof alertPreferences.$inferInsert;
-
+export type AlertPreference = typeof alertPreferences.$inferSelect;
+export type InsertAlertPreference = typeof alertPreferences.$inferInsert;
 
 /**
- * Price Alerts - user-defined price targets for notifications
- * Allows users to set alerts when a stock reaches a specific price
+ * priceAlerts table - user-defined price target alerts
  */
-export const priceAlerts = mysqlTable("priceAlerts", {
+export const priceAlerts = mysqlTable("price_alerts", {
   id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
-  stockId: int("stockId").notNull().references(() => stocks.id, { onDelete: "cascade" }),
-  /** Target price for the alert */
-  targetPrice: varchar("targetPrice", { length: 20 }).notNull(),
-  /** Alert type: above or below target price */
-  alertType: mysqlEnum("alertType", ["above", "below"]).notNull(),
-  /** Alert status: active, triggered, dismissed, deleted */
-  status: mysqlEnum("status", ["active", "triggered", "dismissed", "deleted"]).notNull().default("active"),
-  /** Whether to notify via browser notification */
-  enableBrowserNotification: int("enableBrowserNotification").notNull().default(1),
-  /** Whether to notify via email */
-  enableEmailNotification: int("enableEmailNotification").notNull().default(0),
-  /** Number of times this alert has been triggered */
-  triggerCount: int("triggerCount").notNull().default(0),
-  /** Last price when alert was triggered */
-  lastTriggeredPrice: varchar("lastTriggeredPrice", { length: 20 }),
-  /** Timestamp when alert was last triggered */
+  userId: int("userId").notNull(),
+  stockId: int("stockId").notNull(),
+  targetPrice: decimal("targetPrice", { precision: 15, scale: 2 }).notNull(),
+  alertType: mysqlEnum("alertType", ["above", "below", "percent_change"]).notNull(),
+  status: mysqlEnum("status", ["active", "triggered", "cancelled"]).default("active").notNull(),
+  enableBrowserNotification: int("enableBrowserNotification").default(1),
+  enableEmailNotification: int("enableEmailNotification").default(0),
+  triggerCount: int("triggerCount").default(0),
+  lastTriggeredPrice: decimal("lastTriggeredPrice", { precision: 15, scale: 2 }),
   lastTriggeredAt: timestamp("lastTriggeredAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
@@ -440,122 +396,275 @@ export type PriceAlert = typeof priceAlerts.$inferSelect;
 export type InsertPriceAlert = typeof priceAlerts.$inferInsert;
 
 /**
- * Price Alert History - tracks when price alerts are triggered
- * Used for audit trail and analytics
+ * priceAlertHistory table - log of triggered price alerts
  */
-export const priceAlertHistory = mysqlTable("priceAlertHistory", {
+export const priceAlertHistory = mysqlTable("price_alert_history", {
   id: int("id").autoincrement().primaryKey(),
-  priceAlertId: int("priceAlertId").notNull().references(() => priceAlerts.id, { onDelete: "cascade" }),
-  userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
-  stockId: int("stockId").notNull().references(() => stocks.id, { onDelete: "cascade" }),
-  /** Price at the time of trigger */
-  triggerPrice: varchar("triggerPrice", { length: 20 }).notNull(),
-  /** Target price that was set */
-  targetPrice: varchar("targetPrice", { length: 20 }).notNull(),
-  /** Alert type that triggered */
-  alertType: mysqlEnum("alertType", ["above", "below"]).notNull(),
-  /** Notification channels that were used */
-  notificationChannels: varchar("notificationChannels", { length: 100 }).notNull(), // JSON array
-  /** Whether notification was successfully sent */
-  notificationSent: int("notificationSent").notNull().default(0),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  priceAlertId: int("priceAlertId").notNull(),
+  userId: int("userId").notNull(),
+  stockId: int("stockId").notNull(),
+  triggerPrice: decimal("triggerPrice", { precision: 15, scale: 2 }).notNull(),
+  targetPrice: decimal("targetPrice", { precision: 15, scale: 2 }).notNull(),
+  alertType: varchar("alertType", { length: 30 }).notNull(),
+  notificationChannels: json("notificationChannels"),
+  notificationSent: int("notificationSent").default(0),
+  triggeredAt: timestamp("triggeredAt").defaultNow().notNull(),
 });
 
 export type PriceAlertHistory = typeof priceAlertHistory.$inferSelect;
 export type InsertPriceAlertHistory = typeof priceAlertHistory.$inferInsert;
 
 /**
- * Paper Trading Validation Sessions - tracks ongoing validation runs
+ * backtestRuns table - backtest job records
  */
-export const validationSessions = mysqlTable("validationSessions", {
+export const backtestRuns = mysqlTable("backtest_runs", {
   id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
-  sessionId: varchar("sessionId", { length: 255 }).notNull().unique(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 255 }),
   startDate: timestamp("startDate").notNull(),
-  startingCapital: decimal("startingCapital", { precision: 10, scale: 2 }).notNull(),
-  currentCapital: decimal("currentCapital", { precision: 10, scale: 2 }).notNull(),
-  config: text("config").notNull(), // JSON string of ValidationConfig
-  status: mysqlEnum("status", ["ACTIVE", "PAUSED", "COMPLETED"]).notNull(),
-  ownerEmail: varchar("ownerEmail", { length: 320 }),
+  endDate: timestamp("endDate").notNull(),
+  initialCapital: decimal("initialCapital", { precision: 15, scale: 2 }).notNull(),
+  finalCapital: decimal("finalCapital", { precision: 15, scale: 2 }),
+  totalReturn: decimal("totalReturn", { precision: 10, scale: 4 }),
+  winRate: decimal("winRate", { precision: 10, scale: 4 }),
+  sharpeRatio: decimal("sharpeRatio", { precision: 10, scale: 4 }),
+  maxDrawdown: decimal("maxDrawdown", { precision: 10, scale: 4 }),
+  totalTrades: int("totalTrades"),
+  winningTrades: int("winningTrades"),
+  avgWin: decimal("avgWin", { precision: 15, scale: 2 }),
+  avgLoss: decimal("avgLoss", { precision: 15, scale: 2 }),
+  profitFactor: decimal("profitFactor", { precision: 10, scale: 4 }),
+  stockIds: json("stockIds"),
+  filterSettings: json("filterSettings"),
+  status: mysqlEnum("status", ["running", "completed", "failed"]).default("running").notNull(),
+  errorMessage: text("errorMessage"),
+  completedAt: timestamp("completedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
-export type ValidationSession = typeof validationSessions.$inferSelect;
-export type InsertValidationSession = typeof validationSessions.$inferInsert;
+export type BacktestRun = typeof backtestRuns.$inferSelect;
+export type InsertBacktestRun = typeof backtestRuns.$inferInsert;
 
 /**
- * Paper Trading Validation Trades - stores individual trades within a validation session
+ * backtestTrades table - individual trades within a backtest run
  */
-export const validationTrades = mysqlTable("validationTrades", {
+export const backtestTrades = mysqlTable("backtest_trades", {
   id: int("id").autoincrement().primaryKey(),
-  sessionId: int("sessionId").notNull().references(() => validationSessions.id, { onDelete: "cascade" }),
-  tradeId: varchar("tradeId", { length: 255 }).notNull(),
-  date: varchar("date", { length: 10 }).notNull(),
-  time: varchar("time", { length: 8 }).notNull(),
-  ticker: varchar("ticker", { length: 20 }).notNull(),
-  type: mysqlEnum("type", ["BUY", "SELL"]).notNull(),
+  backtestRunId: int("backtestRunId").notNull(),
+  stockId: int("stockId").notNull(),
+  type: mysqlEnum("type", ["buy", "sell"]).notNull(),
+  entryDate: timestamp("entryDate").notNull(),
+  entryPrice: decimal("entryPrice", { precision: 15, scale: 2 }).notNull(),
+  exitDate: timestamp("exitDate"),
+  exitPrice: decimal("exitPrice", { precision: 15, scale: 2 }),
   quantity: int("quantity").notNull(),
-  entryPrice: decimal("entryPrice", { precision: 10, scale: 2 }).notNull(),
-  executionPrice: decimal("executionPrice", { precision: 10, scale: 2 }).notNull(),
-  commission: decimal("commission", { precision: 10, scale: 2 }).notNull(),
-  totalCost: decimal("totalCost", { precision: 10, scale: 2 }).notNull(),
-  pnl: decimal("pnl", { precision: 10, scale: 2 }),
-  pnlPercent: decimal("pnlPercent", { precision: 10, scale: 4 }),
-  signalConfidence: int("signalConfidence").notNull(),
-  signalType: varchar("signalType", { length: 20 }).notNull(),
-  signalReason: text("signalReason"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  profitLoss: decimal("profitLoss", { precision: 15, scale: 2 }),
+  returnPercent: decimal("returnPercent", { precision: 10, scale: 4 }),
+  exitReason: varchar("exitReason", { length: 50 }),
+  signalConfidence: int("signalConfidence"),
 });
 
-export type ValidationTrade = typeof validationTrades.$inferSelect;
-export type InsertValidationTrade = typeof validationTrades.$inferInsert;
+export type BacktestTrade = typeof backtestTrades.$inferSelect;
+export type InsertBacktestTrade = typeof backtestTrades.$inferInsert;
 
 /**
- * Paper Trading Validation Daily Performance - stores daily performance snapshots
+ * stockSentiment table - aggregated sentiment scores per stock
  */
-export const validationDailyPerformance = mysqlTable("validationDailyPerformance", {
+export const stockSentiment = mysqlTable("stock_sentiment", {
   id: int("id").autoincrement().primaryKey(),
-  sessionId: int("sessionId").notNull().references(() => validationSessions.id, { onDelete: "cascade" }),
-  date: varchar("date", { length: 10 }).notNull(),
-  openingCapital: decimal("openingCapital", { precision: 10, scale: 2 }).notNull(),
-  closingCapital: decimal("closingCapital", { precision: 10, scale: 2 }).notNull(),
-  dailyPnL: decimal("dailyPnL", { precision: 10, scale: 2 }).notNull(),
-  dailyPnLPercent: decimal("dailyPnLPercent", { precision: 10, scale: 4 }).notNull(),
-  trades: int("trades").notNull(),
-  winningTrades: int("winningTrades").notNull(),
-  losingTrades: int("losingTrades").notNull(),
-  winRate: decimal("winRate", { precision: 5, scale: 4 }).notNull(),
-  maxDailyDrawdown: decimal("maxDailyDrawdown", { precision: 5, scale: 4 }).notNull(),
-  riskLimitHit: int("riskLimitHit").notNull(), // 1 = true, 0 = false
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  stockId: int("stockId").notNull(),
+  sentimentScore: int("sentimentScore").notNull(),  // stored as integer * 100
+  confidence: int("confidence").notNull(),
+  articleCount: int("articleCount").notNull(),
+  classification: mysqlEnum("classification", ["very_positive", "positive", "neutral", "negative", "very_negative"]).notNull(),
+  analysisDate: timestamp("analysisDate").defaultNow().notNull(),
 });
 
-export type ValidationDailyPerformance = typeof validationDailyPerformance.$inferSelect;
-export type InsertValidationDailyPerformance = typeof validationDailyPerformance.$inferInsert;
+export type StockSentiment = typeof stockSentiment.$inferSelect;
+export type InsertStockSentiment = typeof stockSentiment.$inferInsert;
 
 /**
- * Paper Trading Validation Monthly Performance - stores monthly performance snapshots
+ * newsArticles table - individual news articles with sentiment scores
  */
-export const validationMonthlyPerformance = mysqlTable("validationMonthlyPerformance", {
+export const newsArticles = mysqlTable("news_articles", {
   id: int("id").autoincrement().primaryKey(),
-  sessionId: int("sessionId").notNull().references(() => validationSessions.id, { onDelete: "cascade" }),
-  month: int("month").notNull(),
-  startDate: varchar("startDate", { length: 10 }).notNull(),
-  endDate: varchar("endDate", { length: 10 }).notNull(),
-  openingCapital: decimal("openingCapital", { precision: 10, scale: 2 }).notNull(),
-  closingCapital: decimal("closingCapital", { precision: 10, scale: 2 }).notNull(),
-  monthlyReturn: decimal("monthlyReturn", { precision: 10, scale: 2 }).notNull(),
-  monthlyReturnPercent: decimal("monthlyReturnPercent", { precision: 10, scale: 4 }).notNull(),
-  targetReturn: decimal("targetReturn", { precision: 10, scale: 2 }).notNull(),
-  targetMet: int("targetMet").notNull(), // 1 = true, 0 = false
-  totalTrades: int("totalTrades").notNull(),
-  winRate: decimal("winRate", { precision: 5, scale: 4 }).notNull(),
-  sharpeRatio: decimal("sharpeRatio", { precision: 10, scale: 4 }).notNull(),
-  maxDrawdown: decimal("maxDrawdown", { precision: 5, scale: 4 }).notNull(),
-  daysRiskLimitHit: int("daysRiskLimitHit").notNull(),
+  stockId: int("stockId").notNull(),
+  title: varchar("title", { length: 500 }).notNull(),
+  description: text("description"),
+  content: text("content"),
+  url: varchar("url", { length: 1000 }).unique(),
+  source: varchar("source", { length: 100 }),
+  sentimentScore: int("sentimentScore"),  // stored as integer * 100
+  publishedAt: timestamp("publishedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
-export type ValidationMonthlyPerformance = typeof validationMonthlyPerformance.$inferSelect;
-export type InsertValidationMonthlyPerformance = typeof validationMonthlyPerformance.$inferInsert;
+export type NewsArticle = typeof newsArticles.$inferSelect;
+export type InsertNewsArticle = typeof newsArticles.$inferInsert;
+
+// ─── Stripe / subscription columns on users (added via migration) ─────────────
+// stripeWebhook.ts references users.stripeCustomerId and users.subscriptionTier.
+// These are added to the users table via SQL migration below; the schema type
+// is extended here so TypeScript is happy.
+// NOTE: Run the migration SQL before deploying.
+
+/**
+ * Blog posts table - stores all blog articles
+ */
+export const blogPosts = mysqlTable("blog_posts", {
+  id: int("id").autoincrement().primaryKey(),
+  slug: varchar("slug", { length: 255 }).notNull().unique(),
+  title: varchar("title", { length: 255 }).notNull(),
+  excerpt: text("excerpt").notNull(),
+  content: text("content").notNull(),
+  author: varchar("author", { length: 100 }).notNull().default("Manus AI"),
+  date: varchar("date", { length: 50 }).notNull(),
+  readTime: varchar("readTime", { length: 20 }).notNull(),
+  category: varchar("category", { length: 100 }).notNull(),
+  tags: json("tags").notNull(),
+  imageUrl: varchar("imageUrl", { length: 500 }).notNull(),
+  featured: boolean("featured").default(false).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type BlogPost = typeof blogPosts.$inferSelect;
+export type InsertBlogPost = typeof blogPosts.$inferInsert;
+
+
+/**
+ * Social Media Scheduler - Schedule posts on Reddit and Twitter
+ */
+export const socialMediaPosts = mysqlTable("social_media_posts", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  platform: mysqlEnum("platform", ["reddit", "twitter"]).notNull(),
+  title: text("title"),
+  content: text("content").notNull(),
+  subreddit: varchar("subreddit", { length: 255 }), // For Reddit posts
+  tags: text("tags"), // JSON array of tags/hashtags
+  scheduledAt: timestamp("scheduledAt").notNull(),
+  postedAt: timestamp("postedAt"),
+  status: mysqlEnum("status", ["scheduled", "posted", "failed", "draft"]).default("draft").notNull(),
+  postUrl: varchar("postUrl", { length: 500 }), // URL of posted content
+  views: int("views").default(0),
+  engagement: int("engagement").default(0), // upvotes + comments + shares
+  errorMessage: text("errorMessage"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type SocialMediaPost = typeof socialMediaPosts.$inferSelect;
+export type InsertSocialMediaPost = typeof socialMediaPosts.$inferInsert;
+
+/**
+ * Social Media Templates - Reusable content templates
+ */
+export const socialMediaTemplates = mysqlTable("social_media_templates", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  platform: mysqlEnum("platform", ["reddit", "twitter"]).notNull(),
+  category: varchar("category", { length: 100 }).notNull(), // e.g., "signal_alert", "educational", "user_win"
+  template: text("template").notNull(), // Template with {{variables}}
+  description: text("description"),
+  isPublic: boolean("isPublic").default(false), // Share with other users
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type SocialMediaTemplate = typeof socialMediaTemplates.$inferSelect;
+export type InsertSocialMediaTemplate = typeof socialMediaTemplates.$inferInsert;
+
+/**
+ * Social Media Accounts - Connected Reddit/Twitter accounts
+ */
+export const socialMediaAccounts = mysqlTable("social_media_accounts", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  platform: mysqlEnum("platform", ["reddit", "twitter"]).notNull(),
+  accountName: varchar("accountName", { length: 255 }).notNull(),
+  accessToken: text("accessToken"),
+  refreshToken: text("refreshToken"),
+  expiresAt: timestamp("expiresAt"),
+  isConnected: boolean("isConnected").default(true),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type SocialMediaAccount = typeof socialMediaAccounts.$inferSelect;
+export type InsertSocialMediaAccount = typeof socialMediaAccounts.$inferInsert;
+
+/**
+ * Social Media Analytics - Track performance of posts
+ */
+export const socialMediaAnalytics = mysqlTable("social_media_analytics", {
+  id: int("id").autoincrement().primaryKey(),
+  postId: int("postId").notNull(),
+  platform: mysqlEnum("platform", ["reddit", "twitter"]).notNull(),
+  views: int("views").default(0),
+  clicks: int("clicks").default(0),
+  upvotes: int("upvotes").default(0),
+  comments: int("comments").default(0),
+  shares: int("shares").default(0),
+  engagement: int("engagement").default(0), // upvotes + comments + shares
+  engagementRate: decimal("engagementRate", { precision: 5, scale: 2 }).default("0"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type SocialMediaAnalytic = typeof socialMediaAnalytics.$inferSelect;
+export type InsertSocialMediaAnalytic = typeof socialMediaAnalytics.$inferInsert;
+
+/**
+ * Referral programme - unique referral codes and tracking
+ */
+export const referralCodes = mysqlTable("referral_codes", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().unique(),
+  code: varchar("code", { length: 20 }).notNull().unique(),
+  totalReferrals: int("totalReferrals").default(0).notNull(),
+  totalCreditsEarned: int("totalCreditsEarned").default(0).notNull(), // in days of free subscription
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type ReferralCode = typeof referralCodes.$inferSelect;
+export type InsertReferralCode = typeof referralCodes.$inferInsert;
+
+/**
+ * Referral conversions - tracks who signed up via a referral link
+ */
+export const referralConversions = mysqlTable("referral_conversions", {
+  id: int("id").autoincrement().primaryKey(),
+  referrerId: int("referrerId").notNull(), // user who owns the referral code
+  referredUserId: int("referredUserId").notNull().unique(), // new user who signed up
+  code: varchar("code", { length: 20 }).notNull(),
+  status: mysqlEnum("status", ["pending", "converted", "credited"]).default("pending").notNull(),
+  creditsAwarded: int("creditsAwarded").default(0).notNull(), // days credited to referrer
+  convertedAt: timestamp("convertedAt"),
+  creditedAt: timestamp("creditedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type ReferralConversion = typeof referralConversions.$inferSelect;
+export type InsertReferralConversion = typeof referralConversions.$inferInsert;
+
+// ─── Onboarding Email Sequence ────────────────────────────────────────────────
+export const onboardingEmailQueue = mysqlTable("onboarding_email_queue", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("user_id").notNull(),
+  email: varchar("email", { length: 255 }).notNull(),
+  firstName: varchar("first_name", { length: 100 }).notNull().default(""),
+  stepNumber: int("step_number").notNull(), // 1–7
+  scheduledAt: bigint("scheduled_at", { mode: "number" }).notNull(), // UTC ms
+  sentAt: bigint("sent_at", { mode: "number" }),
+  status: varchar("status", { length: 20 }).notNull().default("pending"), // pending | sent | failed | unsubscribed
+  errorMessage: text("error_message"),
+  createdAt: bigint("created_at", { mode: "number" }).notNull().$defaultFn(() => Date.now()),
+});
+
+export const onboardingUnsubscribes = mysqlTable("onboarding_unsubscribes", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("user_id").notNull(),
+  email: varchar("email", { length: 255 }).notNull(),
+  unsubscribedAt: bigint("unsubscribed_at", { mode: "number" }).notNull().$defaultFn(() => Date.now()),
+});

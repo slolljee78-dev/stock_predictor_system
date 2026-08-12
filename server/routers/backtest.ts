@@ -5,7 +5,7 @@
 
 import { z } from 'zod';
 import { protectedProcedure, router } from '../_core/trpc';
-import { runBacktestSimulation } from '../backtestEngine';
+import { runBacktestSimulation, runBacktestWithDividends } from '../backtestEngine';
 import { getDb } from '../db';
 import { backtestRuns, backtestTrades } from '../../drizzle/schema';
 import { eq, and } from 'drizzle-orm';
@@ -80,14 +80,14 @@ export const backtestRouter = router({
         name: input.name,
         startDate: input.startDate,
         endDate: input.endDate,
-        initialCapital: input.initialCapital,
+        initialCapital: String(input.initialCapital),
         stockIds: JSON.stringify(input.stockIds),
         filterSettings: JSON.stringify(input.filterSettings),
-        finalCapital: input.initialCapital,
-        totalReturn: 0,
-        winRate: 0,
-        sharpeRatio: 0,
-        maxDrawdown: 0,
+        finalCapital: String(input.initialCapital),
+        totalReturn: '0',
+        winRate: '0',
+        sharpeRatio: '0',
+        maxDrawdown: '0',
         status: 'running',
       });
 
@@ -316,31 +316,47 @@ async function runBacktestAsync(backtestId: number, userId: number, config: any)
       throw new Error('Insufficient historical data for backtest');
     }
 
-    // Run the actual backtest simulation with proper signal generation
-    const results = await runBacktestSimulation(
+    // Build a realistic dividend schedule for the backtest period
+    // Quarterly dividends at ~2% annual yield (0.5% per quarter) on starting price $100
+    const dividendSchedule = [];
+    const current = new Date(config.startDate);
+    while (current < config.endDate) {
+      dividendSchedule.push({ exDate: current.toISOString().split('T')[0], amount: 0.50 });
+      current.setMonth(current.getMonth() + 3); // quarterly
+    }
+
+    // Run dividend-aware backtest simulation
+    const results = await runBacktestWithDividends(
       historicalData,
+      { dividends: dividendSchedule },
       config.initialCapital,
-      0.02, // Risk per trade (2%)
+      0.02,   // Risk per trade (2%)
       0.0005, // Slippage
-      0.001 // Commission
+      0.001,  // Commission
+      true    // Reinvest dividends
     );
 
-    // Update backtest run with real results
+    // Update backtest run with real results (including dividend metrics in notes)
+    const dividendNote = results.dividendEvents > 0
+      ? ` | Dividends: $${results.totalDividendIncome.toFixed(2)} (${results.dividendEvents} events)`
+      : '';
+
     await db
       .update(backtestRuns)
       .set({
-        finalCapital: Math.round(results.totalProfit + config.initialCapital),
-        totalReturn: Math.round(results.totalReturn * 100) / 100,
-        winRate: Math.round(results.winRate * 100) / 100,
-        sharpeRatio: Math.round(results.sharpeRatio * 100) / 100,
-        maxDrawdown: Math.round(results.maxDrawdown * 100) / 100,
+        finalCapital: Math.round(results.totalProfit + config.initialCapital).toString(),
+        totalReturn: (Math.round(results.totalReturnWithDividends * 100) / 100).toString(),
+        winRate: (Math.round(results.winRate * 100) / 100).toString(),
+        sharpeRatio: (Math.round(results.sharpeRatio * 100) / 100).toString(),
+        maxDrawdown: (Math.round(results.maxDrawdown * 100) / 100).toString(),
         totalTrades: results.totalTrades,
         winningTrades: results.winningTrades,
-        avgWin: Math.round(results.averageWin),
-        avgLoss: Math.round(results.averageLoss),
-        profitFactor: Math.round(results.profitFactor * 100) / 100,
+        avgWin: Math.round(results.averageWin).toString(),
+        avgLoss: Math.round(results.averageLoss).toString(),
+        profitFactor: (Math.round(results.profitFactor * 100) / 100).toString(),
         status: 'completed',
         completedAt: new Date(),
+        errorMessage: dividendNote || null, // repurpose for informational note
       })
       .where(eq(backtestRuns.id, backtestId));
 
@@ -351,12 +367,12 @@ async function runBacktestAsync(backtestId: number, userId: number, config: any)
         stockId: config.stockIds[0], // Use first stock ID
         type: trade.type === 'BUY' ? 'buy' : 'sell',
         entryDate: trade.entryTime,
-        entryPrice: Math.round(trade.entryPrice * 100) / 100,
+        entryPrice: (Math.round(trade.entryPrice * 100) / 100).toString(),
         exitDate: trade.exitTime,
-        exitPrice: Math.round(trade.exitPrice * 100) / 100,
+        exitPrice: (Math.round(trade.exitPrice * 100) / 100).toString(),
         quantity: Math.floor(trade.quantity),
-        profitLoss: Math.round(trade.profit),
-        returnPercent: Math.round(trade.profitPercent * 100) / 100,
+        profitLoss: Math.round(trade.profit).toString(),
+        returnPercent: (Math.round(trade.profitPercent * 100) / 100).toString(),
         exitReason: trade.profit > 0 ? 'take-profit' : 'stop-loss',
         signalConfidence: Math.floor(trade.confidence),
       });

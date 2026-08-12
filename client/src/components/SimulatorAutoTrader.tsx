@@ -48,6 +48,20 @@ interface AutoTradingRoundResponse {
   scannedTickers: string[];
   nextScanOffset: number;
   actionableSignals: ActionableSignal[];
+  diagnostics?: {
+    marketDataAvailable: number;
+    marketDataUnavailable: number;
+    directionalSignals: number;
+    holdSignals: number;
+    belowConfidenceSignals: number;
+    requiredConfidence: number;
+    closestSignal: {
+      ticker: string;
+      signalType: "buy" | "sell" | "hold";
+      confidence: number;
+      reasoning?: string;
+    } | null;
+  };
   executedTrades: AutoExecutedTrade[];
 }
 
@@ -74,6 +88,7 @@ interface ScheduledAutoTradingRun {
   totalRoundsCompleted: number;
   totalTradesExecuted: number;
   lastSummary: string | null;
+  lastRound: AutoTradingRoundResponse | null;
   roundHistory: ScheduledRoundLogEntry[];
   portfolio: {
     currentValue: number;
@@ -127,6 +142,23 @@ function formatCurrencyValue(value: number) {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;
+}
+
+function getNoSignalDiagnostic(round: AutoTradingRoundResponse | null) {
+  const diagnostics = round?.diagnostics;
+  if (!diagnostics) {
+    return "No buy or sell signals have crossed the current threshold yet.";
+  }
+
+  if (diagnostics.marketDataAvailable === 0) {
+    return "Market data was unavailable for this scan, so the engine did not produce a recommendation. It will retry on the next scheduled pass.";
+  }
+
+  if (diagnostics.closestSignal && diagnostics.closestSignal.signalType !== "hold") {
+    return `Closest setup: ${diagnostics.closestSignal.ticker} ${diagnostics.closestSignal.signalType.toUpperCase()} at ${diagnostics.closestSignal.confidence}% confidence. The current threshold is ${diagnostics.requiredConfidence}%.`;
+  }
+
+  return `The engine evaluated ${diagnostics.marketDataAvailable} stock${diagnostics.marketDataAvailable === 1 ? "" : "s"}; the available technical indicators were mixed, so no directional recommendation cleared the ${diagnostics.requiredConfidence}% threshold.`;
 }
 
 export function SimulatorAutoTrader({ portfolio, accessUser, onApplyTrades }: SimulatorAutoTraderProps) {
@@ -203,8 +235,8 @@ export function SimulatorAutoTrader({ portfolio, accessUser, onApplyTrades }: Si
     const buyCount = response.executedTrades.filter((trade) => trade.type === "BUY").length;
     const sellCount = response.executedTrades.filter((trade) => trade.type === "SELL").length;
     const summaryMessage = response.executedTrades.length > 0
-      ? `Auto trader executed ${response.executedTrades.length} virtual trade${response.executedTrades.length === 1 ? "" : "s"} across ${response.scannedCount} scanned stocks (${buyCount} buys, ${sellCount} sells).`
-      : `Auto trader scanned ${response.scannedCount} stocks and found no trade that met the current confidence and sizing rules.`;
+      ? `Signal engine executed ${response.executedTrades.length} virtual trade${response.executedTrades.length === 1 ? "" : "s"} across ${response.scannedCount} scanned stocks (${buyCount} buys, ${sellCount} sells).`
+      : `Signal engine scanned ${response.scannedCount} stocks. ${getNoSignalDiagnostic(response)}`;
 
     if (response.executedTrades.length > 0) {
       onApplyTrades(
@@ -241,7 +273,9 @@ export function SimulatorAutoTrader({ portfolio, accessUser, onApplyTrades }: Si
     universeSize,
   ]);
 
-  const actionableSignals = lastRound?.actionableSignals ?? [];
+  const displayedRound = lastRound ?? scheduledRun?.lastRound ?? null;
+  const actionableSignals = displayedRound?.actionableSignals ?? [];
+  const latestDiagnostics = displayedRound?.diagnostics;
   const scheduledRunInProgress = scheduledRun?.status === "active";
   const scheduledRoundHistory = scheduledRun?.roundHistory ?? [];
   const selectedUniverseText = selectedUniverse.length > 0
@@ -249,12 +283,12 @@ export function SimulatorAutoTrader({ portfolio, accessUser, onApplyTrades }: Si
     : "A random basket will be chosen on the first run";
 
   return (
-    <Card className="premium-card border-0 bg-transparent shadow-none lg:col-span-2">
+    <Card id="signal-engine" className="premium-card border-0 bg-transparent shadow-none lg:col-span-2">
       <CardHeader>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <CardTitle className="text-xl font-semibold tracking-tight">Auto Trader</CardTitle>
+              <CardTitle className="text-xl font-semibold tracking-tight">Signal Engine</CardTitle>
               <Badge variant="secondary" className="uppercase tracking-[0.2em] text-[11px]">
                 beta
               </Badge>
@@ -293,7 +327,7 @@ export function SimulatorAutoTrader({ portfolio, accessUser, onApplyTrades }: Si
             ) : (
               <Button type="button" onClick={() => setLocation("/pricing")} className="w-full sm:w-auto">
                 <Lock className="mr-2 h-4 w-4" />
-                Unlock auto trading
+                Unlock Signal Engine
               </Button>
             )}
           </div>
@@ -304,7 +338,7 @@ export function SimulatorAutoTrader({ portfolio, accessUser, onApplyTrades }: Si
           <div className="rounded-2xl border border-primary/25 bg-primary/10 p-4 space-y-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-sm font-semibold text-foreground">Auto trading is locked on the free plan</p>
+                <p className="text-sm font-semibold text-foreground">Signal engine is locked on the free plan</p>
                 <p className="mt-1 text-sm text-muted-foreground">{autoTradingUpgradeMessage}</p>
               </div>
               <Button type="button" onClick={() => setLocation("/pricing")} className="pill-button pill-button-primary h-10 px-5">
@@ -494,6 +528,14 @@ export function SimulatorAutoTrader({ portfolio, accessUser, onApplyTrades }: Si
               {scheduledRun?.lastSummary ?? "Start a timed run to persist this simulator snapshot on the server and let daily automated rounds update it over the selected duration."}
             </p>
 
+            {scheduledRun?.lastRound?.diagnostics ? (
+              <div className="rounded-2xl border border-white/10 bg-black/10 px-4 py-3 text-xs leading-5 text-muted-foreground">
+                <span className="font-semibold text-foreground">Latest scan diagnostics: </span>
+                {scheduledRun.lastRound.diagnostics.marketDataAvailable}/{scheduledRun.lastRound.scannedCount} market-data responses available · {scheduledRun.lastRound.diagnostics.directionalSignals} directional setups · {scheduledRun.lastRound.diagnostics.belowConfidenceSignals} below the {scheduledRun.lastRound.diagnostics.requiredConfidence}% threshold
+                {scheduledRun.lastRound.diagnostics.marketDataUnavailable > 0 ? ` · ${scheduledRun.lastRound.diagnostics.marketDataUnavailable} unavailable` : ""}
+              </div>
+            ) : null}
+
             <div className="space-y-3 rounded-2xl border border-white/10 bg-black/10 p-4">
               <div className="flex items-center justify-between gap-3">
                 <div>
@@ -545,9 +587,9 @@ export function SimulatorAutoTrader({ portfolio, accessUser, onApplyTrades }: Si
         )}
 
         <div className="rounded-2xl border border-amber-500/25 bg-amber-500/10 p-4">
-          <p className="text-sm font-semibold text-foreground">Auto mode currently runs in the open browser tab only</p>
+          <p className="text-sm font-semibold text-foreground">Choose the run mode that suits your test</p>
           <p className="mt-2 text-sm text-muted-foreground">
-            If you close the simulator, switch apps, or leave the tab suspended in the background, automated rounds can pause. Use <strong>Run now</strong> for an immediate pass, and keep this page open while testing the feature.
+            The quick browser loop is useful for open-tab testing and can pause in a background mobile tab. A timed 1-day, 3-day, or 7-day run is persisted on the server and processed by the scheduled Signal Engine even after you close the page.
           </p>
         </div>
 
@@ -584,13 +626,13 @@ export function SimulatorAutoTrader({ portfolio, accessUser, onApplyTrades }: Si
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Bot className="h-4 w-4" />
-              {autoTradingEnabled ? (autoEnabled ? "Auto mode is scanning while this tab stays open" : "Auto mode is idle") : "Upgrade required for auto mode"}
+              {autoTradingEnabled ? (autoEnabled ? "Signal engine is scanning while this tab stays open" : "Signal engine is idle") : "Upgrade required for signal engine"}
             </div>
           </div>
 
           <div className="mt-4 flex flex-wrap gap-2">
             {selectedUniverse.length === 0 ? (
-              <p className="text-sm text-muted-foreground">{autoTradingEnabled ? "Run the auto trader to pick a fresh basket of companies from the broader universe." : "Upgrade to unlock a broader random basket and automated paper-trading rounds."}</p>
+              <p className="text-sm text-muted-foreground">{autoTradingEnabled ? "Run the signal engine to pick a fresh basket of companies from the broader universe." : "Upgrade to unlock a broader random basket and signal-driven paper-trading rounds."}</p>
             ) : (
               selectedUniverse.map((stock) => (
                 <Badge key={stock.ticker} variant="outline" className="border-cyan-500/30 bg-cyan-500/10 text-cyan-100">
@@ -611,13 +653,14 @@ export function SimulatorAutoTrader({ portfolio, accessUser, onApplyTrades }: Si
             <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Actionable signals</p>
             <p className={`mt-2 text-2xl font-semibold ${autoTradingEnabled ? "" : "blur-[2px] select-none"}`}>{actionableSignals.length}</p>
             <p className="text-sm text-muted-foreground">Signals above your current confidence threshold in the latest scan</p>
+            {latestDiagnostics ? <p className="mt-2 text-xs text-muted-foreground">{latestDiagnostics.marketDataAvailable}/{displayedRound?.scannedCount ?? 0} market-data responses available</p> : null}
           </div>
           <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
             <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Latest round</p>
-            <p className={`mt-2 text-2xl font-semibold ${autoTradingEnabled ? "" : "blur-[2px] select-none"}`}>{lastRound?.executedTrades.length ?? 0}</p>
+            <p className={`mt-2 text-2xl font-semibold ${autoTradingEnabled ? "" : "blur-[2px] select-none"}`}>{displayedRound?.executedTrades.length ?? 0}</p>
             <p className="text-sm text-muted-foreground">Virtual trades executed in the most recent automated pass</p>
-            {lastRound?.scannedTickers?.length ? (
-              <p className="mt-2 text-xs text-muted-foreground">Scanned now: {lastRound.scannedTickers.join(", ")}</p>
+            {displayedRound?.scannedTickers?.length ? (
+              <p className="mt-2 text-xs text-muted-foreground">Scanned now: {displayedRound.scannedTickers.join(", ")}</p>
             ) : null}
           </div>
         </div>
@@ -633,7 +676,7 @@ export function SimulatorAutoTrader({ portfolio, accessUser, onApplyTrades }: Si
               <p className="mt-2 text-sm text-muted-foreground">Upgrade to reveal live actionable signals and automated trade candidates.</p>
             </div>
           ) : actionableSignals.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No buy or sell signals have crossed the current threshold yet.</p>
+            <p className="text-sm text-muted-foreground">{getNoSignalDiagnostic(displayedRound)}</p>
           ) : (
             <div className="space-y-2">
               {actionableSignals.slice(0, 6).map((signal) => (

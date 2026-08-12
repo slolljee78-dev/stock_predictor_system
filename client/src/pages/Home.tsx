@@ -26,27 +26,28 @@ import { useLocation } from "wouter";
 import { PublicSiteHeader } from "@/components/PublicSiteHeader";
 import { getPublicAudienceState, getPublicPrimaryAction } from "@/lib/publicSite";
 import { getLoginUrl } from "@/const";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { OnboardingModal } from "@/components/OnboardingModal";
+import { FeatureShowcase } from "@/components/FeatureShowcase";
 
 const featureCards = [
+  {
+    icon: TrendingUp,
+    title: "Signal Engine — Auto Trade",
+    description:
+      "The platform's flagship feature. Set the Signal Engine to scan a stock universe, pick a basket, and auto-trade from live buy and sell signals for 1, 3, or 7 days. Close the tab and come back to results.",
+  },
   {
     icon: BrainCircuit,
     title: "AI-ranked trade opportunities",
     description:
-      "See which Trading 212 names have the strongest buy or sell setup, with clear confidence scoring and context.",
-  },
-  {
-    icon: Radar,
-    title: "Watchlists that feel alive",
-    description:
-      "Track your chosen stocks with fresh signals, confidence movement, and simple next-step guidance instead of raw data overload.",
+      "See which Trading 212 stocks have the strongest buy or sell setup, ranked by confidence score so you know exactly which setups to review first.",
   },
   {
     icon: BellRing,
-    title: "Automated paper trading built in",
+    title: "Alerts, watchlists & validation",
     description:
-      "Let the simulator scan a broader stock universe, choose random baskets, and execute virtual trades from live buy and sell signals before you risk real capital.",
+      "Track your chosen stocks with live signal alerts, confidence movement, and a paper-trading simulator to validate ideas before committing real capital.",
   },
 ];
 
@@ -73,16 +74,16 @@ const workflowSteps = [
   },
   {
     step: "03",
-    title: "Let the simulator trade the idea first",
-    body: "Use the automated simulator to scan, select, and paper-trade ideas for you, then compare the results before risking real money.",
+    title: "Activate the Signal Engine and let it auto-trade for you",
+    body: "Set the Signal Engine to scan a stock universe, pick a random basket, and automatically open and close virtual positions from live buy and sell signals. Choose a 1-day, 3-day, or 7-day timed run — then come back to real results without touching a chart.",
     action: "/simulator",
-    link: { text: "Explore analysis tools", href: "/analysis" }
+    link: { text: "See how it works", href: "/how-it-works" }
   },
 ];
 
 const testimonials = [
   {
-    quote: "I was spending 3 hours every morning analyzing charts. Stock Predictor cut that down to 20 minutes. The confidence scoring is a game-changer—I know exactly which setups to focus on.",
+    quote: "I was spending 3 hours every morning analyzing charts. Vortextrade cut that down to 20 minutes. The confidence scoring is a game-changer—I know exactly which setups to focus on.",
     author: "James M.",
     title: "Active Trader",
     duration: "2 years on platform",
@@ -111,11 +112,11 @@ const socialProofStats = [
 const faqItems = [
   {
     question: "Will this guarantee me profits?",
-    answer: "No. No trading tool guarantees profits. Markets are unpredictable, and you can lose money. Stock Predictor is a decision-support tool that helps you analyze faster and validate ideas. The simulator is for learning only—real trading results may differ significantly. Always trade responsibly and never risk more than you can afford to lose.",
+    answer: "No. No trading tool guarantees profits. Markets are unpredictable, and you can lose money. Vortextrade is a decision-support tool that helps you analyze faster and validate ideas. The simulator is for learning only—real trading results may differ significantly. Always trade responsibly and never risk more than you can afford to lose.",
   },
   {
     question: "Is this a scam?",
-    answer: "No. Stock Predictor is a decision-support platform for self-directed investors. It does not provide personal financial advice and is not regulated by the FCA. We are transparent about our methodology (technical indicators), data sources (Alpha Vantage), and limitations (daily data, not real-time). Use the simulator to validate ideas before risking real capital.",
+    answer: "No. Vortextrade is a decision-support platform for self-directed investors. It does not provide personal financial advice and is not regulated by the FCA. We are transparent about our methodology (technical indicators), data sources (Alpha Vantage), and limitations (daily data, not real-time). Use the simulator to validate ideas before risking real capital.",
   },
   {
     question: "How accurate are the signals?",
@@ -141,16 +142,6 @@ export default function Home() {
   const [expandedFaq, setExpandedFaq] = useState<number | null>(0);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const heroPrimaryAction = getPublicPrimaryAction(getPublicAudienceState(isAuthenticated), "hero");
-
-  // Show onboarding modal for new authenticated users
-  useEffect(() => {
-    if (isAuthenticated && !loading) {
-      const hasSeenOnboarding = localStorage.getItem('onboarding_completed');
-      if (!hasSeenOnboarding) {
-        setShowOnboarding(true);
-      }
-    }
-  }, [isAuthenticated, loading]);
 
   const handleOnboardingComplete = () => {
     localStorage.setItem('onboarding_completed', 'true');
@@ -183,7 +174,7 @@ export default function Home() {
 
       <main className="focus:outline-none">
         {/* HERO SECTION - REDESIGNED */}
-        <section className="relative overflow-hidden pt-0">
+        <section className="relative overflow-hidden pt-20 md:pt-0">
           <div className="hero-grid absolute inset-0 opacity-60" />
           <div className="container relative py-8 md:py-16 lg:py-20">
             <div className="grid items-center gap-14 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16">
@@ -195,14 +186,14 @@ export default function Home() {
 
                 <div className="space-y-6">
                   <div className="space-y-3">
-                    <p className="text-sm font-bold uppercase tracking-[0.24em] text-primary/85">Stock Predictor</p>
+                    <p className="text-sm font-bold uppercase tracking-[0.24em] text-primary/85">Vortextrade</p>
                     <h1 className="display-title max-w-5xl text-balance leading-tight">
-                      Trade With <span className="gradient-text">Conviction,</span><br className="hidden sm:block" /> and Let Your Simulator Act First.
+                      AI Signals. <span className="gradient-text">Auto Trade.</span><br className="hidden sm:block" /> Zero Manual Analysis.
                     </h1>
                   </div>
 
                   <p className="lead-copy">
-                    Technical analysis-powered trading signals for Trading 212 stocks, plus a paper-trading simulator to test strategies risk-free before committing real capital.
+                    Vortextrade generates AI-ranked buy and sell signals for Trading 212 stocks — then lets the <strong>Signal Engine</strong> automatically scan, select, and paper-trade a basket of stocks for you. Set it to run for 1, 3, or 7 days and come back to real results.
                   </p>
                 </div>
 
@@ -226,15 +217,13 @@ export default function Home() {
                   )}
 
                   <Button
-                    asChild
                     size="lg"
                     variant="outline"
                     className="pill-button pill-button-secondary h-14 px-7 text-base"
+                    onClick={() => setShowOnboarding(true)}
                   >
-                    <a href="#demo">
-                      Watch 2-Minute Demo
-                      <ChevronRight className="h-4 w-4" />
-                    </a>
+                    How it works
+                    <ChevronRight className="h-4 w-4" />
                   </Button>
                 </div>
 
@@ -246,7 +235,11 @@ export default function Home() {
                   </div>
                   <div className="flex items-center gap-2">
                     <Check className="h-4 w-4 text-primary" />
-                    <span>Auto-trading simulator included</span>
+                    <span>Signal Engine auto-trade included</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="h-4 w-4 text-primary" />
+                    <span>1-day, 3-day &amp; 7-day timed runs</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Check className="h-4 w-4 text-primary" />
@@ -257,7 +250,7 @@ export default function Home() {
                 <div className="rounded-3xl border border-amber-400/25 bg-amber-500/10 px-5 py-4 text-sm text-amber-50/90 shadow-[0_20px_50px_rgba(245,158,11,0.12)]">
                   <p className="font-semibold uppercase tracking-[0.16em] text-amber-200">Important risk notice</p>
                   <p className="mt-2 leading-6 text-amber-50/85">
-                    Stock Predictor provides market analysis, ranking tools, and paper-trading workflows for educational decision support. It does not provide financial advice or personal investment recommendations, and it is not regulated by the FCA.
+                    Vortextrade provides market analysis, ranking tools, and paper-trading workflows for educational decision support. It does not provide financial advice or personal investment recommendations, and it is not regulated by the FCA.
                   </p>
                 </div>
 
@@ -274,63 +267,67 @@ export default function Home() {
               <div className="dashboard-frame relative overflow-hidden p-4 md:p-5">
                 <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-primary/15 to-transparent" />
                 <div className="relative space-y-4">
-                  <div className="flex items-center justify-between rounded-3xl border border-border/70 bg-background/50 px-4 py-4 md:py-3">
-                    <div>
-                      <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary/80">Signal workspace</p>
-                      <p className="text-lg md:text-lg font-semibold">Today's highest-conviction ideas</p>
+                  {/* Signal Engine Hero Card */}
+                  <button
+                    onClick={() => setLocation("/simulator")}
+                    className="w-full text-left rounded-3xl border border-primary/40 bg-gradient-to-br from-primary/10 via-background/60 to-accent/10 p-5 hover:shadow-xl hover:shadow-primary/20 transition-all duration-200 cursor-pointer"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/20 text-primary">
+                          <TrendingUp className="h-6 w-6" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="font-bold text-foreground">Signal Engine</p>
+                            <Badge className="rounded-full bg-primary/20 text-primary border-primary/30 text-[10px] px-2 py-0.5 uppercase tracking-wider">Auto Trade</Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-0.5">Scans stocks, picks a basket, trades automatically</p>
+                        </div>
+                      </div>
+                      <Badge className="rounded-full bg-emerald-500/15 text-emerald-300 border-emerald-400/20 text-xs px-2 py-1 shrink-0">Live</Badge>
                     </div>
-                    <Badge className="rounded-full bg-primary/15 px-4 py-2 text-primary border-primary/30 text-sm md:px-3 md:py-1">Live market view</Badge>
-                  </div>
+                    <div className="mt-4 grid grid-cols-3 gap-2">
+                      {["1-day run", "3-day run", "7-day run"].map((label) => (
+                        <div key={label} className="rounded-xl border border-border/60 bg-background/50 px-3 py-2 text-center">
+                          <p className="text-xs font-semibold text-foreground">{label}</p>
+                          <p className="text-[10px] text-muted-foreground mt-0.5">Timed auto</p>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="mt-3 text-xs text-muted-foreground">Set a run, close the tab, come back to results. No manual analysis needed.</p>
+                  </button>
 
                   <div className="grid gap-4 md:grid-cols-2">
                     <button
                       onClick={() => setLocation("/dashboard")}
-                      className="feature-card min-h-44 text-left hover:shadow-lg hover:shadow-primary/20 transition-all duration-200 cursor-pointer"
+                      className="feature-card min-h-36 text-left hover:shadow-lg hover:shadow-primary/20 transition-all duration-200 cursor-pointer"
                     >
-                      <div className="mb-6 flex items-center justify-between">
-                        <div className="flex h-14 w-14 md:h-12 md:w-12 items-center justify-center rounded-2xl bg-primary/15 text-primary">
-                          <LineChart className="h-7 w-7 md:h-6 md:w-6" />
+                      <div className="mb-4 flex items-center justify-between">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/15 text-primary">
+                          <LineChart className="h-5 w-5" />
                         </div>
-                        <Badge className="rounded-full bg-emerald-500/15 text-emerald-300 border-emerald-400/20 text-sm md:text-xs px-3 py-2 md:px-2 md:py-1">+18.4%</Badge>
+                        <Badge className="rounded-full bg-emerald-500/15 text-emerald-300 border-emerald-400/20 text-xs px-2 py-1">+18.4%</Badge>
                       </div>
-                      <p className="text-xs md:text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">Today's Ideas</p>
-                      <p className="mt-3 text-3xl md:text-3xl font-semibold tracking-tight">14 trading opportunities</p>
-                      <p className="mt-3 text-sm text-muted-foreground">Ranked by confidence so you know which setups to focus on first.</p>
+                      <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">Today's Signals</p>
+                      <p className="mt-2 text-2xl font-semibold tracking-tight">14 opportunities</p>
+                      <p className="mt-2 text-sm text-muted-foreground">Ranked by AI confidence score.</p>
                     </button>
 
                     <button
-                      onClick={() => setLocation("/dashboard")}
-                      className="feature-card min-h-44 text-left hover:shadow-lg hover:shadow-primary/20 transition-all duration-200 cursor-pointer"
+                      onClick={() => setLocation("/simulator")}
+                      className="feature-card min-h-36 text-left hover:shadow-lg hover:shadow-primary/20 transition-all duration-200 cursor-pointer"
                     >
-                      <div className="mb-6 flex items-center justify-between">
-                        <div className="flex h-14 w-14 md:h-12 md:w-12 items-center justify-center rounded-2xl bg-accent/15 text-accent">
-                          <ShieldCheck className="h-7 w-7 md:h-6 md:w-6" />
+                      <div className="mb-4 flex items-center justify-between">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-accent/15 text-accent">
+                          <ShieldCheck className="h-5 w-5" />
                         </div>
-                        <Badge className="rounded-full bg-primary/15 text-primary border-primary/30 text-sm md:text-xs px-3 py-2 md:px-2 md:py-1">Risk controlled</Badge>
+                        <Badge className="rounded-full bg-primary/15 text-primary border-primary/30 text-xs px-2 py-1">Paper trade</Badge>
                       </div>
-                      <p className="text-xs md:text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">Auto Trader</p>
-                      <p className="mt-3 text-3xl md:text-3xl font-semibold tracking-tight">25-stock random basket</p>
-                      <p className="mt-3 text-sm text-muted-foreground">Run automated paper-trading rounds from live buy and sell signals to test the idea before you trade it yourself.</p>
+                      <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">Simulator</p>
+                      <p className="mt-2 text-2xl font-semibold tracking-tight">$10k virtual capital</p>
+                      <p className="mt-2 text-sm text-muted-foreground">Test before real money.</p>
                     </button>
-                  </div>
-
-                  <div className="premium-card p-5">
-                    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                      <div>
-                        <p className="text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">What premium feels like</p>
-                        <p className="mt-2 text-xl font-semibold">A cleaner, calmer dashboard designed to support real decision-making.</p>
-                      </div>
-                      <div className="grid grid-cols-2 gap-3 text-sm md:w-[18rem]">
-                        <div className="rounded-2xl border border-border/70 bg-background/40 p-3">
-                          <p className="text-muted-foreground">Auto-trade engine</p>
-                          <p className="mt-1 font-semibold">Signal-driven</p>
-                        </div>
-                        <div className="rounded-2xl border border-border/70 bg-background/40 p-3">
-                          <p className="text-muted-foreground">Paper validation</p>
-                          <p className="mt-1 font-semibold">Before real capital</p>
-                        </div>
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -346,7 +343,7 @@ export default function Home() {
                 <div className="text-center space-y-4 max-w-2xl mx-auto">
                   <h2 className="text-3xl font-bold">Built by Traders. For Traders.</h2>
                   <p className="text-muted-foreground">
-                    Stock Predictor was created to solve a real problem: traders were spending 2-3 hours daily analyzing charts, only to miss the best setups. We automated the analysis. You keep the control.
+                    Vortextrade was created to solve a real problem: traders were spending 2-3 hours daily analyzing charts, only to miss the best setups. We automated the analysis. You keep the control.
                   </p>
                 </div>
 
@@ -383,7 +380,7 @@ export default function Home() {
           <div className="container">
             <div className="space-y-8">
               <div className="text-center space-y-2">
-                <h2 className="text-3xl font-bold">Traders Love Stock Predictor</h2>
+                <h2 className="text-3xl font-bold">Traders Love Vortextrade</h2>
               </div>
 
               <div className="grid gap-6 md:grid-cols-3">
@@ -495,15 +492,38 @@ export default function Home() {
             </div>
 
             <div className="grid gap-5 lg:grid-cols-3">
-              {featureCards.map((feature) => {
+              {featureCards.map((feature, index) => {
                 const Icon = feature.icon;
+                const isSignalEngine = index === 0;
                 return (
-                  <article key={feature.title} className="feature-card min-h-72">
-                    <div className="mb-10 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/14 text-primary">
+                  <article
+                    key={feature.title}
+                    className={`feature-card min-h-72 ${
+                      isSignalEngine
+                        ? "border-primary/50 bg-gradient-to-br from-primary/8 via-background to-accent/5 shadow-lg shadow-primary/10 relative overflow-hidden"
+                        : ""
+                    }`}
+                  >
+                    {isSignalEngine && (
+                      <div className="absolute top-4 right-4">
+                        <Badge className="rounded-full bg-primary/20 text-primary border-primary/30 text-[10px] uppercase tracking-wider px-2 py-0.5">Flagship</Badge>
+                      </div>
+                    )}
+                    <div className={`mb-10 flex h-14 w-14 items-center justify-center rounded-2xl text-primary ${
+                      isSignalEngine ? "bg-primary/20" : "bg-primary/14"
+                    }`}>
                       <Icon className="h-7 w-7" />
                     </div>
                     <h3 className="text-2xl font-semibold text-foreground">{feature.title}</h3>
                     <p className="mt-4 text-base text-muted-foreground">{feature.description}</p>
+                    {isSignalEngine && (
+                      <button
+                        onClick={() => setLocation("/simulator")}
+                        className="mt-6 flex items-center gap-1 text-sm font-semibold text-primary hover:underline"
+                      >
+                        Try the Signal Engine <ChevronRight className="h-4 w-4" />
+                      </button>
+                    )}
                   </article>
                 );
               })}
@@ -521,7 +541,7 @@ export default function Home() {
               </div>
               <h2>A smoother way to move from ideas to action.</h2>
               <p className="lead-copy">
-                Stock Predictor is designed to help you know what to look at first, what deserves closer attention, and what to review before you place a trade.
+                Vortextrade is designed to help you know what to look at first, what deserves closer attention, and what to review before you place a trade.
               </p>
             </div>
 
@@ -553,51 +573,33 @@ export default function Home() {
             <div className="space-y-4">
               <div className="eyebrow">
                 <Star className="h-4 w-4 text-primary" />
-                Product walkthrough
+                Platform tour
               </div>
-              <h2>See how the platform helps you make better trading decisions.</h2>
+              <h2>See every feature in action — live, right here.</h2>
               <p className="lead-copy">
-                This quick walkthrough shows how Stock Predictor helps you move from tracking stocks, to spotting opportunities, to checking your ideas before you act.
+                Explore the Signal Engine, live signals, paper-trading simulator, and alert system. Click any tab to jump to a feature.
               </p>
               <div className="premium-card p-5">
-                <p className="text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">What you will see in under two minutes</p>
+                <p className="text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">What you can explore</p>
                 <div className="mt-4 space-y-4 text-sm text-muted-foreground">
                   {[
-                    "How your watchlist keeps the stocks you care about organised in one place.",
-                    "How buy and sell signals help you spot the opportunities worth reviewing first.",
-                    "How stock pages and alerts give you more context before you act.",
-                    "How the simulator and validation tools help you test ideas with more confidence.",
+                    { label: "Signal Engine", desc: "Auto-trade a basket of stocks for 1, 3, or 7 days." },
+                    { label: "Live Signals", desc: "AI-ranked buy and sell setups updated daily." },
+                    { label: "Simulator", desc: "Paper-trade with £10,000 virtual capital, risk-free." },
+                    { label: "Alerts", desc: "Get notified the moment a signal triggers on your watchlist." },
                   ].map((item, index) => (
-                    <div key={item} className="flex items-start gap-3">
+                    <div key={item.label} className="flex items-start gap-3">
                       <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-semibold text-primary">
                         {index + 1}
                       </div>
-                      <p>{item}</p>
+                      <p><span className="font-semibold text-foreground">{item.label}</span> — {item.desc}</p>
                     </div>
                   ))}
                 </div>
               </div>
             </div>
 
-            <div className="premium-card overflow-hidden p-3 md:p-4">
-              <div className="overflow-hidden rounded-[1.4rem] border border-border/70 bg-black">
-                <div className="aspect-video w-full">
-                  <video
-                    width="100%"
-                    height="100%"
-                    controls
-                    preload="metadata"
-                    className="h-full w-full object-cover"
-                    poster="https://images.unsplash.com/photo-1642790106117-e829e14a795f?auto=format&fit=crop&w=1200&q=80"
-                    controlsList="nodownload"
-                    playsInline
-                  >
-                    <source src="https://d2xsxph8kpxj0f.cloudfront.net/310519663483836922/knJ3QkdJFvivzkyeUv8kpq/stock_predictor_walkthrough_d76d0fcd.mp4" type="video/mp4" />
-                    Your browser does not support the video tag.
-                  </video>
-                </div>
-              </div>
-            </div>
+            <FeatureShowcase />
           </div>
         </section>
 
@@ -607,7 +609,7 @@ export default function Home() {
             <div className="space-y-8">
               <div className="text-center space-y-2">
                 <h2 className="text-3xl font-bold">Common Questions</h2>
-                <p className="text-muted-foreground">Everything you need to know about Stock Predictor</p>
+                <p className="text-muted-foreground">Everything you need to know about Vortextrade</p>
               </div>
 
               <div className="space-y-3">
@@ -721,7 +723,7 @@ export default function Home() {
                 <div className="space-y-3">
                   <h3 className="font-semibold text-foreground">Risk Disclosure</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    Trading stocks involves significant risk of loss. Past performance does not guarantee future results. Stock Predictor signals are designed as decision support tools, not as investment advice or recommendations. You are responsible for all trading decisions and outcomes.
+                    Trading stocks involves significant risk of loss. Past performance does not guarantee future results. Vortextrade signals are designed as decision support tools, not as investment advice or recommendations. You are responsible for all trading decisions and outcomes.
                   </p>
                 </div>
 
@@ -772,6 +774,15 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        {/* REGULATORY DISCLAIMER BAR */}
+        <footer className="bg-muted/60 border-t border-border">
+          <div className="container max-w-5xl py-6">
+            <p className="text-xs text-muted-foreground leading-relaxed text-center">
+              <strong className="text-foreground">Regulatory Disclaimer:</strong> Vortextrade is not authorised or regulated by the Financial Conduct Authority (FCA) or any other financial regulatory body. The information, signals, and tools provided on this platform are for <strong className="text-foreground">educational and informational purposes only</strong> and do not constitute financial advice, investment advice, or a personal recommendation to buy or sell any security. Past performance is not a reliable indicator of future results. The value of investments can go down as well as up, and you may get back less than you invest. Always do your own research and seek independent financial advice from a qualified, FCA-authorised adviser before making any investment decision. Vortextrade accepts no liability for any financial loss arising from use of this platform.
+            </p>
+          </div>
+        </footer>
       </main>
     </div>
   );

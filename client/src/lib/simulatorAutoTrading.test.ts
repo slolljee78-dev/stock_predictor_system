@@ -5,7 +5,7 @@ import { createEmptyPortfolio } from "./tradingSimulatorState";
 
 describe("applyAutoExecutedTrades", () => {
   it("adds a new position and trade when the auto trader opens a buy position", () => {
-    const portfolio = createEmptyPortfolio(1, "Auto Trader", 10_000);
+    const portfolio = createEmptyPortfolio(1, "Signal Engine", 10_000);
     const trades: AutoExecutedTrade[] = [
       {
         ticker: "AAPL",
@@ -29,7 +29,7 @@ describe("applyAutoExecutedTrades", () => {
 
   it("closes an existing position and credits cash when the auto trader sells", () => {
     const portfolio = {
-      ...createEmptyPortfolio(1, "Auto Trader", 10_000),
+      ...createEmptyPortfolio(1, "Signal Engine", 10_000),
       cash: 8_000,
       currentValue: 10_300,
       totalReturn: 300,

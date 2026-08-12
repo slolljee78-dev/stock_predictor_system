@@ -5,134 +5,78 @@
     {
       "idx": 0,
       "version": "5",
-      "when": 1775935073038,
-      "tag": "0000_breezy_morph",
+      "when": 1779650276781,
+      "tag": "0000_puzzling_sentinels",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "5",
-      "when": 1775935289634,
-      "tag": "0001_normal_scourge",
+      "when": 1779650879386,
+      "tag": "0001_shallow_forgotten_one",
       "breakpoints": true
     },
     {
       "idx": 2,
       "version": "5",
-      "when": 1775989404269,
-      "tag": "0002_glamorous_shiva",
+      "when": 1779816907776,
+      "tag": "0002_awesome_tarot",
       "breakpoints": true
     },
     {
       "idx": 3,
       "version": "5",
-      "when": 1776006608972,
-      "tag": "0003_normal_may_parker",
+      "when": 1779817038329,
+      "tag": "0003_aromatic_marten_broadcloak",
       "breakpoints": true
     },
     {
       "idx": 4,
       "version": "5",
-      "when": 1776014403990,
-      "tag": "0004_bent_nightmare",
+      "when": 1781958129669,
+      "tag": "0004_nostalgic_lorna_dane",
       "breakpoints": true
     },
     {
       "idx": 5,
       "version": "5",
-      "when": 1776014489811,
-      "tag": "0005_public_tomorrow_man",
+      "when": 1782475252609,
+      "tag": "0005_harsh_yellow_claw",
       "breakpoints": true
     },
     {
       "idx": 6,
       "version": "5",
-      "when": 1776107841594,
-      "tag": "0006_spooky_ravenous",
+      "when": 1782925633955,
+      "tag": "0006_goofy_dragon_man",
       "breakpoints": true
     },
     {
       "idx": 7,
       "version": "5",
-      "when": 1776124511749,
-      "tag": "0007_overconfident_loners",
+      "when": 1782925675794,
+      "tag": "0007_clever_hercules",
       "breakpoints": true
     },
     {
       "idx": 8,
       "version": "5",
-      "when": 1776161170173,
-      "tag": "0008_careful_changeling",
+      "when": 1782929337210,
+      "tag": "0008_naive_human_cannonball",
       "breakpoints": true
     },
     {
       "idx": 9,
       "version": "5",
-      "when": 1776161905170,
-      "tag": "0009_breezy_earthquake",
+      "when": 1782931677203,
+      "tag": "0009_smooth_starbolt",
       "breakpoints": true
     },
     {
       "idx": 10,
       "version": "5",
-      "when": 1776176980239,
-      "tag": "0010_regular_quicksilver",
-      "breakpoints": true
-    },
-    {
-      "idx": 11,
-      "version": "5",
-      "when": 1776187363464,
-      "tag": "0011_boring_daimon_hellstrom",
-      "breakpoints": true
-    },
-    {
-      "idx": 12,
-      "version": "5",
-      "when": 1776201085786,
-      "tag": "0012_clear_silver_centurion",
-      "breakpoints": true
-    },
-    {
-      "idx": 13,
-      "version": "5",
-      "when": 1776277157379,
-      "tag": "0013_colorful_maverick",
-      "breakpoints": true
-    },
-    {
-      "idx": 14,
-      "version": "5",
-      "when": 1776382135597,
-      "tag": "0014_exotic_genesis",
-      "breakpoints": true
-    },
-    {
-      "idx": 15,
-      "version": "5",
-      "when": 1776462264604,
-      "tag": "0015_youthful_master_mold",
-      "breakpoints": true
-    },
-    {
-      "idx": 16,
-      "version": "5",
-      "when": 1776463448983,
-      "tag": "0016_purple_betty_brant",
-      "breakpoints": true
-    },
-    {
-      "idx": 17,
-      "version": "5",
-      "when": 1776584395045,
-      "tag": "0017_elite_lilandra",
-      "breakpoints": true
-    },
-    {
-      "idx": 18,
-      "version": "5",
-      "when": 1778194995544,
-      "tag": "0018_silly_swarm",
+      "when": 1782931980078,
+      "tag": "0010_tired_sandman",
       "breakpoints": true
     }
   ]

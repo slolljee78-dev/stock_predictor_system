@@ -360,23 +360,25 @@ export function calculateIndicators(priceData: PriceData[]): TechnicalIndicators
  */
 export async function fetchMarketDataWithIndicators(ticker: string): Promise<MarketDataPoint | null> {
   try {
-    // Fetch current price and daily data
-    const [currentPrice, dailyData] = await Promise.all([
-      fetchCurrentPrice(ticker),
-      fetchDailyData(ticker, 100),
-    ]);
+    // One daily-series request provides the most recent close and all indicator
+    // inputs. Avoiding a parallel GLOBAL_QUOTE request is essential on the free
+    // Alpha Vantage plan: two simultaneous requests can cause the whole batch to
+    // be rate-limited before the Signal Engine has evaluated its universe.
+    const dailyData = await fetchDailyData(ticker, 100);
 
-    if (!currentPrice || dailyData.length === 0) {
+    if (dailyData.length === 0) {
       return null;
     }
 
-    // Calculate indicators
-    const indicators = calculateIndicators(dailyData);
+    const currentPrice = dailyData[dailyData.length - 1];
+    if (!currentPrice || currentPrice.close <= 0) {
+      return null;
+    }
 
-    // Calculate change
+    const indicators = calculateIndicators(dailyData);
     const previousClose = dailyData[dailyData.length - 2]?.close || currentPrice.close;
     const change = currentPrice.close - previousClose;
-    const changePercent = (change / previousClose) * 100;
+    const changePercent = previousClose > 0 ? (change / previousClose) * 100 : 0;
 
     return {
       ticker,
@@ -400,6 +402,9 @@ export async function fetchMultipleMarketData(
 ): Promise<Map<string, MarketDataPoint>> {
   const results = new Map<string, MarketDataPoint>();
 
+  // This is deliberately sequential. fetchDailyData spaces requests to respect
+  // Alpha Vantage's free-plan burst limit, and a 14-stock scheduled scan now
+  // consumes 14 calls rather than 28.
   for (const ticker of tickers) {
     const data = await fetchMarketDataWithIndicators(ticker);
     if (data) {

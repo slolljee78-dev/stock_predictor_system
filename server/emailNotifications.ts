@@ -110,7 +110,7 @@ export function createBuySignalEmail(
         </div>
 
         <p style="margin-top: 20px; font-size: 12px; color: #666; text-align: center;">
-          This is an automated alert from Stock Predictor. Please do not reply to this email.
+          This is an automated alert from Vortextrade. Please do not reply to this email.
         </p>
       </div>
     </div>
@@ -130,7 +130,7 @@ Recommendation: Consider this high-confidence buy signal. Review the technical i
 
 View Dashboard: https://stock-predictor.manus.space/dashboard
 
-This is an automated alert from Stock Predictor.
+This is an automated alert from Vortextrade.
   `;
 
   return {
@@ -195,7 +195,7 @@ export function createSellSignalEmail(
         </div>
 
         <p style="margin-top: 20px; font-size: 12px; color: #666; text-align: center;">
-          This is an automated alert from Stock Predictor. Please do not reply to this email.
+          This is an automated alert from Vortextrade. Please do not reply to this email.
         </p>
       </div>
     </div>
@@ -215,7 +215,7 @@ Recommendation: Consider this high-confidence sell signal. Review the technical 
 
 View Dashboard: https://stock-predictor.manus.space/dashboard
 
-This is an automated alert from Stock Predictor.
+This is an automated alert from Vortextrade.
   `;
 
   return {
@@ -280,7 +280,7 @@ export function createSentimentUpdateEmail(
         </div>
 
         <p style="margin-top: 20px; font-size: 12px; color: #666; text-align: center;">
-          This is an automated alert from Stock Predictor. Please do not reply to this email.
+          This is an automated alert from Vortextrade. Please do not reply to this email.
         </p>
       </div>
     </div>
@@ -295,7 +295,7 @@ Articles Analyzed: ${articleCount}
 
 View Sentiment Analysis: https://stock-predictor.manus.space/dashboard
 
-This is an automated alert from Stock Predictor.
+This is an automated alert from Vortextrade.
   `;
 
   return {

@@ -7,9 +7,7 @@ import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
-import { startBackgroundJobs } from "../backgroundJobs";
 import stripeCheckoutRouter from "../stripeCheckout";
-import { initializeAlertMonitoring, shutdownAlertMonitoring } from "../alertMonitoringService";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -41,6 +39,82 @@ async function startServer() {
   // Stripe checkout endpoint
   app.use("/api/stripe", stripeCheckoutRouter);
 
+  // Onboarding email sequence processor (runs hourly via Heartbeat)
+  app.post("/api/scheduled/onboarding-emails", async (req, res) => {
+    try {
+      const { processOnboardingQueue } = await import("../onboardingEmailService");
+      const origin = req.headers.origin || `${req.protocol}://${req.get("host")}`;
+      const result = await processOnboardingQueue(origin);
+      res.json({ success: true, ...result });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to process onboarding emails";
+      res.status(500).json({ success: false, error: message });
+    }
+  });
+
+  // Onboarding unsubscribe link handler
+  app.get("/api/onboarding/unsubscribe", async (req, res) => {
+    try {
+      const uid = parseInt(String(req.query.uid), 10);
+      if (!uid) { res.status(400).send("Invalid unsubscribe link."); return; }
+      const { unsubscribeFromOnboarding } = await import("../onboardingEmailService");
+      await unsubscribeFromOnboarding(uid, "");
+      res.send("<html><body style='font-family:sans-serif;text-align:center;padding:4rem'><h2>You've been unsubscribed</h2><p>You won't receive any more onboarding emails from Vortextrade.</p><a href='/'>Back to Vortextrade</a></body></html>");
+    } catch (error) {
+      res.status(500).send("Failed to unsubscribe. Please contact support.");
+    }
+  });
+
+  // Weekly digest processor (runs every Monday 08:00 UTC via Heartbeat)
+  app.post("/api/scheduled/weekly-digest", async (req, res) => {
+    try {
+      const { processWeeklyDigest } = await import("../weeklyDigestService");
+      const origin = req.headers.origin || `${req.protocol}://${req.get("host")}`;
+      const result = await processWeeklyDigest(origin);
+      res.json({ success: true, ...result });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to process weekly digest";
+      res.status(500).json({ success: false, error: message });
+    }
+  });
+
+  // Weekly digest unsubscribe
+  app.get("/api/digest/unsubscribe", async (req, res) => {
+    res.send("<html><body style='font-family:sans-serif;text-align:center;padding:4rem'><h2>Unsubscribed from weekly digest</h2><p>You won't receive weekly digest emails from Vortextrade.</p><a href='/'>Back to Vortextrade</a></body></html>");
+  });
+
+  // Signal monitoring (runs every 2 hours via Heartbeat)
+  app.post("/api/scheduled/signal-monitoring", async (_req, res) => {
+    try {
+      const { runSignalMonitoring } = await import("../signalMonitoringJob");
+      const config = {
+        interval: 0,
+        confidenceThreshold: 25,
+        maxStocksPerRun: 10,
+        notifyOnSignal: true,
+        updateSentiment: true,
+      };
+      await runSignalMonitoring(config);
+      res.json({ success: true, message: "Signal monitoring cycle completed" });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to run signal monitoring";
+      res.status(500).json({ success: false, error: message });
+    }
+  });
+
+  // Alert monitoring (runs every 10 minutes via Heartbeat)
+  app.post("/api/scheduled/alert-monitoring", async (_req, res) => {
+    try {
+      const { runAlertMonitoringOnce } = await import("../alertMonitoringService");
+      const result = await runAlertMonitoringOnce();
+      res.json({ success: true, ...result });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to run alert monitoring";
+      res.status(500).json({ success: false, error: message });
+    }
+  });
+
+  // Simulator auto-trading (runs on schedule via Heartbeat)
   app.post("/api/scheduled/simulator-auto-trading", async (_req, res) => {
     try {
       const { processScheduledSimulatorRuns } = await import("../scheduledSimulatorRuns");
@@ -52,15 +126,9 @@ async function startServer() {
     }
   });
 
-  app.post("/api/scheduled/process-weekly-reports", async (_req, res) => {
-    try {
-      const { processWeeklyReports } = await import("../weeklyReportProcessor");
-      await processWeeklyReports();
-      res.json({ success: true, message: "Weekly reports processed" });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to process weekly reports";
-      res.status(500).json({ success: false, error: message });
-    }
+  // Version probe - to verify deployment is running latest code
+  app.get("/api/version", (_req, res) => {
+    res.json({ version: "03f84c6e", brand: "Vortextrade", deployedAt: "2026-07-31", buildTime: new Date().toISOString() });
   });
 
   // tRPC API
@@ -88,11 +156,9 @@ async function startServer() {
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
     
-    // Start background jobs (both development and production)
-    startBackgroundJobs();
-    
-    // Initialize alert monitoring service
-    initializeAlertMonitoring();
+    // Background jobs and alert monitoring are now handled by Heartbeat cron endpoints
+    // (/api/scheduled/signal-monitoring every 2h, /api/scheduled/alert-monitoring every 10m)
+    // This allows the server to genuinely spin down to zero on Autoscale hosting.
   });
 }
 
@@ -101,12 +167,10 @@ startServer().catch(console.error);
 // Handle graceful shutdown
 process.on('SIGTERM', () => {
   console.log('[Server] SIGTERM received, shutting down gracefully...');
-  shutdownAlertMonitoring();
   process.exit(0);
 });
 
 process.on('SIGINT', () => {
   console.log('[Server] SIGINT received, shutting down gracefully...');
-  shutdownAlertMonitoring();
   process.exit(0);
 });

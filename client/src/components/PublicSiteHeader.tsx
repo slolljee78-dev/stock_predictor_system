@@ -21,19 +21,26 @@ export function PublicSiteHeader({ currentPath }: PublicSiteHeaderProps) {
   const [, setLocation] = useLocation();
   const audienceState = getPublicAudienceState(isAuthenticated);
   const primaryAction = getPublicPrimaryAction(audienceState, "header");
+  const isHomePage = currentPath === "/";
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border/70 bg-background/70 backdrop-blur-xl">
-      <div className="container flex max-w-full items-center justify-between gap-2 px-4 py-4 md:px-6">
+    <header className={isHomePage
+      ? "absolute inset-x-0 top-0 z-50 border-b border-transparent bg-transparent md:sticky md:border-border/70 md:bg-background/70 md:backdrop-blur-xl"
+      : "sticky top-0 z-50 border-b border-border/70 bg-background/70 backdrop-blur-xl"}
+    >
+      <div className="container flex max-w-full items-center justify-between gap-2 px-4 py-3 md:px-6 md:py-4">
         <button
-          onClick={() => setLocation("/")}
+          type="button"
+          onClick={() => setLocation(isAuthenticated ? "/dashboard" : "/")}
+          aria-label={isAuthenticated ? "Open Vortextrade dashboard" : "Go to Vortextrade homepage"}
+          title={isAuthenticated ? "Open dashboard" : "Vortextrade homepage"}
           className="flex min-w-0 flex-1 items-center gap-3 text-left transition-opacity hover:opacity-80"
         >
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-primary">
             <LineChart className="h-6 w-6" />
           </div>
           <div className="hidden min-w-0 sm:block">
-            <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-primary/90">Stock Predictor</p>
+            <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-primary/90">Vortextrade</p>
             <p className="truncate text-sm text-muted-foreground">Premium AI signals for Trading 212</p>
           </div>
         </button>

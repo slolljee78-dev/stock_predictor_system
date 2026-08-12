@@ -24,12 +24,13 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getLoginUrl } from "@/const";
-import { useIsMobile } from "@/hooks/useMobile";
 import {
   ArrowUpRight,
   BarChart3,
   BellRing,
+  Bot,
   CreditCard,
+  Gift,
   LayoutDashboard,
   LogOut,
   ShieldCheck,
@@ -62,10 +63,10 @@ const menuItems = [
     description: "Real-time trading signals and technical analysis",
   },
   {
-    icon: BarChart3,
-    label: "Simulator",
+    icon: Bot,
+    label: "Signal Engine",
     path: "/simulator",
-    description: "Practice trades and review performance",
+    description: "Run timed auto-trading and review paper-trade results",
   },
   {
     icon: CreditCard,
@@ -96,6 +97,12 @@ const menuItems = [
     label: "Notifications",
     path: "/alerts",
     description: "View signal alerts history and delivery status",
+  },
+  {
+    icon: Gift,
+    label: "Refer a Friend",
+    path: "/referral",
+    description: "Earn free subscription days for referrals",
   },
 ];
 
@@ -162,8 +169,7 @@ export default function DashboardLayout({
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
   const [location, setLocation] = useLocation();
-  const isMobile = useIsMobile();
-  const { setOpenMobile } = useSidebar();
+  const { isMobile, setOpenMobile } = useSidebar();
   const { data: alertStats } = trpc.alerts.getAlertStats.useQuery(undefined, {
     enabled: !!user,
     refetchInterval: 30000, // Refetch every 30 seconds
@@ -203,11 +209,11 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
           <div className="dashboard-frame h-full overflow-hidden">
             <SidebarHeader className="border-b border-border/70 px-4 py-3">
               <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/25" title="Stock Predictor Logo">
-                  <TrendingUp className="h-5 w-5" aria-label="Stock Predictor" />
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/25" title="Vortextrade Logo">
+                  <TrendingUp className="h-5 w-5" aria-label="Vortextrade" />
                 </div>
                 <div className="min-w-0 group-data-[collapsible=icon]:hidden">
-                  <p className="text-xs font-bold uppercase tracking-[0.22em] text-primary/85">Stock Predictor</p>
+                  <p className="text-xs font-bold uppercase tracking-[0.22em] text-primary/85">Vortextrade</p>
                   <p className="truncate text-sm text-muted-foreground">AI signals for Trading 212</p>
                 </div>
               </div>
@@ -234,7 +240,12 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                             <SidebarMenuButton
                               isActive={isActive}
                               tooltip={item.label}
-                              onClick={() => setLocation(item.path)}
+                              onClick={() => {
+                                setLocation(item.path);
+                                if (isMobile) {
+                                  setOpenMobile(false);
+                                }
+                              }}
                               className="h-auto min-h-[72px] items-start rounded-2xl px-3 py-3 md:min-h-auto md:py-3 data-[active=true]:bg-primary data-[active=true]:text-primary-foreground data-[active=true]:shadow-lg data-[active=true]:shadow-primary/20 hover:bg-secondary/80"
                             >
                               <item.icon className="h-5 w-5 md:h-4 md:w-4 shrink-0" aria-label={item.label} />
@@ -270,6 +281,20 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
             </SidebarContent>
 
             <SidebarFooter className="border-t border-border/70 px-3 py-3">
+              {/* Referral banner */}
+              <div
+                className="mb-2 rounded-2xl border border-cyan-500/25 bg-cyan-500/8 px-3 py-2.5 cursor-pointer hover:border-cyan-500/40 transition-colors group-data-[collapsible=icon]:hidden"
+                onClick={() => setLocation("/referral")}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === "Enter" && setLocation("/referral")}
+              >
+                <div className="flex items-center gap-2 mb-0.5">
+                  <Gift className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
+                  <p className="text-xs font-bold text-cyan-400">Give 1 month, get 1 month</p>
+                </div>
+                <p className="text-[11px] text-slate-400 leading-snug">Refer a friend — you both get 30 days free when they upgrade.</p>
+              </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="flex w-full items-center gap-3 rounded-2xl border border-border/70 bg-background/40 px-3 py-3 text-left transition hover:bg-secondary/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="User menu">
@@ -297,7 +322,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
       </Sidebar>
 
       <SidebarInset className="bg-transparent">
-        <div className="relative z-40 -mt-16 px-2 pt-0 md:sticky md:top-0 md:mt-0 md:px-4 md:pt-0 bg-background/92 backdrop-blur-xl border-b border-border/40">
+        <div className="sticky top-0 z-40 px-2 pt-0 md:px-4 md:pt-0 bg-background/92 backdrop-blur-xl border-b border-border/40" style={{marginTop: 0}}>
           <div className="dashboard-frame flex min-h-[58px] items-center justify-between gap-2 px-2.5 py-1.5 md:min-h-14 md:px-6 md:py-2">
             <div className="flex min-w-0 items-center gap-2.5">
               <div className="flex items-center gap-2 rounded-[1.2rem] border border-primary/30 bg-[linear-gradient(135deg,rgba(36,99,235,0.16),rgba(14,165,233,0.08))] px-2 py-1.5 shadow-[0_12px_28px_rgba(37,99,235,0.16)] backdrop-blur md:px-2.5 md:py-2">

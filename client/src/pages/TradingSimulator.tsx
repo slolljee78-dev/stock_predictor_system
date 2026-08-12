@@ -144,6 +144,18 @@ export default function TradingSimulator() {
   }, [simulatorState]);
 
   useEffect(() => {
+    if (typeof window === "undefined" || window.location.hash !== "#signal-engine") {
+      return;
+    }
+
+    const frame = window.requestAnimationFrame(() => {
+      document.getElementById("signal-engine")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
+
+  useEffect(() => {
     if (!livePriceData || hasManualPriceOverride) {
       return;
     }
@@ -444,7 +456,7 @@ export default function TradingSimulator() {
           <div className="space-y-3">
             <h1 className="text-4xl font-bold gradient-text">Trading Simulator</h1>
                 <p className="text-muted-foreground max-w-2xl">
-                  Practice trades with live market prices when they are available, or let the built-in auto-trader scan broader stock baskets and execute signal-driven paper trades before you commit real money.
+                  Practice trades with live market prices when they are available, or let the built-in signal engine scan broader stock baskets and execute signal-driven paper trades before you commit real money.
                 </p>
                 {showAdminViewModeToggle ? (
                   <div className="max-w-3xl pt-2">
@@ -475,14 +487,14 @@ export default function TradingSimulator() {
               </p>
               {!autoTradingEnabled && (
                 <div className="rounded-2xl border border-primary/25 bg-primary/10 px-4 py-3">
-                  <p className="text-sm font-medium text-foreground">Free accounts can keep using manual paper trading, but auto trading unlocks after upgrading to a paid plan.</p>
+                  <p className="text-sm font-medium text-foreground">Free accounts can keep using manual paper trading, but the Signal Engine unlocks after upgrading to a paid plan.</p>
                 </div>
               )}
             </div>
             <div className="grid gap-3 sm:grid-cols-3 md:grid-cols-1">
               <div className="rounded-2xl border border-border/70 bg-background/40 p-4">
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">Broader universe</p>
-                <p className="mt-2 text-lg font-semibold">25 stocks per auto-trade pool</p>
+                <p className="mt-2 text-lg font-semibold">25 stocks per Signal Engine pool</p>
               </div>
               <div className="rounded-2xl border border-border/70 bg-background/40 p-4">
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">Signal driven</p>
@@ -494,7 +506,7 @@ export default function TradingSimulator() {
               </div>
               {!autoTradingEnabled && (
                 <Button type="button" onClick={() => setLocation("/pricing")} className="pill-button pill-button-primary h-11 px-5 md:self-start">
-                  Unlock paid auto trading
+                  Unlock Signal Engine
                 </Button>
               )}
             </div>
@@ -601,7 +613,7 @@ export default function TradingSimulator() {
 
         <Card className="premium-card border-0 bg-transparent shadow-none">
           <CardHeader>
-            <CardTitle className="text-xl font-semibold tracking-tight">Auto-trade performance summary</CardTitle>
+            <CardTitle className="text-xl font-semibold tracking-tight">Signal Engine performance summary</CardTitle>
             <CardDescription>
               Review how manual and automated trades are contributing to realised outcomes, open exposure, and holding discipline.
             </CardDescription>
@@ -636,6 +648,14 @@ export default function TradingSimulator() {
         </Card>
 
         <div className="grid gap-6 lg:grid-cols-3">
+          <SimulatorAutoTrader
+            portfolio={selectedPortfolio}
+            accessUser={effectiveUser}
+            onApplyTrades={(executedTrades, summaryMessage) => {
+              void handleAutoTradesApplied(executedTrades, summaryMessage);
+            }}
+          />
+
           <Card className="premium-card border-0 bg-transparent shadow-none lg:col-span-2">
             <CardHeader>
               <CardTitle className="text-xl font-semibold tracking-tight flex items-center gap-2">Execute Trade <HelpTooltip content={HELP_CONTENT.paperTrading.content} /></CardTitle>
@@ -726,14 +746,6 @@ export default function TradingSimulator() {
               )}
             </CardContent>
           </Card>
-
-          <SimulatorAutoTrader
-            portfolio={selectedPortfolio}
-            accessUser={effectiveUser}
-            onApplyTrades={(executedTrades, summaryMessage) => {
-              void handleAutoTradesApplied(executedTrades, summaryMessage);
-            }}
-          />
 
           <Card className="premium-card border-0 bg-transparent shadow-none">
             <CardHeader>

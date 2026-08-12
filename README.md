@@ -1,4 +1,4 @@
-# Stock Predictor - Premium Trading Intelligence Platform
+# Vortextrade - Premium Trading Intelligence Platform
 
 A sophisticated, AI-powered stock analysis and trading simulator platform designed for Trading 212 users. Combines advanced technical analysis, machine learning-generated signals, and risk-free paper trading in an elegant, mobile-first interface.
 

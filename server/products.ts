@@ -1,5 +1,5 @@
 /**
- * Subscription products for Manus Stock Predictor
+ * Subscription products for Vortextrade
  * Define all products and prices here for centralized management
  */
 

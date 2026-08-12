@@ -1,9 +1,9 @@
 export interface StoredSignalWithPreferences {
-  type: "buy" | "sell";
+  type: "buy" | "sell" | "hold";
   confidenceScore: number;
-  minConfidenceThreshold?: number;
-  alertOnBuy?: number | boolean;
-  alertOnSell?: number | boolean;
+  minConfidenceThreshold?: number | null;
+  alertOnBuy?: number | boolean | null;
+  alertOnSell?: number | boolean | null;
 }
 
 export const DEFAULT_STORED_SIGNAL_CONFIDENCE_THRESHOLD = 25;

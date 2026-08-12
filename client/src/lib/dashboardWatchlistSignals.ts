@@ -1,6 +1,11 @@
 type StoredSignal = {
   ticker: string;
-  type: "buy" | "sell";
+  type: "buy" | "sell" | "hold";
+  signalId?: number;
+  stockId?: number;
+  confidenceScore?: number;
+  priceAtSignal?: string | null;
+  createdAt?: string | number | Date;
 };
 
 type LiveWatchlistStatus = {

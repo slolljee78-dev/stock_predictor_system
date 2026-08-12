@@ -47,7 +47,7 @@ export const alertPreferencesRouter = router({
         enableBuyAlerts: prefs[0].enableBuyAlerts === 1,
         enableSellAlerts: prefs[0].enableSellAlerts === 1,
         enableSentimentAlerts: prefs[0].enableSentimentAlerts === 1,
-        notificationChannels: JSON.parse(prefs[0].notificationChannels),
+        notificationChannels: JSON.parse(prefs[0].notificationChannels as string),
         enablePushNotifications: prefs[0].enablePushNotifications === 1,
       };
     }),
@@ -147,7 +147,7 @@ export const alertPreferencesRouter = router({
       enableBuyAlerts: p.enableBuyAlerts === 1,
       enableSellAlerts: p.enableSellAlerts === 1,
       enableSentimentAlerts: p.enableSentimentAlerts === 1,
-      notificationChannels: JSON.parse(p.notificationChannels),
+      notificationChannels: JSON.parse(p.notificationChannels as string),
       enablePushNotifications: p.enablePushNotifications === 1,
     }));
   }),

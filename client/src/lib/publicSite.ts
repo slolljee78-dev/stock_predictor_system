@@ -5,6 +5,7 @@ import {
   LayoutDashboard,
   LineChart,
   ShieldCheck,
+  TrendingUp,
   type LucideIcon,
 } from "lucide-react";
 
@@ -43,6 +44,11 @@ export const PUBLIC_HEADER_LINKS: PublicHeaderLink[] = [
     activePaths: ["/"],
   },
   {
+    label: "Signal Engine",
+    href: "/simulator",
+    activePaths: ["/simulator"],
+  },
+  {
     label: "How it works",
     href: "/#workflow",
     activePaths: ["/"],
@@ -61,6 +67,16 @@ export const PUBLIC_HEADER_LINKS: PublicHeaderLink[] = [
     label: "FAQ",
     href: "/faq",
     activePaths: ["/faq"],
+  },
+  {
+    label: "Live Signals",
+    href: "/signals/today",
+    activePaths: ["/signals/today", "/stocks/"],
+  },
+  {
+    label: "Free Tools",
+    href: "/tools/signal-calculator",
+    activePaths: ["/tools/"],
   },
 ];
 
@@ -115,6 +131,13 @@ export const PUBLIC_MOBILE_NAV_SECTIONS: PublicMobileNavSection[] = [
   {
     title: "Workspace",
     items: [
+      {
+        label: "Signal Engine (Auto Trade)",
+        href: "/simulator",
+        description: "Let the Signal Engine scan stocks, pick a basket, and auto-trade for 1, 3, or 7 days.",
+        icon: TrendingUp,
+        accent: "from-primary/30 to-accent/10",
+      },
       {
         label: "Dashboard",
         href: "/dashboard",
