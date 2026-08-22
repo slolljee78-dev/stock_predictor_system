@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <title>Vortextrade - AI Trading Signals for Trading 212 Stocks</title>
+    <meta name="description" content="Daily end-of-day signal review and paper-trading tools for Trading 212 stocks. Review technical-indicator context, test ideas, and make your own decisions." />
+    <meta name="keywords" content="vortextrade, Trading 212 stocks, technical analysis, daily signal review, paper trading, stock analysis" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Vortextrade" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text x='50' y='50' font-size='80' text-anchor='middle' dominant-baseline='central'>📈</text></svg>" />
+    
+    <!-- Performance Optimizations for Core Web Vitals -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="dns-prefetch" href="https://api.manus.im" />
+    
+    <!-- Google Search Console Verification -->
+    <meta name="google-site-verification" content="DUU5OD-SoaO-EUhNem9IXNYKKxsLnmx83vUGBzE4P-Y" />
+    
+    <!-- SEO Meta Tags -->
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <meta http-equiv="content-language" content="en-US" />
+    <link rel="canonical" href="https://vortextrade.manus.space/" />
+    
+    <!-- Open Graph Tags -->
+    <meta property="og:title" content="Vortextrade — AI Trading Signals for Trading 212" />
+    <meta property="og:description" content="Daily end-of-day signal review and paper-trading tools for Trading 212 stocks. Review technical context and test ideas before making your own decisions." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://vortextrade.manus.space/" />
+    <meta property="og:image" content="https://d2xsxph8kpxj0f.cloudfront.net/310519663483836922/2r4F6nSed624wbXgw8j4xA/og-image-8HVgGBU42tC95NQEgJtak7.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:site_name" content="Vortextrade" />
+    <meta property="og:locale" content="en_GB" />
+    
+    <!-- Twitter Card Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Vortextrade — AI Trading Signals for Trading 212" />
+    <meta name="twitter:description" content="Daily end-of-day signal review and paper-trading tools for Trading 212 stocks." />
+    <meta name="twitter:image" content="https://d2xsxph8kpxj0f.cloudfront.net/310519663483836922/2r4F6nSed624wbXgw8j4xA/og-image-8HVgGBU42tC95NQEgJtak7.png" />
+    
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-48R6XGD71G"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-48R6XGD71G');
+    </script>
+    
+    <!-- Schema.org Structured Data -->
+    <!-- Organization Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Vortextrade",
+      "url": "https://vortextrade.manus.space",
+      "description": "Daily signal-review and paper-trading tools for self-directed investors"
+    }
+    </script>
+    
+    <!-- WebApplication Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Vortextrade",
+      "description": "Daily signal-review and paper-trading tools using technical-indicator context",
+      "url": "https://vortextrade.manus.space",
+      "applicationCategory": "FinanceApplication",
+      "author": {
+        "@type": "Organization",
+        "name": "Vortextrade Team"
+      }
+    }
+    </script>
+    
+    
+    <script>
+      // Aggressive Vite client removal and error suppression
+      (function() {
+        // Store original console.error before anything else wraps it
+        const originalConsoleError = console.error;
+        
+        // Override console.error to suppress Vite WebSocket errors
+        console.error = function(...args) {
+          const errorStr = String(args[0] || '');
+          if (errorStr.includes('[vite]') && errorStr.includes('failed to connect to websocket')) {
+            return; // Silently ignore this specific error
+          }
+          return originalConsoleError.apply(this, args);
+        };
+        
+        // Remove any Vite client scripts that get injected
+        function removeViteClient() {
+          const scripts = document.querySelectorAll('script[src*="@vite/client"]');
+          scripts.forEach(script => {
+            script.remove();
+          });
+        }
+        
+        // Remove Vite client immediately
+        removeViteClient();
+        
+        // Watch for new scripts being added and remove Vite client
+        const observer = new MutationObserver(() => {
+          removeViteClient();
+        });
+        
+        observer.observe(document.documentElement, {
+          childList: true,
+          subtree: true,
+        });
+        
+        // Also prevent window.onerror from reporting these errors
+        window.addEventListener('error', (event) => {
+          if (event.message && event.message.includes('[vite]') && event.message.includes('websocket')) {
+            event.preventDefault();
+            event.stopPropagation();
+            event.stopImmediatePropagation();
+            return false;
+          }
+        }, true);
+        
+        // Prevent unhandledrejection events for Vite WebSocket errors
+        window.addEventListener('unhandledrejection', (event) => {
+          if (event.reason && String(event.reason).includes('[vite]') && String(event.reason).includes('websocket')) {
+            event.preventDefault();
+          }
+        }, true);
+      })();
+    </script>
+
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx" defer></script>
+    <script
+      defer
+      src="%VITE_ANALYTICS_ENDPOINT%/umami"
+      data-website-id="%VITE_ANALYTICS_WEBSITE_ID%"></script>
+  </body>
+
+</html>

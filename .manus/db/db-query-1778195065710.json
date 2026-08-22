@@ -1,0 +1,17 @@
+{
+  "query": "SELECT `minConfidenceThreshold`, COUNT(*) AS `watchlistCount`\nFROM `watchlists`\nGROUP BY `minConfidenceThreshold`\nORDER BY `minConfidenceThreshold`;\nSELECT `id`, `riskProfileId`, `minConfidence`, `status`, `totalRoundsCompleted`, `totalTradesExecuted`\nFROM `scheduled_simulator_runs`\nORDER BY `id`;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user irvuEERniB6Vw7s.bec5f3955eab --database knJ3QkdJFvivzkyeUv8kpq --execute SELECT `minConfidenceThreshold`, COUNT(*) AS `watchlistCount`\nFROM `watchlists`\nGROUP BY `minConfidenceThreshold`\nORDER BY `minConfidenceThreshold`;\nSELECT `id`, `riskProfileId`, `minConfidence`, `status`, `totalRoundsCompleted`, `totalTradesExecuted`\nFROM `scheduled_simulator_runs`\nORDER BY `id`;",
+  "rows": [
+    {
+      "minConfidenceThreshold": "25",
+      "watchlistCount": "7"
+    }
+  ],
+  "messages": [
+    "id\triskProfileId\tminConfidence\tstatus\ttotalRoundsCompleted\ttotalTradesExecuted",
+    "1\tbalanced\t30\tactive\t3\t0"
+  ],
+  "stdout": "minConfidenceThreshold\twatchlistCount\n25\t7\nid\triskProfileId\tminConfidence\tstatus\ttotalRoundsCompleted\ttotalTradesExecuted\n1\tbalanced\t30\tactive\t3\t0\n",
+  "stderr": "",
+  "execution_time_ms": 623
+}

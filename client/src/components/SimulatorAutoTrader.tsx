@@ -1,0 +1,826 @@
+import React, { useEffect, useMemo, useState } from "react";
+import { AlertTriangle, Bot, CheckCircle2, CloudOff, Pause, Play, RefreshCw, Shuffle, Sparkles, Lock } from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  canUseAutoTrading,
+  getAutoTradingUpgradeMessage,
+  type SubscriptionAwareUser,
+} from "@/lib/subscriptionAccess";
+import { getPreviewUsage, LOCKED_FEATURE_PLAN_ROWS } from "@/lib/upgradeConversion";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import type { AutoExecutedTrade } from "@/lib/simulatorAutoTrading";
+import { getRiskProfile, SIMULATOR_RISK_PROFILES, type SimulatorRiskProfileId } from "@/lib/simulatorInsights";
+import { trpc } from "@/lib/trpc";
+import type { SimulatorPortfolio } from "@/lib/tradingSimulatorState";
+import { getScheduledRunTimer } from "@/lib/scheduledRunTimer";
+import { useLocation } from "wouter";
+
+interface UniverseStock {
+  ticker: string;
+  name: string;
+  sector: string;
+  exchange: string;
+  type: string;
+}
+
+interface ActionableSignal {
+  ticker: string;
+  name: string;
+  sector: string;
+  signalType: "buy" | "sell" | "hold";
+  confidence: number;
+  currentPrice: number;
+  reasoning?: string;
+}
+
+interface AutoTradingRoundResponse {
+  runAt: string;
+  selectedUniverse: UniverseStock[];
+  scannedCount: number;
+  scannedTickers: string[];
+  nextScanOffset: number;
+  actionableSignals: ActionableSignal[];
+  diagnostics?: {
+    marketDataAvailable: number;
+    marketDataUnavailable: number;
+    directionalSignals: number;
+    holdSignals: number;
+    belowConfidenceSignals: number;
+    requiredConfidence: number;
+    closestSignal: {
+      ticker: string;
+      signalType: "buy" | "sell" | "hold";
+      confidence: number;
+      reasoning?: string;
+    } | null;
+  };
+  executedTrades: AutoExecutedTrade[];
+}
+
+interface ScheduledRoundLogEntry {
+  runAt: string;
+  scannedCount: number;
+  scannedTickers: string[];
+  actionableSignalsCount: number;
+  actionableBuySignals: number;
+  actionableSellSignals: number;
+  executedTradesCount: number;
+  buyTrades: number;
+  sellTrades: number;
+  summary: string;
+}
+
+interface ScheduledAutoTradingRun {
+  status: "active" | "completed" | "cancelled";
+  durationDays: 1 | 3 | 7;
+  startedAt: string | null;
+  endsAt: string | null;
+  nextRunAt: string | null;
+  lastRunAt: string | null;
+  totalRoundsCompleted: number;
+  totalTradesExecuted: number;
+  lastSummary: string | null;
+  lastRound: AutoTradingRoundResponse | null;
+  roundHistory: ScheduledRoundLogEntry[];
+  portfolio: {
+    currentValue: number;
+    cash: number;
+    totalReturnPercent: number;
+  };
+}
+
+interface SimulatorAutoTraderProps {
+  portfolio: SimulatorPortfolio;
+  accessUser?: SubscriptionAwareUser | null;
+  watchlist?: Array<{ ticker: string; name?: string | null }>;
+  onApplyTrades: (trades: AutoExecutedTrade[], summaryMessage: string) => void;
+}
+
+const DEFAULT_INTERVAL_SECONDS = 60;
+const DEFAULT_RISK_PROFILE: SimulatorRiskProfileId = "balanced";
+
+function formatLastRun(value: string | null) {
+  if (!value) {
+    return "No automated round has run yet";
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return "No automated round has run yet";
+  }
+
+  return `Last run ${parsed.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+}
+
+function formatDateTime(value: string | null) {
+  if (!value) {
+    return "Not scheduled";
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return "Not scheduled";
+  }
+
+  return parsed.toLocaleString([], {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function formatCurrencyValue(value: number) {
+  return `£${value.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+}
+
+function getNoSignalDiagnostic(round: AutoTradingRoundResponse | null) {
+  const diagnostics = round?.diagnostics;
+  if (!diagnostics) {
+    return "No buy or sell signals have crossed the current threshold yet.";
+  }
+
+  if (diagnostics.marketDataAvailable === 0) {
+    return "Market data was unavailable for this scan, so the engine did not produce a recommendation. It will retry on the next scheduled pass.";
+  }
+
+  if (diagnostics.closestSignal && diagnostics.closestSignal.signalType !== "hold") {
+    return `Closest setup: ${diagnostics.closestSignal.ticker} ${diagnostics.closestSignal.signalType.toUpperCase()} at ${diagnostics.closestSignal.confidence}% confidence. The current threshold is ${diagnostics.requiredConfidence}%.`;
+  }
+
+  return `The engine evaluated ${diagnostics.marketDataAvailable} stock${diagnostics.marketDataAvailable === 1 ? "" : "s"}; the available technical indicators were mixed, so no directional recommendation cleared the ${diagnostics.requiredConfidence}% threshold.`;
+}
+
+function getDataHealth(input: {
+  lastCheckedAt: string | null;
+  diagnostics?: AutoTradingRoundResponse["diagnostics"];
+  requestFailed: boolean;
+}) {
+  if (input.requestFailed) {
+    return { label: "Status unavailable", message: "The latest Signal Engine status could not be retrieved. No trade decision has been made from this failed request.", tone: "warning" as const };
+  }
+  if (!input.lastCheckedAt) {
+    return { label: "Not yet refreshed", message: "Run a scan or start a timed run to record the first market-data check.", tone: "neutral" as const };
+  }
+  if (input.diagnostics?.marketDataAvailable === 0) {
+    return { label: "Market data unavailable", message: "The latest scan received no usable market-data responses. The engine did not make a recommendation and will retry on its next pass.", tone: "warning" as const };
+  }
+  if (input.diagnostics && input.diagnostics.marketDataUnavailable > 0) {
+    return { label: "Partial data response", message: `${input.diagnostics.marketDataUnavailable} selected ticker${input.diagnostics.marketDataUnavailable === 1 ? " was" : "s were"} unavailable during the latest scan. Results reflect only the available responses.`, tone: "warning" as const };
+  }
+  const lastChecked = new Date(input.lastCheckedAt).getTime();
+  if (Number.isFinite(lastChecked) && Date.now() - lastChecked > 6 * 60 * 60 * 1000) {
+    return { label: "Refresh may be stale", message: "The latest recorded scan is more than six hours old. Check the next scheduled round or run a new scan before relying on it.", tone: "neutral" as const };
+  }
+  return { label: "Latest scan data available", message: "The latest scan received market-data responses for its selected universe. Always review the timestamp before using a result.", tone: "healthy" as const };
+}
+
+export function SimulatorAutoTrader({ portfolio, accessUser, watchlist = [], onApplyTrades }: SimulatorAutoTraderProps) {
+  const [, setLocation] = useLocation();
+  const autoTradingEnabled = canUseAutoTrading(accessUser);
+  const autoTradingUpgradeMessage = getAutoTradingUpgradeMessage(accessUser);
+  const universeQuery = trpc.simulator.getAutoTradingUniverse.useQuery();
+  const autoRoundMutation = trpc.simulator.runAutoTradingRound.useMutation();
+  const scheduledRunQuery = trpc.simulator.getScheduledAutoTradingRun.useQuery(undefined, {
+    enabled: autoTradingEnabled,
+    refetchInterval: autoTradingEnabled ? 60000 : false,
+  });
+  const startScheduledRunMutation = trpc.simulator.startScheduledAutoTradingRun.useMutation();
+  const cancelScheduledRunMutation = trpc.simulator.cancelScheduledAutoTradingRun.useMutation();
+
+  const [autoEnabled, setAutoEnabled] = useState(false);
+  const [riskProfileId, setRiskProfileId] = useState<SimulatorRiskProfileId>(DEFAULT_RISK_PROFILE);
+  const [universeSize, setUniverseSize] = useState(12);
+  const [minConfidence, setMinConfidence] = useState(70);
+  const [maxTradesPerRound, setMaxTradesPerRound] = useState(2);
+  const [positionSizePercent, setPositionSizePercent] = useState(20);
+  const [intervalSeconds, setIntervalSeconds] = useState(DEFAULT_INTERVAL_SECONDS);
+  const [selectedUniverse, setSelectedUniverse] = useState<UniverseStock[]>([]);
+  const [scanOffset, setScanOffset] = useState(0);
+  const [lastRunAt, setLastRunAt] = useState<string | null>(null);
+  const [lastRound, setLastRound] = useState<AutoTradingRoundResponse | null>(null);
+  const [scheduledDurationDays, setScheduledDurationDays] = useState<1 | 3 | 7>(1);
+  const [timerNow, setTimerNow] = useState(() => Date.now());
+
+  const activeRiskProfile = getRiskProfile(riskProfileId);
+  const watchlistTickers = useMemo(
+    () => Array.from(new Set(
+      watchlist
+        .map((stock) => stock.ticker.trim().toUpperCase())
+        .filter(Boolean),
+    )),
+    [watchlist],
+  );
+  const hasWatchlistUniverse = watchlistTickers.length > 0;
+  const selectedTickers = selectedUniverse.map((stock) => stock.ticker);
+  const activeUniverseTickers = hasWatchlistUniverse ? watchlistTickers : selectedTickers;
+  const activeUniverseSize = hasWatchlistUniverse
+    ? Math.max(universeSize, watchlistTickers.length)
+    : universeSize;
+  const autoPreviewUsage = getPreviewUsage(3, autoTradingEnabled ? 3 : 1);
+  const scheduledRun = (scheduledRunQuery.data ?? null) as ScheduledAutoTradingRun | null;
+  const latestScan = scheduledRun?.lastRound ?? lastRound;
+  const latestScanAt = scheduledRun?.lastRunAt ?? lastRunAt ?? latestScan?.runAt ?? null;
+  const dataHealth = getDataHealth({
+    lastCheckedAt: latestScanAt,
+    diagnostics: latestScan?.diagnostics,
+    requestFailed: scheduledRunQuery.isError || autoRoundMutation.isError,
+  });
+
+  useEffect(() => {
+    const profile = getRiskProfile(riskProfileId);
+    setMinConfidence(profile.minConfidence);
+    setMaxTradesPerRound(profile.maxTradesPerRound);
+    setPositionSizePercent(profile.positionSizePercent);
+    setIntervalSeconds(profile.intervalSeconds);
+  }, [riskProfileId]);
+
+  const positionSnapshot = useMemo(
+    () => portfolio.positions.map((position) => ({
+      ticker: position.ticker,
+      quantity: position.quantity,
+      averagePrice: position.entryPrice,
+    })),
+    [portfolio.positions],
+  );
+
+  const runRound = async (reshuffle: boolean = false) => {
+    if (!autoTradingEnabled) {
+      setLocation("/pricing");
+      return;
+    }
+
+    const response = await autoRoundMutation.mutateAsync({
+      positions: positionSnapshot,
+      cashBalance: portfolio.cash,
+      desiredUniverseSize: activeUniverseSize,
+      universeTickers: reshuffle && !hasWatchlistUniverse ? [] : activeUniverseTickers,
+      minConfidence,
+      maxTradesPerRound,
+      positionSizePercent,
+      maxOpenPositions: 8,
+      scanBatchSize: 4,
+      scanOffset: reshuffle ? 0 : scanOffset,
+    }) as AutoTradingRoundResponse;
+
+    setSelectedUniverse(response.selectedUniverse);
+    setScanOffset(response.nextScanOffset);
+    setLastRunAt(response.runAt);
+    setLastRound(response);
+
+    const buyCount = response.executedTrades.filter((trade) => trade.type === "BUY").length;
+    const sellCount = response.executedTrades.filter((trade) => trade.type === "SELL").length;
+    const summaryMessage = response.executedTrades.length > 0
+      ? `Signal engine executed ${response.executedTrades.length} virtual trade${response.executedTrades.length === 1 ? "" : "s"} across ${response.scannedCount} scanned stocks (${buyCount} buys, ${sellCount} sells).`
+      : `Signal engine scanned ${response.scannedCount} stocks. ${getNoSignalDiagnostic(response)}`;
+
+    if (response.executedTrades.length > 0) {
+      onApplyTrades(
+        response.executedTrades.map((trade) => ({
+          ...trade,
+          origin: "auto",
+          riskProfile: riskProfileId,
+        })),
+        summaryMessage,
+      );
+    }
+  };
+
+  useEffect(() => {
+    if (!autoEnabled) {
+      return;
+    }
+
+    const timer = window.setInterval(() => {
+      void runRound();
+    }, Math.max(15, intervalSeconds) * 1000);
+
+    return () => window.clearInterval(timer);
+  }, [
+    autoEnabled,
+    intervalSeconds,
+    maxTradesPerRound,
+    minConfidence,
+    onApplyTrades,
+    portfolio.cash,
+    positionSizePercent,
+    positionSnapshot,
+    selectedUniverse,
+    universeSize,
+  ]);
+
+  useEffect(() => {
+    if (scheduledRun?.status !== "active") {
+      return;
+    }
+
+    setTimerNow(Date.now());
+    const timer = window.setInterval(() => setTimerNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [scheduledRun?.status]);
+
+  const displayedRound = lastRound ?? scheduledRun?.lastRound ?? null;
+  const actionableSignals = displayedRound?.actionableSignals ?? [];
+  const latestDiagnostics = displayedRound?.diagnostics;
+  const scheduledRunInProgress = scheduledRun?.status === "active";
+  const scheduledRoundHistory = scheduledRun?.roundHistory ?? [];
+  const scheduledRunTimer = useMemo(
+    () => scheduledRunInProgress
+      ? getScheduledRunTimer({
+          startedAt: scheduledRun?.startedAt ?? null,
+          endsAt: scheduledRun?.endsAt ?? null,
+          nextRunAt: scheduledRun?.nextRunAt ?? null,
+          now: timerNow,
+        })
+      : null,
+    [scheduledRun?.endsAt, scheduledRun?.nextRunAt, scheduledRun?.startedAt, scheduledRunInProgress, timerNow],
+  );
+  const selectedUniverseText = hasWatchlistUniverse
+    ? `${watchlistTickers.length} stock${watchlistTickers.length === 1 ? "" : "s"} from your watchlist`
+    : selectedUniverse.length > 0
+    ? `${selectedUniverse.length} stocks in the current random basket`
+    : "A random basket will be chosen on the first run";
+
+  return (
+    <Card id="signal-engine" className="premium-card border-0 bg-transparent shadow-none lg:col-span-2">
+      <CardHeader>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-xl font-semibold tracking-tight">Signal Engine</CardTitle>
+              <Badge variant="secondary" className="uppercase tracking-[0.2em] text-[11px]">
+                beta
+              </Badge>
+            </div>
+            <CardDescription>
+              The Signal Engine checks every stock on your watchlist first, then uses a broader random basket only when your watchlist is empty. It can open or close virtual positions from live buy and sell signals while keeping manual paper trading available.
+            </CardDescription>
+          </div>
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:justify-end">
+            {autoTradingEnabled ? (
+              <>
+                <Button
+                  variant={autoEnabled ? "secondary" : "default"}
+                  onClick={async () => {
+                    if (autoEnabled) {
+                      setAutoEnabled(false);
+                      return;
+                    }
+                    setAutoEnabled(true);
+                    await runRound();
+                  }}
+                  disabled={autoRoundMutation.isPending}
+                >
+                  {autoEnabled ? <Pause className="mr-2 h-4 w-4" /> : <Play className="mr-2 h-4 w-4" />}
+                  {autoEnabled ? "Stop auto mode" : "Start auto mode"}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => void runRound()}
+                  disabled={autoRoundMutation.isPending}
+                >
+                  <RefreshCw className={`mr-2 h-4 w-4 ${autoRoundMutation.isPending ? "animate-spin" : ""}`} />
+                  Run now
+                </Button>
+              </>
+            ) : (
+              <Button type="button" onClick={() => setLocation("/pricing")} className="w-full sm:w-auto">
+                <Lock className="mr-2 h-4 w-4" />
+                Unlock Signal Engine
+              </Button>
+            )}
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {!autoTradingEnabled && (
+          <div className="rounded-2xl border border-primary/25 bg-primary/10 p-4 space-y-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-semibold text-foreground">Signal engine is locked on the free plan</p>
+                <p className="mt-1 text-sm text-muted-foreground">{autoTradingUpgradeMessage}</p>
+              </div>
+              <Button type="button" onClick={() => setLocation("/pricing")} className="pill-button pill-button-primary h-10 px-5">
+                View plans
+              </Button>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-3 text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                <span>Feature preview</span>
+                <span>{autoPreviewUsage.label}</span>
+              </div>
+              <div className="h-2 overflow-hidden rounded-full bg-background/60">
+                <div className="h-full rounded-full bg-primary" style={{ width: `${autoPreviewUsage.percent}%` }} />
+              </div>
+              <p className="text-xs text-muted-foreground">{autoPreviewUsage.remainingLocked} premium automation features remain locked until upgrade.</p>
+            </div>
+            <div className="overflow-hidden rounded-2xl border border-border/70 bg-background/40">
+              <div className="grid grid-cols-3 gap-px bg-border/60 text-sm">
+                <div className="bg-background/95 px-3 py-2 font-semibold text-foreground">Feature</div>
+                <div className="bg-background/95 px-3 py-2 font-semibold text-foreground">Free</div>
+                <div className="bg-background/95 px-3 py-2 font-semibold text-foreground">Paid</div>
+              </div>
+              {LOCKED_FEATURE_PLAN_ROWS.map((row) => (
+                <div key={row.label} className="grid grid-cols-3 gap-px border-t border-border/60 bg-border/60 text-sm">
+                  <div className="bg-background/95 px-3 py-2 text-foreground">{row.label}</div>
+                  <div className="bg-background/95 px-3 py-2 text-muted-foreground">{row.free}</div>
+                  <div className="bg-background/95 px-3 py-2 text-foreground">{row.paid}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        <div className="space-y-3">
+          <div>
+            <label className="text-sm font-medium">Risk profile</label>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {Object.values(SIMULATOR_RISK_PROFILES).map((profile) => (
+                <Button
+                  key={profile.id}
+                  type="button"
+                  variant={profile.id === riskProfileId ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setRiskProfileId(profile.id)}
+                  className="rounded-full"
+                  disabled={!autoTradingEnabled}
+                >
+                  {profile.label}
+                </Button>
+              ))}
+            </div>
+            <p className="mt-2 text-sm text-muted-foreground">{activeRiskProfile.description}</p>
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-4">
+          <div>
+            <label className="text-sm font-medium">{hasWatchlistUniverse ? "Watchlist coverage" : "Random basket size"}</label>
+            <Input
+              className="mt-1"
+              type="number"
+              min={6}
+              max={25}
+              value={hasWatchlistUniverse ? watchlistTickers.length : universeSize}
+              onChange={(event) => setUniverseSize(Number(event.target.value) || 12)}
+              disabled={!autoTradingEnabled || hasWatchlistUniverse}
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium">Min confidence %</label>
+            <Input
+              className="mt-1"
+              type="number"
+              min={60}
+              max={95}
+              value={minConfidence}
+              onChange={(event) => setMinConfidence(Number(event.target.value) || 70)}
+              disabled={!autoTradingEnabled}
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium">Max trades / round</label>
+            <Input
+              className="mt-1"
+              type="number"
+              min={1}
+              max={5}
+              value={maxTradesPerRound}
+              onChange={(event) => setMaxTradesPerRound(Number(event.target.value) || 2)}
+              disabled={!autoTradingEnabled}
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium">Position size %</label>
+            <Input
+              className="mt-1"
+              type="number"
+              min={5}
+              max={40}
+              value={positionSizePercent}
+              onChange={(event) => setPositionSizePercent(Number(event.target.value) || 20)}
+              disabled={!autoTradingEnabled}
+            />
+          </div>
+        </div>
+
+        </div>
+
+        {autoTradingEnabled && (
+          <div className="rounded-2xl border border-cyan-500/25 bg-cyan-500/10 p-4 space-y-4">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+              <div className="space-y-2">
+                <p className="text-sm font-semibold text-foreground">Timed auto-trading run</p>
+                <p className="text-sm text-muted-foreground">
+                  Save the current simulator portfolio on the server and let it execute one automated round per day for <strong>1 day</strong>, <strong>3 days</strong>, or <strong>7 days</strong>. This is separate from the browser-only loop below and keeps its own persisted schedule state.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {[1, 3, 7].map((duration) => (
+                  <Button
+                    key={duration}
+                    type="button"
+                    size="sm"
+                    variant={scheduledDurationDays === duration ? "default" : "outline"}
+                    onClick={() => setScheduledDurationDays(duration as 1 | 3 | 7)}
+                    disabled={startScheduledRunMutation.isPending || cancelScheduledRunMutation.isPending || scheduledRunInProgress}
+                  >
+                    {duration}-day run
+                  </Button>
+                ))}
+                <Button
+                  type="button"
+                  onClick={async () => {
+                    await startScheduledRunMutation.mutateAsync({
+                      durationDays: scheduledDurationDays,
+                      riskProfileId,
+                      universeSize,
+                      minConfidence,
+                      maxTradesPerRound,
+                      positionSizePercent,
+                      portfolio,
+                      universeTickers: activeUniverseTickers,
+                    });
+                    await scheduledRunQuery.refetch();
+                  }}
+                  disabled={startScheduledRunMutation.isPending || scheduledRunInProgress}
+                >
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  {startScheduledRunMutation.isPending ? "Starting…" : scheduledRunInProgress ? "Timed run in progress" : "Start timed run"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={async () => {
+                    await cancelScheduledRunMutation.mutateAsync();
+                    await scheduledRunQuery.refetch();
+                  }}
+                  disabled={!scheduledRun || scheduledRun.status !== "active" || cancelScheduledRunMutation.isPending}
+                >
+                  {cancelScheduledRunMutation.isPending ? "Stopping…" : "Stop timed run"}
+                </Button>
+              </div>
+            </div>
+
+            {scheduledRunInProgress && scheduledRunTimer ? (
+              <section className="overflow-hidden rounded-2xl border border-primary/35 bg-[linear-gradient(135deg,rgba(14,165,233,0.16),rgba(37,99,235,0.1),rgba(15,23,42,0.35))] p-4 shadow-[0_18px_42px_rgba(14,165,233,0.12)]">
+                <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge className="rounded-full border-primary/30 bg-primary/15 text-primary">Timed run active</Badge>
+                      <span className="text-xs font-medium text-muted-foreground">Server-scheduled paper trading</span>
+                    </div>
+                    <p className="mt-3 text-sm text-muted-foreground">Time remaining until the scheduled run closes</p>
+                    <time
+                      className="mt-1 block text-3xl font-semibold tracking-tight text-foreground tabular-nums"
+                      dateTime={scheduledRun?.endsAt ?? undefined}
+                      aria-label={`Time remaining: ${scheduledRunTimer.timeRemaining}`}
+                    >
+                      {scheduledRunTimer.isAwaitingCompletion ? "Finishing scheduled run" : scheduledRunTimer.timeRemaining}
+                    </time>
+                    <p className="mt-2 text-xs text-muted-foreground">Expected completion: {formatDateTime(scheduledRun?.endsAt ?? null)}</p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 md:min-w-[260px]">
+                    <div className="rounded-xl border border-white/10 bg-black/10 p-3">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Run progress</p>
+                      <p className="mt-1 text-lg font-semibold text-foreground">{Math.round(scheduledRunTimer.progressPercent)}%</p>
+                      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10" aria-hidden="true">
+                        <div className="h-full rounded-full bg-primary transition-[width] duration-1000 ease-out" style={{ width: `${scheduledRunTimer.progressPercent}%` }} />
+                      </div>
+                    </div>
+                    <div className="rounded-xl border border-white/10 bg-black/10 p-3">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Next scan</p>
+                      <p className="mt-1 text-lg font-semibold text-foreground">{scheduledRunTimer.nextRoundIn ?? "Not scheduled"}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">{formatDateTime(scheduledRun?.nextRunAt ?? null)}</p>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            ) : null}
+
+            <div className={`rounded-2xl border p-4 ${dataHealth.tone === "healthy" ? "border-emerald-500/25 bg-emerald-500/10" : dataHealth.tone === "warning" ? "border-amber-500/25 bg-amber-500/10" : "border-white/10 bg-white/5"}`}>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="flex gap-3">
+                  {dataHealth.tone === "healthy" ? <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-300" /> : dataHealth.tone === "warning" ? <CloudOff className="mt-0.5 h-5 w-5 shrink-0 text-amber-300" /> : <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />}
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Data health: {dataHealth.label}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{dataHealth.message}</p>
+                  </div>
+                </div>
+                <Badge variant="outline" className="w-fit border-white/15 bg-black/10 text-foreground">
+                  Last check: {formatDateTime(latestScanAt)}
+                </Badge>
+              </div>
+            </div>
+
+            <div className="grid gap-3 md:grid-cols-4">
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Status</p>
+                <p className="mt-2 text-lg font-semibold text-foreground">{scheduledRunInProgress ? "in progress" : scheduledRun?.status ?? "idle"}</p>
+                <p className="text-sm text-muted-foreground">Duration: {scheduledRun?.durationDays ?? scheduledDurationDays} day(s)</p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Next round</p>
+                <p className="mt-2 text-lg font-semibold text-foreground">{formatDateTime(scheduledRun?.nextRunAt ?? null)}</p>
+                <p className="text-sm text-muted-foreground">Last run: {formatDateTime(scheduledRun?.lastRunAt ?? null)}</p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Portfolio value</p>
+                <p className="mt-2 text-lg font-semibold text-foreground">{formatCurrencyValue(scheduledRun?.portfolio.currentValue ?? portfolio.currentValue)}</p>
+                <p className="text-sm text-muted-foreground">Cash: {formatCurrencyValue(scheduledRun?.portfolio.cash ?? portfolio.cash)}</p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Executed trades</p>
+                <p className="mt-2 text-lg font-semibold text-foreground">{scheduledRun?.totalTradesExecuted ?? 0}</p>
+                <p className="text-sm text-muted-foreground">Rounds completed: {scheduledRun?.totalRoundsCompleted ?? 0}</p>
+                <p className="mt-2 text-xs text-muted-foreground">Trades only count when a signal also passes confidence, sizing, and open-position rules.</p>
+              </div>
+            </div>
+
+            <p className="text-sm text-muted-foreground">
+              {scheduledRun?.lastSummary ?? "Start a timed run to persist this simulator snapshot on the server and let daily automated rounds update it over the selected duration."}
+            </p>
+
+            {scheduledRun?.lastRound?.diagnostics ? (
+              <div className="rounded-2xl border border-white/10 bg-black/10 px-4 py-3 text-xs leading-5 text-muted-foreground">
+                <span className="font-semibold text-foreground">Latest scan diagnostics: </span>
+                {scheduledRun.lastRound.diagnostics.marketDataAvailable}/{scheduledRun.lastRound.scannedCount} market-data responses available · {scheduledRun.lastRound.diagnostics.directionalSignals} directional setups · {scheduledRun.lastRound.diagnostics.belowConfidenceSignals} below the {scheduledRun.lastRound.diagnostics.requiredConfidence}% threshold
+                {scheduledRun.lastRound.diagnostics.marketDataUnavailable > 0 ? ` · ${scheduledRun.lastRound.diagnostics.marketDataUnavailable} unavailable` : ""}
+              </div>
+            ) : null}
+
+            <div className="space-y-3 rounded-2xl border border-white/10 bg-black/10 p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-foreground">Per-round execution log</p>
+                  <p className="text-xs text-muted-foreground">Each scheduled pass records when it ran, how many tickers it scanned, how many actionable signals it found, and whether any trades executed. A 3-day run now completes three daily passes, not four.</p>
+                </div>
+                {scheduledRoundHistory.length > 0 ? (
+                  <Badge variant="outline" className="border-cyan-500/30 bg-cyan-500/10 text-cyan-100">
+                    {(scheduledRun?.totalRoundsCompleted ?? scheduledRoundHistory.length)} round{(scheduledRun?.totalRoundsCompleted ?? scheduledRoundHistory.length) === 1 ? "" : "s"} completed
+                  </Badge>
+                ) : null}
+              </div>
+
+              {scheduledRoundHistory.length === 0 ? (
+                <p className="text-sm text-muted-foreground">The execution log will appear after the first scheduled round completes.</p>
+              ) : (
+                <div className="space-y-3">
+                  {scheduledRoundHistory.slice(0, 6).map((round) => (
+                    <div key={round.runAt} className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">{formatDateTime(round.runAt)}</p>
+                          <p className="mt-1 text-sm text-muted-foreground">{round.summary}</p>
+                        </div>
+                        <div className="flex flex-wrap gap-2 text-xs">
+                          <Badge variant="outline" className="border-white/10 bg-white/5 text-foreground">
+                            {round.scannedCount} scanned
+                          </Badge>
+                          <Badge variant="outline" className="border-emerald-500/30 bg-emerald-500/10 text-emerald-200">
+                            {round.actionableBuySignals} buy signals
+                          </Badge>
+                          <Badge variant="outline" className="border-rose-500/30 bg-rose-500/10 text-rose-200">
+                            {round.actionableSellSignals} sell signals
+                          </Badge>
+                          <Badge variant="outline" className="border-cyan-500/30 bg-cyan-500/10 text-cyan-100">
+                            {round.executedTradesCount} trade{round.executedTradesCount === 1 ? "" : "s"}
+                          </Badge>
+                        </div>
+                      </div>
+                      {round.scannedTickers.length > 0 ? (
+                        <p className="mt-3 text-xs text-muted-foreground">Scanned tickers: {round.scannedTickers.join(", ")}</p>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        <div className="rounded-2xl border border-amber-500/25 bg-amber-500/10 p-4">
+          <p className="text-sm font-semibold text-foreground">Choose the run mode that suits your test</p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            The quick browser loop is useful for open-tab testing and can pause in a background mobile tab. A timed 1-day, 3-day, or 7-day run is persisted on the server and processed by the scheduled Signal Engine even after you close the page.
+          </p>
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
+          <div>
+            <label className="text-sm font-medium">Auto-run interval (seconds)</label>
+            <Input
+              className="mt-1"
+              type="number"
+              min={15}
+              max={300}
+              step={15}
+              value={intervalSeconds}
+              onChange={(event) => setIntervalSeconds(Number(event.target.value) || DEFAULT_INTERVAL_SECONDS)}
+              disabled={!autoTradingEnabled}
+            />
+          </div>
+          <Button
+            variant="outline"
+            onClick={() => void runRound(!hasWatchlistUniverse)}
+            disabled={autoRoundMutation.isPending || !autoTradingEnabled}
+          >
+            <Shuffle className="mr-2 h-4 w-4" />
+            {hasWatchlistUniverse ? "Scan watchlist" : "New random basket"}
+          </Button>
+        </div>
+
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-medium text-foreground">{selectedUniverseText}</p>
+              <p className="text-sm text-muted-foreground">{formatLastRun(lastRunAt)}</p>
+              <p className="text-xs text-muted-foreground">{hasWatchlistUniverse ? "Every stock you add to your watchlist is kept in this Signal Engine universe. Each round scans a rotating batch to protect live market-data providers." : "Each round scans a rotating batch so the basket can be larger without overwhelming the live market-data providers."} Background mobile tabs may pause these browser timers.</p>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Bot className="h-4 w-4" />
+              {autoTradingEnabled ? (autoEnabled ? "Signal engine is scanning while this tab stays open" : "Signal engine is idle") : "Upgrade required for signal engine"}
+            </div>
+          </div>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            {selectedUniverse.length === 0 ? (
+              <p className="text-sm text-muted-foreground">{autoTradingEnabled ? "Run the Signal Engine to build its stock universe." : "Upgrade to unlock Signal Engine paper-trading rounds."}</p>
+            ) : (
+              selectedUniverse.map((stock) => (
+                <Badge key={stock.ticker} variant="outline" className="border-cyan-500/30 bg-cyan-500/10 text-cyan-100">
+                  {stock.ticker}
+                </Badge>
+              ))
+            )}
+          </div>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-3">
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Universe available</p>
+            <p className={`mt-2 text-2xl font-semibold ${autoTradingEnabled ? "" : "blur-[2px] select-none"}`}>{universeQuery.data?.length ?? 0}</p>
+            <p className="text-sm text-muted-foreground">Tradable companies and ETFs in the expanded simulator pool</p>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Actionable signals</p>
+            <p className={`mt-2 text-2xl font-semibold ${autoTradingEnabled ? "" : "blur-[2px] select-none"}`}>{actionableSignals.length}</p>
+            <p className="text-sm text-muted-foreground">Signals above your current confidence threshold in the latest scan</p>
+            {latestDiagnostics ? <p className="mt-2 text-xs text-muted-foreground">{latestDiagnostics.marketDataAvailable}/{displayedRound?.scannedCount ?? 0} market-data responses available</p> : null}
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Latest round</p>
+            <p className={`mt-2 text-2xl font-semibold ${autoTradingEnabled ? "" : "blur-[2px] select-none"}`}>{displayedRound?.executedTrades.length ?? 0}</p>
+            <p className="text-sm text-muted-foreground">Virtual trades executed in the most recent automated pass</p>
+            {displayedRound?.scannedTickers?.length ? (
+              <p className="mt-2 text-xs text-muted-foreground">Scanned now: {displayedRound.scannedTickers.join(", ")}</p>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="space-y-3 rounded-2xl border border-white/10 bg-white/5 p-4">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-cyan-300" />
+            <p className="font-medium">Latest high-conviction signals</p>
+          </div>
+          {!autoTradingEnabled ? (
+            <div className="rounded-xl bg-secondary/30 px-3 py-3">
+              <p className="text-sm font-medium text-foreground blur-[2px] select-none">NVDA · BUY · 84% confidence</p>
+              <p className="mt-2 text-sm text-muted-foreground">Upgrade to reveal live actionable signals and automated trade candidates.</p>
+            </div>
+          ) : actionableSignals.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{getNoSignalDiagnostic(displayedRound)}</p>
+          ) : (
+            <div className="space-y-2">
+              {actionableSignals.slice(0, 6).map((signal) => (
+                <div key={`${signal.ticker}-${signal.signalType}`} className="flex items-center justify-between gap-4 rounded-xl bg-secondary/30 px-3 py-3">
+                  <div className="min-w-0">
+                    <p className="font-semibold">{signal.ticker}</p>
+                    <p className="text-sm text-muted-foreground truncate">{signal.reasoning ?? `${signal.name} is showing a ${signal.signalType} setup.`}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <Badge variant={signal.signalType === "buy" ? "default" : "secondary"}>
+                      {signal.signalType.toUpperCase()}
+                    </Badge>
+                    <p className="mt-2 text-sm text-muted-foreground">{signal.confidence}% confidence</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

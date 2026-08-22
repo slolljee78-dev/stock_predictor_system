@@ -1,0 +1,85 @@
+{
+  "query": "SELECT DATE(createdAt) AS signal_day, type, COUNT(*) AS signal_count, AVG(confidenceScore) AS avg_confidence FROM signals WHERE createdAt >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 7 DAY) GROUP BY DATE(createdAt), type ORDER BY signal_day DESC, type; SELECT id, userId, status, durationDays, minConfidence, maxTradesPerRound, totalRoundsCompleted, totalTradesExecuted, startedAt, lastRunAt, nextRunAt, lastSummary FROM scheduled_simulator_runs ORDER BY id DESC LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user irvuEERniB6Vw7s.bec5f3955eab --database knJ3QkdJFvivzkyeUv8kpq --execute SELECT DATE(createdAt) AS signal_day, type, COUNT(*) AS signal_count, AVG(confidenceScore) AS avg_confidence FROM signals WHERE createdAt >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 7 DAY) GROUP BY DATE(createdAt), type ORDER BY signal_day DESC, type; SELECT id, userId, status, durationDays, minConfidence, maxTradesPerRound, totalRoundsCompleted, totalTradesExecuted, startedAt, lastRunAt, nextRunAt, lastSummary FROM scheduled_simulator_runs ORDER BY id DESC LIMIT 5;",
+  "rows": [
+    {
+      "signal_day": "2026-05-07",
+      "type": "buy",
+      "signal_count": "10",
+      "avg_confidence": "26.9000"
+    },
+    {
+      "signal_day": "2026-05-07",
+      "type": "sell",
+      "signal_count": "11",
+      "avg_confidence": "31.0909"
+    },
+    {
+      "signal_day": "2026-05-06",
+      "type": "buy",
+      "signal_count": "3",
+      "avg_confidence": "26.6667"
+    },
+    {
+      "signal_day": "2026-05-06",
+      "type": "sell",
+      "signal_count": "3",
+      "avg_confidence": "33.0000"
+    },
+    {
+      "signal_day": "2026-05-04",
+      "type": "buy",
+      "signal_count": "34",
+      "avg_confidence": "26.5588"
+    },
+    {
+      "signal_day": "2026-05-04",
+      "type": "sell",
+      "signal_count": "19",
+      "avg_confidence": "33.0000"
+    },
+    {
+      "signal_day": "2026-05-03",
+      "type": "buy",
+      "signal_count": "18",
+      "avg_confidence": "26.6667"
+    },
+    {
+      "signal_day": "2026-05-03",
+      "type": "sell",
+      "signal_count": "5",
+      "avg_confidence": "33.0000"
+    },
+    {
+      "signal_day": "2026-05-02",
+      "type": "buy",
+      "signal_count": "15",
+      "avg_confidence": "26.6667"
+    },
+    {
+      "signal_day": "2026-05-02",
+      "type": "sell",
+      "signal_count": "3",
+      "avg_confidence": "33.0000"
+    },
+    {
+      "signal_day": "2026-05-01",
+      "type": "buy",
+      "signal_count": "68",
+      "avg_confidence": "26.7353"
+    },
+    {
+      "signal_day": "2026-05-01",
+      "type": "sell",
+      "signal_count": "21",
+      "avg_confidence": "33.0000"
+    }
+  ],
+  "messages": [
+    "id\tuserId\tstatus\tdurationDays\tminConfidence\tmaxTradesPerRound\ttotalRoundsCompleted\ttotalTradesExecuted\tstartedAt\tlastRunAt\tnextRunAt\tlastSummary",
+    "1\t1\tactive\t3\t72\t2\t3\t0\t2026-05-06 22:12:52\t2026-05-07 22:49:06\t2026-05-08 22:49:06\tScheduled simulator scanned 13 stocks and found no trade that met the current confidence and sizing rules."
+  ],
+  "stdout": "signal_day\ttype\tsignal_count\tavg_confidence\n2026-05-07\tbuy\t10\t26.9000\n2026-05-07\tsell\t11\t31.0909\n2026-05-06\tbuy\t3\t26.6667\n2026-05-06\tsell\t3\t33.0000\n2026-05-04\tbuy\t34\t26.5588\n2026-05-04\tsell\t19\t33.0000\n2026-05-03\tbuy\t18\t26.6667\n2026-05-03\tsell\t5\t33.0000\n2026-05-02\tbuy\t15\t26.6667\n2026-05-02\tsell\t3\t33.0000\n2026-05-01\tbuy\t68\t26.7353\n2026-05-01\tsell\t21\t33.0000\nid\tuserId\tstatus\tdurationDays\tminConfidence\tmaxTradesPerRound\ttotalRoundsCompleted\ttotalTradesExecuted\tstartedAt\tlastRunAt\tnextRunAt\tlastSummary\n1\t1\tactive\t3\t72\t2\t3\t0\t2026-05-06 22:12:52\t2026-05-07 22:49:06\t2026-05-08 22:49:06\tScheduled simulator scanned 13 stocks and found no trade that met the current confidence and sizing rules.\n",
+  "stderr": "",
+  "execution_time_ms": 632
+}

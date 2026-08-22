@@ -1,0 +1,4 @@
+Browser validation findings on 2026-04-24:
+- Preview /pricing now shows both 'Back to menu' and 'Back to dashboard' controls for authenticated users.
+- Preview /dashboard on desktop shows the overview header at the top of the workspace without the older public-page gap.
+- Remaining user-reported issue is mobile top spacing above the overview banner, so the latest mobile-specific DashboardLayout adjustments need to be checkpointed and published for user verification.
